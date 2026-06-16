@@ -1,0 +1,116 @@
+/* Cross-component UI utilities used by several cell editors. */
+
+/* Editor tool strip — a labelled toolbar that scrolls rather than wraps (tablet-friendly).
+   !important on display: S2's layered base styles otherwise reset it. */
+.toolStrip {
+  display: flex !important;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding: 7px 10px;
+  background: var(--canvas);
+  border: 1px solid var(--s-line);
+  border-radius: var(--radius-sm);
+  scrollbar-width: thin;
+}
+.toolStrip + .toolStrip {
+  margin-top: 8px;
+}
+.toolStrip > * {
+  flex: none;
+}
+.toolbarSep {
+  width: 1px;
+  align-self: stretch;
+  margin: 2px 4px;
+  background: var(--s-line-strong);
+}
+
+/* Icon-only S2 buttons: S2 reserves a text column (label-sized padding) for buttons
+   holding non-Spectrum (Phosphor) icons, which left-aligns the glyph. Collapse that
+   column and square the hit area so the icon truly centers (tablet-friendly). */
+.btnIcononly {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 0 !important;
+  padding-inline: 0 !important;
+  aspect-ratio: 1 / 1;
+}
+
+/* Filled brand CTA (Play, empty-state) — uses the cell's --accent, used sparingly. */
+.btnMagenta {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-family: var(--font-ui);
+  font-size: 1rem;
+  font-weight: 600;
+  color: #fff;
+  background: var(--accent);
+  border: none;
+  border-radius: var(--radius-pill);
+  padding: 11px 22px;
+  cursor: pointer;
+  transition:
+    background 0.15s ease,
+    transform 0.06s ease;
+}
+/* Icon-only variant — square tappable target, glyph centered. */
+.btnMagenta.btnIcon {
+  padding: 0;
+  width: 44px;
+  height: 44px;
+  border-radius: var(--radius-sm);
+}
+.btnMagenta:hover {
+  background: var(--accent-strong);
+}
+.btnMagenta:active {
+  transform: translateY(1px);
+}
+.btnMagenta:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px var(--accent-ring);
+}
+
+/* Monospace source editors (Markdown + ABC). */
+.codeMono {
+  width: 100%;
+  font-family: var(--font-mono);
+  font-size: 0.9rem;
+  line-height: 1.6;
+  color: var(--s-ink);
+  background: var(--canvas);
+  border: 1px solid var(--s-line);
+  border-radius: var(--radius-sm);
+  padding: 12px 14px;
+  resize: vertical;
+  min-height: 96px;
+  transition:
+    border-color 0.15s ease,
+    box-shadow 0.15s ease;
+}
+.codeMono:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-ring);
+}
+
+/* Empty media drop target (image / pdf) — centered. */
+.mediaEmpty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 28px 16px;
+  color: var(--s-ink-muted);
+}
+.mediaEmptyTitle {
+  font-family: var(--font-content);
+  font-size: 1.1rem;
+  color: var(--s-ink);
+}

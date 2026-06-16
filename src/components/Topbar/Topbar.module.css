@@ -1,0 +1,43 @@
+.bar {
+  display: flex;
+  align-items: center;
+  column-gap: 12px;
+  padding: 12px 24px;
+}
+.tools {
+  display: flex;
+  align-items: center;
+  column-gap: 4px;
+}
+.topbar {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  background: rgba(255, 255, 255, 0.82);
+  backdrop-filter: saturate(1.4) blur(10px);
+  border-bottom: 1px solid var(--s-line);
+  animation: bar-in 0.5s cubic-bezier(0.2, 0.7, 0.2, 1) backwards;
+}
+.brandMark {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 8px;
+  user-select: none;
+}
+.brandGlyph {
+  font-size: 1.4rem;
+  line-height: 1;
+  color: var(--s-magenta);
+}
+.brandWord {
+  font-family: var(--font-content);
+  font-weight: 600;
+  font-size: 1.08rem;
+  letter-spacing: 0.01em;
+  color: var(--s-ink);
+}
+@media (prefers-reduced-motion: reduce) {
+  .topbar {
+    animation: none;
+  }
+}

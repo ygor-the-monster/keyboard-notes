@@ -1,0 +1,81 @@
+- generic [ref=e4]:
+  - banner [ref=e5]:
+    - generic [ref=e6]:
+      - generic [ref=e7]:
+        - generic [ref=e8]: 𝄞
+        - generic [ref=e9]: Piano Notes
+      - separator
+      - button "Lessons" [ref=e10]:
+        - img [ref=e11]
+      - textbox "Lesson title" [ref=e14]:
+        - /placeholder: Untitled lesson
+        - text: Toolbar v2
+      - separator
+      - toolbar "Lesson tools" [ref=e15]:
+        - button "Export JSON" [ref=e16]:
+          - img [ref=e17]
+        - button "Print / save PDF" [ref=e19]:
+          - img [ref=e20]
+  - generic [ref=e22]:
+    - button "Show metronome" [ref=e23] [cursor=pointer]:
+      - img [ref=e24]
+      - generic [ref=e26]: Metronome
+      - generic [ref=e27]: "90"
+    - generic [ref=e28]:
+      - generic [ref=e29]:
+        - img [ref=e30]
+        - generic [ref=e32]: Metronome
+      - group "Tempo" [ref=e33]:
+        - generic [ref=e34]:
+          - generic [ref=e35]: Tempo
+          - status [ref=e36]: "90"
+        - slider "Tempo" [ref=e42]: "90"
+      - generic [ref=e44]:
+        - generic [ref=e45]: Time signature
+        - button "4/4 Time signature" [ref=e46]:
+          - generic [ref=e48]: 4/4
+          - img [ref=e49]
+        - combobox [ref=e53]
+      - button "Start" [ref=e54] [cursor=pointer]
+  - generic [ref=e56]:
+    - generic [ref=e57]:
+      - table [ref=e61]:
+        - rowgroup [ref=e62]:
+          - row "Note Hand Tempo" [ref=e63]:
+            - columnheader "Note" [ref=e64]
+            - columnheader "Hand" [ref=e65]
+            - columnheader "Tempo" [ref=e66]
+        - rowgroup [ref=e67]:
+          - row "C major RH 90" [ref=e68]:
+            - cell "C major" [ref=e69]
+            - cell "RH" [ref=e70]
+            - cell "90" [ref=e71]
+          - row "G7 LH 84" [ref=e72]:
+            - cell "G7" [ref=e73]
+            - cell "LH" [ref=e74]
+            - cell "84" [ref=e75]
+          - row "F both 72" [ref=e76]:
+            - cell "F" [ref=e77]
+            - cell "both" [ref=e78]
+            - cell "72" [ref=e79]
+      - img "Sheet Music" [ref=e84]:
+        - generic [ref=e101]: = 90
+      - img "Sheet Music" [ref=e163]:
+        - generic [ref=e180]: = 90
+      - img "Sheet Music" [ref=e242]:
+        - generic [ref=e259]: = 90
+    - generic [ref=e317]:
+      - generic [ref=e318]:
+        - separator [ref=e319]
+        - img [ref=e320]
+        - generic [ref=e322]: Add a cell
+        - separator [ref=e323]
+      - generic [ref=e324]:
+        - button "Add note" [ref=e325]:
+          - img [ref=e326]
+        - button "Add music staff" [ref=e328]:
+          - img [ref=e329]
+        - button "Add image" [ref=e331]:
+          - img [ref=e332]
+        - button "Add PDF" [ref=e334]:
+          - img [ref=e335]

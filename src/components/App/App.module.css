@@ -1,0 +1,16 @@
+.page {
+  max-width: 880px;
+  margin-inline: auto;
+  padding: 44px 24px;
+}
+.stack {
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+}
+.empty {
+  display: flex;
+  height: 100%;
+  align-items: center;
+  justify-content: center;
+}

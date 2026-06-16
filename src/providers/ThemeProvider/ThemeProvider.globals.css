@@ -1,0 +1,345 @@
+/* Global layer: design tokens, base resets, the manuscript canvas, injected-DOM styles
+   (Markdown prose + abcjs SVG — these can't be CSS-module-scoped because the markup is
+   generated at runtime), shared keyframes, and print rules. Component-owned styling lives
+   in per-component *.module.css files. */
+
+/* Leland — MuseScore's SMuFL engraving font, used only for notation glyph faces in
+   toolbars (accidentals, ornaments, dynamics, barlines) via their SMuFL codepoints. */
+@font-face {
+  font-family: "Leland";
+  src: url("../../assets/Leland.otf") format("opentype");
+  font-display: swap;
+}
+
+:root {
+  /* Manuscript identity (the one deliberate non-Spectrum color) */
+  --canvas: #f6f5f1;
+  --staff-line: rgba(28, 27, 25, 0.035);
+
+  /* Spectrum 2 light tokens — exact values from @react-spectrum/s2 spectrum-theme.
+     magenta (primary/active) + seafoam (spark) + gray neutrals. */
+  --s-magenta: rgb(217, 35, 97); /* magenta-900 */
+  --s-magenta-strong: rgb(186, 22, 80); /* magenta-1000 */
+  --s-magenta-tint: rgb(255, 232, 240); /* magenta-200 */
+  --s-magenta-wash: rgba(217, 35, 97, 0.05); /* faint even-row stripe */
+  --s-magenta-line: rgba(217, 35, 97, 0.28); /* table / hairline borders */
+  --s-magenta-ring: rgba(217, 35, 97, 0.34);
+  --s-seafoam: rgb(7, 129, 109); /* seafoam-900 */
+  --s-seafoam-strong: rgb(5, 108, 92); /* seafoam-1000 */
+  --s-seafoam-tint: rgb(211, 246, 234); /* seafoam-200 */
+  --s-seafoam-ring: rgba(7, 129, 109, 0.32);
+  --s-indigo: rgb(113, 85, 250); /* indigo-900 */
+  --s-indigo-strong: rgb(99, 56, 238); /* indigo-1000 */
+  --s-indigo-tint: rgb(235, 238, 255); /* indigo-200 */
+  --s-indigo-ring: rgba(113, 85, 250, 0.3);
+  --s-orange: rgb(194, 78, 0); /* orange-900 */
+  --s-orange-strong: rgb(167, 62, 0); /* orange-1000 */
+  --s-orange-tint: rgb(255, 236, 207); /* orange-200 */
+  --s-orange-ring: rgba(194, 78, 0, 0.28);
+  --s-purple: rgb(154, 71, 226); /* purple-900 */
+  --s-purple-strong: rgb(134, 56, 211); /* purple-1000 */
+  --s-purple-tint: rgb(244, 235, 255); /* purple-200 */
+  --s-purple-ring: rgba(154, 71, 226, 0.3);
+  --s-neutral-tint: rgb(233, 233, 233); /* gray-100 */
+
+  /* Per-block accent — defaults to magenta (app brand); each cell type overrides it. */
+  --accent: var(--s-magenta);
+  --accent-strong: var(--s-magenta-strong);
+  --accent-tint: var(--s-magenta-tint);
+  --accent-ring: var(--s-magenta-ring);
+  --s-ink: rgb(19, 19, 19); /* gray-900 */
+  --s-ink-muted: rgb(113, 113, 113); /* gray-600 */
+  --s-line: rgb(218, 218, 218); /* gray-300 */
+  --s-line-strong: rgb(192, 192, 192); /* ~gray-400 */
+
+  /* Fonts — Adobe Source superfamily + IBM Plex Mono for ABC glyph-icons */
+  --font-ui: "Source Sans 3", system-ui, -apple-system, sans-serif;
+  --font-content: "Source Serif 4", Georgia, "Times New Roman", serif;
+  --font-mono: "Source Code Pro", ui-monospace, SFMono-Regular, Menlo, monospace;
+  --font-glyph: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+
+  /* Form */
+  --radius: 12px;
+  --radius-sm: 8px;
+  --radius-pill: 999px;
+  --shadow-card: 0 1px 2px rgba(28, 27, 25, 0.04), 0 6px 18px rgba(28, 27, 25, 0.05);
+  --shadow-pop: 0 12px 32px rgba(28, 27, 25, 0.14);
+}
+
+html,
+body,
+#root {
+  height: 100%;
+  margin: 0;
+}
+/* The S2 Provider renders a wrapper div between #root and .app-shell; stretch it. */
+#root > * {
+  height: 100%;
+}
+* {
+  box-sizing: border-box;
+}
+body {
+  font-family: var(--font-ui);
+  color: var(--s-ink);
+  background: var(--canvas);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+/* App shell: ivory manuscript canvas, faint ruled staff texture + soft light. */
+.app-shell {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  background-color: var(--canvas);
+  background-image:
+    radial-gradient(120% 80% at 50% -10%, rgba(255, 255, 255, 0.9), transparent 60%),
+    repeating-linear-gradient(
+      to bottom,
+      transparent 0,
+      transparent 27px,
+      var(--staff-line) 27px,
+      var(--staff-line) 28px
+    );
+  background-attachment: fixed;
+}
+.app-scroll {
+  position: relative;
+  z-index: 1;
+  overflow-y: auto;
+  flex: 1;
+  min-height: 0;
+}
+
+/* Generic "hide when printing" utility, used across components. */
+.no-print {
+}
+
+/* ----- Rendered Markdown — Source Serif 4 prose (styles runtime-injected HTML) ----- */
+.md-preview {
+  font-family: var(--font-content);
+  font-size: 1.02rem;
+  line-height: 1.7;
+  color: var(--s-ink);
+}
+.md-preview > :first-child {
+  margin-top: 0;
+}
+.md-preview > :last-child {
+  margin-bottom: 0;
+}
+.md-preview h1,
+.md-preview h2,
+.md-preview h3 {
+  font-family: var(--font-content);
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  line-height: 1.15;
+  margin: 0.6em 0 0.3em;
+}
+.md-preview h1 {
+  font-size: 1.95rem;
+}
+.md-preview h2 {
+  font-size: 1.5rem;
+}
+.md-preview h3 {
+  font-size: 1.2rem;
+}
+.md-preview img {
+  max-width: 100%;
+  border: 1px solid var(--s-line);
+  border-radius: var(--radius-sm);
+}
+.md-preview a {
+  color: var(--s-magenta-strong);
+  text-decoration: underline;
+  text-decoration-color: var(--s-magenta);
+  text-decoration-thickness: 1.5px;
+  text-underline-offset: 2px;
+}
+.md-preview pre {
+  font-family: var(--font-mono);
+  font-size: 0.86rem;
+  background: var(--canvas);
+  border: 1px solid var(--s-line);
+  padding: 12px 14px;
+  border-radius: var(--radius-sm);
+  overflow-x: auto;
+}
+.md-preview code {
+  font-family: var(--font-mono);
+  font-size: 0.86em;
+  background: var(--s-magenta-tint);
+  color: var(--s-magenta-strong);
+  padding: 0.1em 0.35em;
+  border-radius: 4px;
+}
+.md-preview pre code {
+  background: none;
+  color: inherit;
+  padding: 0;
+}
+.md-preview blockquote {
+  border-left: 3px solid var(--s-magenta);
+  margin: 0.7em 0;
+  padding: 0.1em 0 0.1em 14px;
+  color: var(--s-ink-muted);
+  font-style: italic;
+}
+.md-preview ul.task {
+  list-style: none;
+  padding-left: 1.1em;
+}
+.md-preview input[type="checkbox"] {
+  width: 17px;
+  height: 17px;
+  margin-right: 7px;
+  vertical-align: -3px;
+  accent-color: var(--s-magenta);
+}
+.md-preview table {
+  border-collapse: collapse;
+  overflow: hidden;
+  border-radius: var(--radius-sm);
+}
+.md-preview th,
+.md-preview td {
+  border: 1px solid var(--s-magenta-line);
+  padding: 7px 11px;
+}
+.md-preview th {
+  background: var(--s-magenta-tint);
+  color: var(--s-magenta-strong);
+  font-weight: 600;
+}
+.md-preview tbody tr:nth-child(even) td {
+  background: var(--s-magenta-wash);
+}
+.md-preview mark {
+  background: var(--s-magenta-tint);
+  color: var(--s-magenta-strong);
+  padding: 0.05em 0.25em;
+  border-radius: 3px;
+}
+.md-preview sub,
+.md-preview sup {
+  font-size: 0.72em;
+}
+.md-preview .footnote-ref a {
+  text-decoration: none;
+  font-weight: 600;
+}
+.md-preview .footnotes-sep {
+  margin-top: 1.6em;
+  border: 0;
+  border-top: 1px solid var(--s-line);
+}
+.md-preview ol.footnotes {
+  font-size: 0.86rem;
+  color: var(--s-ink-muted);
+  padding-left: 1.3em;
+}
+.md-preview ol.footnotes li {
+  margin: 0.2em 0;
+}
+.md-preview .footnote-back {
+  text-decoration: none;
+  margin-left: 0.3em;
+}
+
+/* ----- Music staff (abcjs injects the SVG) — always fills the cell width ----- */
+.abc-render {
+  display: block;
+  overflow-x: auto;
+  background: #ffffff;
+  color: var(--s-ink);
+  border: 1px solid var(--s-line);
+  border-radius: var(--radius-sm);
+  box-shadow: var(--shadow-card);
+  padding: 18px 20px;
+}
+.abc-render svg {
+  display: block;
+  width: 100%;
+  max-width: 100%;
+  height: auto;
+}
+.abc-error {
+  color: #d7373f;
+  font-size: 0.85rem;
+}
+
+/* Rendered (compact) image — fit & centered. */
+.img-rendered {
+  max-width: 100%;
+  max-height: 72vh;
+  border: 1px solid var(--s-line);
+  border-radius: var(--radius-sm);
+  box-shadow: var(--shadow-card);
+  display: block;
+  margin-inline: auto;
+}
+
+/* ----- Shared keyframes (referenced by component modules) ----- */
+@keyframes cell-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@keyframes bar-in {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* ----- Print: clean, document-style handout. Component modules add their own
+   @media print tweaks for hashed classes; chrome opts out via .no-print. ----- */
+@page {
+  margin: 16mm;
+}
+@media print {
+  .no-print {
+    display: none !important;
+  }
+  html,
+  body,
+  .app-shell {
+    height: auto !important;
+    background: #fff !important;
+    background-image: none !important;
+  }
+  .app-scroll {
+    overflow: visible !important;
+  }
+  .app-scroll > div {
+    max-width: none !important;
+    padding: 0 !important;
+  }
+  .abc-render,
+  .img-rendered {
+    border: none !important;
+    box-shadow: none !important;
+    padding: 0 !important;
+  }
+  .md-preview,
+  .md-preview a {
+    color: #000 !important;
+  }
+  * {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+}

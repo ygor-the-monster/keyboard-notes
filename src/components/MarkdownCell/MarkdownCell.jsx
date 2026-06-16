@@ -1,0 +1,135 @@
+import { useEffect, useRef } from "react";
+import {
+  TextB,
+  TextItalic,
+  TextStrikethrough,
+  Code,
+  CodeBlock,
+  Highlighter,
+  TextSuperscript,
+  TextSubscript,
+  ListBullets,
+  ListNumbers,
+  ListChecks,
+  Quotes,
+  LinkSimple,
+  Table,
+  Minus,
+} from "@phosphor-icons/react";
+import { useStore } from "../../providers/StoreProvider/StoreProvider.jsx";
+import { renderMarkdown, toggleTask, applyFormat, replaceTextarea } from "./MarkdownCell.utils.js";
+import Toolbar from "../Toolbar/Toolbar.jsx";
+import shared from "../../providers/ThemeProvider/ThemeProvider.module.css";
+
+export default function MarkdownCell({ cell, editing }) {
+  const { updateCell } = useStore();
+  const taRef = useRef(null);
+
+  // Uncontrolled editor (keeps native undo); sync external source changes back in.
+  useEffect(() => {
+    const ta = taRef.current;
+    if (ta && ta.value !== cell.source) ta.value = cell.source;
+  }, [cell.source]);
+
+  if (!editing) {
+    const html = renderMarkdown(cell.source);
+    return (
+      <div
+        className="md-preview"
+        dangerouslySetInnerHTML={{
+          __html: html || '<p style="opacity:.6">Empty note — click to edit.</p>',
+        }}
+        ref={(node) => {
+          if (!node) return;
+          let i = 0;
+          node.querySelectorAll('input[type="checkbox"]').forEach((box) => {
+            const idx = i++;
+            box.disabled = false;
+            box.onchange = () =>
+              updateCell(cell.id, { source: toggleTask(cell.source, idx, box.checked) });
+          });
+        }}
+      />
+    );
+  }
+
+  function format(kind) {
+    const ta = taRef.current;
+    if (!ta) return;
+    const { value, selStart, selEnd } = applyFormat(
+      ta.value,
+      ta.selectionStart,
+      ta.selectionEnd,
+      kind,
+    );
+    // Replace as one undoable step so Cmd/Ctrl+Z reverts the whole formatting action.
+    replaceTextarea(ta, value, selStart, selEnd, (v) => updateCell(cell.id, { source: v }));
+  }
+
+  const act = (id, icon, label) => ({ kind: "action", id, icon, label, onUse: () => format(id) });
+  const tools = [
+    // Inline formatting
+    act("bold", TextB, "Bold"),
+    act("italic", TextItalic, "Italic"),
+    act("strike", TextStrikethrough, "Strikethrough"),
+    act("code", Code, "Inline code"),
+    act("highlight", Highlighter, "Highlight"),
+    act("link", LinkSimple, "Link"),
+    act("superscript", TextSuperscript, "Superscript"),
+    act("subscript", TextSubscript, "Subscript"),
+    { kind: "sep" },
+    // Block structure
+    {
+      kind: "group",
+      id: "list",
+      icon: ListBullets,
+      label: "List",
+      options: [
+        { id: "ul", icon: ListBullets, label: "Bullet list", onUse: () => format("ul") },
+        { id: "ol", icon: ListNumbers, label: "Numbered list", onUse: () => format("ol") },
+        { id: "task", icon: ListChecks, label: "Task list", onUse: () => format("task") },
+      ],
+    },
+    act("quote", Quotes, "Blockquote"),
+    {
+      kind: "group",
+      id: "heading",
+      char: "H",
+      label: "Heading",
+      options: [
+        { id: "h1", char: "H1", label: "Heading 1", onUse: () => format("h1") },
+        { id: "h2", char: "H2", label: "Heading 2", onUse: () => format("h2") },
+        { id: "h3", char: "H3", label: "Heading 3", onUse: () => format("h3") },
+      ],
+    },
+    { kind: "sep" },
+    // Inserts
+    act("table", Table, "Table"),
+    act("codeblock", CodeBlock, "Code block"),
+    {
+      kind: "action",
+      id: "footnote",
+      char: "†",
+      label: "Footnote",
+      onUse: () => format("footnote"),
+    },
+    act("hr", Minus, "Divider"),
+  ];
+
+  return (
+    <div style={{ display: "flex", flexDirection: "column", rowGap: 8 }}>
+      <Toolbar label="Format" tools={tools} />
+      <textarea
+        ref={taRef}
+        className={`${shared.codeMono} no-print`}
+        aria-label="Markdown source"
+        spellCheck
+        defaultValue={cell.source}
+        rows={Math.max(4, cell.source.split("\n").length + 1)}
+        onChange={(e) => updateCell(cell.id, { source: e.target.value })}
+        autoFocus
+        style={{ marginTop: 4 }}
+      />
+    </div>
+  );
+}

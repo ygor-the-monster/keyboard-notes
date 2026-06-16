@@ -1,0 +1,62 @@
+- generic [ref=e4]:
+  - banner [ref=e5]:
+    - generic [ref=e6]:
+      - generic [ref=e7]:
+        - generic [ref=e8]: 𝄞
+        - generic [ref=e9]: Piano Notes
+      - separator
+      - button "Lessons" [ref=e10]:
+        - img [ref=e11]
+      - textbox "Lesson title" [ref=e14]:
+        - /placeholder: Untitled lesson
+        - text: Toolbar test
+      - separator
+      - toolbar "Lesson tools" [ref=e15]:
+        - button "Export JSON" [ref=e16]:
+          - img [ref=e17]
+        - button "Print / save PDF" [ref=e19]:
+          - img [ref=e20]
+  - generic [ref=e22]:
+    - button "Show metronome" [ref=e23] [cursor=pointer]:
+      - img [ref=e24]
+      - generic [ref=e26]: Metronome
+      - generic [ref=e27]: "90"
+    - generic [ref=e28]:
+      - generic [ref=e29]:
+        - img [ref=e30]
+        - generic [ref=e32]: Metronome
+      - group "Tempo" [ref=e33]:
+        - generic [ref=e34]:
+          - generic [ref=e35]: Tempo
+          - status [ref=e36]: "90"
+        - slider "Tempo" [ref=e42]: "90"
+      - generic [ref=e44]:
+        - generic [ref=e45]: Time signature
+        - button "4/4 Time signature" [ref=e46]:
+          - generic [ref=e48]: 4/4
+          - img [ref=e49]
+        - combobox [ref=e53]
+      - button "Start" [ref=e54] [cursor=pointer]
+  - generic [ref=e56]:
+    - generic [ref=e57]:
+      - generic [ref=e60]:
+        - heading "Chopin Nocturne" [level=1] [ref=e61]
+        - paragraph [ref=e62]: First line of the note sits near the top now.
+      - generic [ref=e65]:
+        - heading "Second note" [level=2] [ref=e66]
+        - paragraph [ref=e67]: No empty band above this text.
+    - generic [ref=e68]:
+      - generic [ref=e69]:
+        - separator [ref=e70]
+        - img [ref=e71]
+        - generic [ref=e73]: Add a cell
+        - separator [ref=e74]
+      - generic [ref=e75]:
+        - button "Add note" [ref=e76]:
+          - img [ref=e77]
+        - button "Add music staff" [ref=e79]:
+          - img [ref=e80]
+        - button "Add image" [ref=e82]:
+          - img [ref=e83]
+        - button "Add PDF" [ref=e85]:
+          - img [ref=e86]

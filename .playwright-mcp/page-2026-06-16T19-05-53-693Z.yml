@@ -1,0 +1,127 @@
+- generic [ref=e4]:
+  - banner [ref=e5]:
+    - generic [ref=e6]:
+      - generic [ref=e7]:
+        - generic [ref=e8]: 𝄞
+        - generic [ref=e9]: Piano Notes
+      - separator
+      - button "Lessons" [ref=e10]:
+        - img [ref=e11]
+      - textbox "Lesson title" [ref=e14]:
+        - /placeholder: Untitled lesson
+        - text: Editor toolbars
+      - separator
+      - toolbar "Lesson tools" [ref=e15]:
+        - button "Export JSON" [ref=e16]:
+          - img [ref=e17]
+        - button "Print / save PDF" [ref=e19]:
+          - img [ref=e20]
+  - generic [ref=e22]:
+    - button "Show metronome" [ref=e23] [cursor=pointer]:
+      - img [ref=e24]
+      - generic [ref=e26]: Metronome
+      - generic [ref=e27]: "90"
+    - generic [ref=e28]:
+      - generic [ref=e29]:
+        - img [ref=e30]
+        - generic [ref=e32]: Metronome
+      - group "Tempo" [ref=e33]:
+        - generic [ref=e34]:
+          - generic [ref=e35]: Tempo
+          - status [ref=e36]: "90"
+        - slider "Tempo" [ref=e42]: "90"
+      - generic [ref=e44]:
+        - generic [ref=e45]: Time signature
+        - button "4/4 Time signature" [ref=e46]:
+          - generic [ref=e48]: 4/4
+          - img [ref=e49]
+        - combobox [ref=e53]
+      - button "Start" [ref=e54] [cursor=pointer]
+  - generic [ref=e56]:
+    - generic [ref=e57]:
+      - paragraph [ref=e516]:
+        - text: Make this
+        - strong [ref=e517]: bold
+        - text: again.
+      - img "Lesson image" [ref=e65]
+      - img "Sheet Music" [ref=e70]:
+        - generic [ref=e87]: = 90
+      - img "Sheet Music" [ref=e149]:
+        - generic [ref=e166]: = 90
+      - img "Sheet Music" [ref=e228]:
+        - generic [ref=e245]: = 90
+      - img "Sheet Music" [ref=e307]:
+        - generic [ref=e324]: = 90
+      - img "Sheet Music" [ref=e386]:
+        - generic [ref=e403]: = 90
+      - generic [ref=e483]:
+        - generic [ref=e484]:
+          - generic [ref=e485]:
+            - img [ref=e487]
+            - generic [ref=e489]:
+              - img [ref=e490]
+              - text: Image
+          - toolbar "Cell actions" [ref=e492]:
+            - button "Move up" [ref=e493]:
+              - img [ref=e494]
+            - button "Move down" [ref=e496]:
+              - img [ref=e497]
+            - button "Duplicate" [ref=e499]:
+              - img [ref=e500]
+            - button "Delete cell" [ref=e502]:
+              - img [ref=e503]
+        - toolbar "Image" [ref=e518]:
+          - button "Transform" [ref=e520]:
+            - img [ref=e521]
+          - button "Crop" [ref=e523]:
+            - img [ref=e524]
+          - group "Brightness" [ref=e527]:
+            - 'button "Brightness: previous" [ref=e528]':
+              - img [ref=e529]
+            - img [ref=e532]
+            - 'button "Brightness: next" [ref=e534]':
+              - img [ref=e535]
+          - group "Contrast" [ref=e537]:
+            - 'button "Contrast: previous" [ref=e538]':
+              - img [ref=e539]
+            - img [ref=e542]
+            - 'button "Contrast: next" [ref=e544]':
+              - img [ref=e545]
+          - group "Saturation" [ref=e547]:
+            - 'button "Saturation: previous" [ref=e548]':
+              - img [ref=e549]
+            - img [ref=e552]
+            - 'button "Saturation: next" [ref=e554]':
+              - img [ref=e555]
+          - button "Sharpen" [ref=e557]:
+            - img [ref=e558]
+          - button "Color" [ref=e562]:
+            - img [ref=e563]
+          - button "Thickness" [ref=e566]:
+            - img [ref=e567]
+          - generic [ref=e569]:
+            - button "Opacity" [expanded] [active] [ref=e570]:
+              - img [ref=e571]
+            - generic [ref=e582]:
+              - button "Opaque (100%)" [ref=e583]
+              - button "Medium (66%)" [ref=e585]
+              - button "Light (33%)" [ref=e587]
+          - button "Replace image" [ref=e574]:
+            - img [ref=e575]
+          - button "Undo" [ref=e577]:
+            - img [ref=e578]
+    - generic [ref=e461]:
+      - generic [ref=e462]:
+        - separator [ref=e463]
+        - img [ref=e464]
+        - generic [ref=e466]: Add a cell
+        - separator [ref=e467]
+      - generic [ref=e468]:
+        - button "Add note" [ref=e469]:
+          - img [ref=e470]
+        - button "Add music staff" [ref=e472]:
+          - img [ref=e473]
+        - button "Add image" [ref=e475]:
+          - img [ref=e476]
+        - button "Add PDF" [ref=e478]:
+          - img [ref=e479]

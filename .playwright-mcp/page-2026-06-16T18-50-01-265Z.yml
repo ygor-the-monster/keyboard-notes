@@ -1,0 +1,108 @@
+- generic [ref=e4]:
+  - banner [ref=e5]:
+    - generic [ref=e6]:
+      - generic [ref=e7]:
+        - generic [ref=e8]: 𝄞
+        - generic [ref=e9]: Piano Notes
+      - separator
+      - button "Lessons" [ref=e10]:
+        - img [ref=e11]
+      - textbox "Lesson title" [ref=e14]:
+        - /placeholder: Untitled lesson
+        - text: Toolbar v2
+      - separator
+      - toolbar "Lesson tools" [ref=e15]:
+        - button "Export JSON" [ref=e16]:
+          - img [ref=e17]
+        - button "Print / save PDF" [ref=e19]:
+          - img [ref=e20]
+  - generic [ref=e22]:
+    - button "Show metronome" [ref=e23] [cursor=pointer]:
+      - img [ref=e24]
+      - generic [ref=e26]: Metronome
+      - generic [ref=e27]: "90"
+    - generic [ref=e28]:
+      - generic [ref=e29]:
+        - img [ref=e30]
+        - generic [ref=e32]: Metronome
+      - group "Tempo" [ref=e33]:
+        - generic [ref=e34]:
+          - generic [ref=e35]: Tempo
+          - status [ref=e36]: "90"
+        - slider "Tempo" [ref=e42]: "90"
+      - generic [ref=e44]:
+        - generic [ref=e45]: Time signature
+        - button "4/4 Time signature" [ref=e46]:
+          - generic [ref=e48]: 4/4
+          - img [ref=e49]
+        - combobox [ref=e53]
+      - button "Start" [ref=e54] [cursor=pointer]
+  - generic [ref=e56]:
+    - generic [ref=e57]:
+      - table [ref=e494]:
+        - rowgroup [ref=e495]:
+          - row "Note Hand Tempo" [ref=e496]:
+            - columnheader "Note" [ref=e497]
+            - columnheader "Hand" [ref=e498]
+            - columnheader "Tempo" [ref=e499]
+        - rowgroup [ref=e500]:
+          - row "C major RH 90" [ref=e501]:
+            - cell "C major" [ref=e502]
+            - cell "RH" [ref=e503]
+            - cell "90" [ref=e504]
+          - row "G7 LH 84" [ref=e505]:
+            - cell "G7" [ref=e506]
+            - cell "LH" [ref=e507]
+            - cell "84" [ref=e508]
+          - row "F both 72" [ref=e509]:
+            - cell "F" [ref=e510]
+            - cell "both" [ref=e511]
+            - cell "72" [ref=e512]
+      - img "Sheet Music" [ref=e84]:
+        - generic [ref=e101]: = 90
+      - img "Sheet Music" [ref=e163]:
+        - generic [ref=e180]: = 90
+      - img "Sheet Music" [ref=e242]:
+        - generic [ref=e259]: = 90
+      - img "Sheet Music" [ref=e321]:
+        - generic [ref=e338]: = 90
+      - img "Sheet Music" [ref=e400]:
+        - generic [ref=e417]: = 90
+      - generic [ref=e513]:
+        - generic [ref=e514]:
+          - generic [ref=e515]:
+            - img [ref=e517]
+            - generic [ref=e519]:
+              - img [ref=e520]
+              - text: Image
+          - toolbar "Cell actions" [ref=e522]:
+            - button "Move up" [ref=e523]:
+              - img [ref=e524]
+            - button "Move down" [ref=e526]:
+              - img [ref=e527]
+            - button "Duplicate" [ref=e529]:
+              - img [ref=e530]
+            - button "Delete cell" [ref=e532]:
+              - img [ref=e533]
+        - generic [ref=e537]:
+          - button "DropZone Browse…" [ref=e539]
+          - generic [ref=e540]:
+            - img [ref=e541]
+            - generic [ref=e543]: Add an image
+            - button "Browse…" [ref=e544]:
+              - generic [ref=e545]: Browse…
+    - generic [ref=e474]:
+      - generic [ref=e475]:
+        - separator [ref=e476]
+        - img [ref=e477]
+        - generic [ref=e479]: Add a cell
+        - separator [ref=e480]
+      - generic [ref=e481]:
+        - button "Add note" [ref=e482]:
+          - img [ref=e483]
+        - button "Add music staff" [ref=e485]:
+          - img [ref=e486]
+        - button "Add image" [active] [ref=e488]:
+          - img [ref=e489]
+        - button "Add PDF" [ref=e491]:
+          - img [ref=e492]

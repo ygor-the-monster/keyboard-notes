@@ -1,0 +1,144 @@
+/* Per-block accent colors (Spectrum hues) — set --accent for everything inside the cell. */
+.typeMd {
+  --accent: var(--s-magenta);
+  --accent-strong: var(--s-magenta-strong);
+  --accent-tint: var(--s-magenta-tint);
+  --accent-ring: var(--s-magenta-ring);
+}
+.typeAbc {
+  --accent: var(--s-seafoam);
+  --accent-strong: var(--s-seafoam-strong);
+  --accent-tint: var(--s-seafoam-tint);
+  --accent-ring: var(--s-seafoam-ring);
+}
+.typeImg {
+  --accent: var(--s-indigo);
+  --accent-strong: var(--s-indigo-strong);
+  --accent-tint: var(--s-indigo-tint);
+  --accent-ring: var(--s-indigo-ring);
+}
+.typePdf {
+  --accent: var(--s-orange);
+  --accent-strong: var(--s-orange-strong);
+  --accent-tint: var(--s-orange-tint);
+  --accent-ring: var(--s-orange-ring);
+}
+.typeSnd {
+  --accent: var(--s-purple);
+  --accent-strong: var(--s-purple-strong);
+  --accent-tint: var(--s-purple-tint);
+  --accent-ring: var(--s-purple-ring);
+}
+
+/* Clean white card, hairline border, soft shadow. */
+.tagGroup {
+  display: flex;
+  align-items: center;
+  column-gap: 8px;
+}
+.actions {
+  display: flex;
+  align-items: center;
+  column-gap: 4px;
+}
+
+.cell {
+  position: relative;
+  background: #ffffff;
+  border: 1px solid var(--s-line);
+  border-radius: var(--radius);
+  padding: 26px 30px;
+  box-shadow: var(--shadow-card);
+  transition:
+    border-color 0.18s ease,
+    box-shadow 0.18s ease,
+    transform 0.18s ease;
+  animation: cell-in 0.5s cubic-bezier(0.2, 0.7, 0.2, 1) backwards;
+  animation-delay: var(--stagger, 0ms);
+}
+.cell::before {
+  /* accent rule, hidden until editing */
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 14px;
+  bottom: 14px;
+  width: 3px;
+  border-radius: 0 3px 3px 0;
+  background: var(--accent);
+  opacity: 0;
+  transition: opacity 0.18s ease;
+}
+.cell:hover {
+  border-color: var(--s-line-strong);
+}
+.cell.editing {
+  border-color: var(--accent);
+  box-shadow:
+    var(--shadow-card),
+    0 0 0 3px var(--accent-ring);
+  transform: translateY(-1px);
+}
+.cell.editing::before {
+  opacity: 1;
+}
+
+/* Cell controls (tag + drag + actions) appear only while the cell is active — no
+   hover dependence (tablet) and no reserved space when collapsed. */
+.cellToolbar {
+  display: none;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+.cell.editing .cellToolbar {
+  display: flex;
+}
+.cellDrag {
+  color: var(--s-ink-muted);
+  opacity: 0.5;
+  cursor: grab;
+  display: inline-flex;
+}
+
+/* Cell type tag — subtle tinted pill in the block's accent. */
+.cellTag {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border-radius: var(--radius-pill);
+  padding: 3px 11px 3px 9px;
+  font-family: var(--font-ui);
+  font-size: 0.74rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  background: var(--accent-tint);
+  color: var(--accent-strong);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cell {
+    animation: none;
+  }
+  .cell.editing {
+    transform: none;
+  }
+}
+
+/* Print: cells become plain document sections — no card chrome, just rhythm. */
+@media print {
+  .cell {
+    box-shadow: none !important;
+    border: none !important;
+    border-radius: 0 !important;
+    padding: 0 !important;
+    margin: 0 0 18pt !important;
+    animation: none !important;
+    transform: none !important;
+    break-inside: avoid;
+  }
+  .cell::before {
+    display: none !important;
+  }
+}

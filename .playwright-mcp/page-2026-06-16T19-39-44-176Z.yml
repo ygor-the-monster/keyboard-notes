@@ -1,0 +1,105 @@
+- generic [ref=e4]:
+  - banner [ref=e5]:
+    - generic [ref=e6]:
+      - generic [ref=e7]:
+        - generic [ref=e8]: 𝄞
+        - generic [ref=e9]: Piano Notes
+      - separator
+      - button "Lessons" [ref=e10]:
+        - img [ref=e11]
+      - textbox "Lesson title" [ref=e14]:
+        - /placeholder: Untitled lesson
+        - text: Toolbar v2
+      - separator
+      - toolbar "Lesson tools" [ref=e15]:
+        - button "Export JSON" [ref=e16]:
+          - img [ref=e17]
+        - button "Print / save PDF" [ref=e19]:
+          - img [ref=e20]
+  - generic [ref=e22]:
+    - button "Show metronome" [ref=e23] [cursor=pointer]:
+      - img [ref=e24]
+      - generic [ref=e26]: Metronome
+      - generic [ref=e27]: "90"
+    - generic [ref=e28]:
+      - generic [ref=e29]:
+        - img [ref=e30]
+        - generic [ref=e32]: Metronome
+      - group "Tempo" [ref=e33]:
+        - generic [ref=e34]:
+          - generic [ref=e35]: Tempo
+          - status [ref=e36]: "90"
+        - slider "Tempo" [ref=e42]: "90"
+      - generic [ref=e44]:
+        - generic [ref=e45]: Time signature
+        - button "4/4 Time signature" [ref=e46]:
+          - generic [ref=e48]: 4/4
+          - img [ref=e49]
+        - combobox [ref=e53]
+      - button "Start" [ref=e54] [cursor=pointer]
+  - generic [ref=e55]:
+    - button "Show tuner" [ref=e56] [cursor=pointer]:
+      - img [ref=e57]
+      - generic [ref=e59]: Tuner
+      - generic [ref=e60]: –
+    - generic [ref=e61]:
+      - generic [ref=e62]:
+        - img [ref=e63]
+        - generic [ref=e65]: Note identifier
+      - generic [ref=e66]:
+        - generic [ref=e67]: —
+        - generic [ref=e68]: —
+      - generic [ref=e71]:
+        - generic [ref=e72]: ♭ flat
+        - generic [ref=e73]: sharp ♯
+      - button "Start listening" [ref=e74] [cursor=pointer]
+  - generic [ref=e76]:
+    - generic [ref=e77]:
+      - table [ref=e81]:
+        - rowgroup [ref=e82]:
+          - row "Note Hand Tempo" [ref=e83]:
+            - columnheader "Note" [ref=e84]
+            - columnheader "Hand" [ref=e85]
+            - columnheader "Tempo" [ref=e86]
+        - rowgroup [ref=e87]:
+          - row "C major RH 90" [ref=e88]:
+            - cell "C major" [ref=e89]
+            - cell "RH" [ref=e90]
+            - cell "90" [ref=e91]
+          - row "G7 LH 84" [ref=e92]:
+            - cell "G7" [ref=e93]
+            - cell "LH" [ref=e94]
+            - cell "84" [ref=e95]
+          - row "F both 72" [ref=e96]:
+            - cell "F" [ref=e97]
+            - cell "both" [ref=e98]
+            - cell "72" [ref=e99]
+      - img "Sheet Music" [ref=e104]:
+        - generic [ref=e121]: = 90
+      - img "Sheet Music" [ref=e183]:
+        - generic [ref=e200]: = 90
+      - img "Sheet Music" [ref=e262]:
+        - generic [ref=e279]: = 90
+      - img "Sheet Music" [ref=e341]:
+        - generic [ref=e358]: = 90
+      - img "Sheet Music" [ref=e420]:
+        - generic [ref=e437]: = 90
+      - generic [ref=e495]: No image — click to add one.
+      - img "Lesson image" [ref=e498]
+    - generic [ref=e499]:
+      - generic [ref=e500]:
+        - separator [ref=e501]
+        - img [ref=e502]
+        - generic [ref=e504]: Add a cell
+        - separator [ref=e505]
+      - generic [ref=e506]:
+        - button "Add note" [ref=e507]:
+          - img [ref=e508]
+        - button "Add music staff" [ref=e510]:
+          - img [ref=e511]
+        - button "Add image" [ref=e513]:
+          - img [ref=e514]
+        - button "Add PDF" [ref=e516]:
+          - img [ref=e517]
+        - button "Add audio" [ref=e519]:
+          - img [ref=e520]

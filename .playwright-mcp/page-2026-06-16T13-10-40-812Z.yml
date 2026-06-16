@@ -1,0 +1,125 @@
+- generic [ref=e4]:
+  - banner [ref=e5]:
+    - generic [ref=e6]:
+      - generic [ref=e7]:
+        - generic [ref=e8]: 𝄞
+        - generic [ref=e9]: Piano Notes
+      - separator
+      - button "Lessons" [ref=e10]:
+        - img [ref=e11]
+      - textbox "Lesson title" [ref=e14]:
+        - /placeholder: Untitled lesson
+        - text: Editor toolbars
+      - separator
+      - toolbar "Lesson tools" [ref=e15]:
+        - button "Export JSON" [ref=e16]:
+          - img [ref=e17]
+        - button "Print / save PDF" [ref=e19]:
+          - img [ref=e20]
+  - generic [ref=e22]:
+    - button "Show metronome" [ref=e23] [cursor=pointer]:
+      - img [ref=e24]
+      - generic [ref=e26]: Metronome
+      - generic [ref=e27]: "90"
+    - generic [ref=e28]:
+      - generic [ref=e29]:
+        - img [ref=e30]
+        - generic [ref=e32]: Metronome
+      - group "Tempo" [ref=e33]:
+        - generic [ref=e34]:
+          - generic [ref=e35]: Tempo
+          - status [ref=e36]: "90"
+        - slider "Tempo" [ref=e42]: "90"
+      - generic [ref=e44]:
+        - generic [ref=e45]: Time signature
+        - button "4/4 Time signature" [ref=e46]:
+          - generic [ref=e48]: 4/4
+          - img [ref=e49]
+        - combobox [ref=e53]
+      - button "Start" [ref=e54] [cursor=pointer]
+  - generic [ref=e56]:
+    - generic [ref=e57]:
+      - generic [ref=e60]:
+        - heading "Practice notes" [level=2] [ref=e92]
+        - paragraph [ref=e93]:
+          - text: Watch the
+          - strong [ref=e94]: voicing
+          - text: and keep a steady pulse.
+        - list [ref=e95]:
+          - listitem [ref=e96]:
+            - checkbox [ref=e97]
+            - text: slow hands-separate
+          - listitem [ref=e98]:
+            - checkbox [ref=e99]
+            - text: add pedal
+      - img "Lesson image" [ref=e71]
+      - generic [ref=e100]:
+        - generic [ref=e101]:
+          - generic [ref=e102]:
+            - img [ref=e104]
+            - generic [ref=e106]:
+              - img [ref=e107]
+              - text: Music
+          - toolbar "Cell actions" [ref=e109]:
+            - button "Move up" [ref=e110]:
+              - img [ref=e111]
+            - button "Move down" [ref=e113]:
+              - img [ref=e114]
+            - button "Duplicate" [ref=e116]:
+              - img [ref=e117]
+            - button "Delete cell" [ref=e119]:
+              - img [ref=e120]
+        - generic [ref=e123]:
+          - toolbar "Music" [ref=e124]:
+            - generic [ref=e125]: Music
+            - button "Play" [ref=e126]:
+              - img [ref=e127]
+            - button "Tempo" [ref=e130]:
+              - img [ref=e131]
+              - img [ref=e133]
+            - button "Notes" [ref=e137]:
+              - generic [ref=e138]: C
+              - img [ref=e139]
+            - button "Accidental" [ref=e142]:
+              - generic [ref=e143]: ♯
+              - img [ref=e144]
+            - button "Octave" [ref=e147]:
+              - img [ref=e148]
+              - img [ref=e150]
+            - button "Length" [ref=e153]:
+              - generic [ref=e154]: ½
+              - img [ref=e155]
+            - button "Bars & repeats" [ref=e159]:
+              - generic [ref=e160]: "|"
+              - img [ref=e161]
+            - button "Rests" [ref=e164]:
+              - generic [ref=e165]: z
+              - img [ref=e166]
+            - button "Phrasing" [ref=e169]:
+              - generic [ref=e170]: ‿
+              - img [ref=e171]
+            - button "Articulation" [ref=e174]:
+              - generic [ref=e175]: •
+              - img [ref=e176]
+            - button "Dynamics" [ref=e179]:
+              - generic [ref=e180]: f
+              - img [ref=e181]
+            - button "Chord symbol — type name inside" [ref=e183]:
+              - generic [ref=e184]: "\""
+          - textbox "ABC header" [ref=e185]: X:1 M:4/4 L:1/4 Q:1/4=90 K:C
+          - textbox "ABC music" [ref=e186]: "%%score { (RH) (LH) } V:RH clef=treble V:LH clef=bass [V:RH] C D E F | G A B c | [V:LH] C,2 G,2 | C,2 G,2 |"
+    - generic [ref=e72]:
+      - generic [ref=e73]:
+        - separator [ref=e74]
+        - img [ref=e75]
+        - generic [ref=e77]: Add a cell
+        - separator [ref=e78]
+      - generic [ref=e79]:
+        - button "Add note" [ref=e80]:
+          - img [ref=e81]
+        - button "Add music staff" [active] [ref=e83]:
+          - img [ref=e84]
+        - button "Add image" [ref=e86]:
+          - img [ref=e87]
+        - button "Add PDF" [ref=e89]:
+          - img [ref=e90]

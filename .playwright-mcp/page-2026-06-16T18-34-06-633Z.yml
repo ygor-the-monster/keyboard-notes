@@ -1,0 +1,133 @@
+- generic [ref=e4]:
+  - banner [ref=e5]:
+    - generic [ref=e6]:
+      - generic [ref=e7]:
+        - generic [ref=e8]: 𝄞
+        - generic [ref=e9]: Piano Notes
+      - separator
+      - button "Lessons" [ref=e10]:
+        - img [ref=e11]
+      - textbox "Lesson title" [ref=e14]:
+        - /placeholder: Untitled lesson
+        - text: Editor toolbars
+      - separator
+      - toolbar "Lesson tools" [ref=e15]:
+        - button "Export JSON" [ref=e16]:
+          - img [ref=e17]
+        - button "Print / save PDF" [ref=e19]:
+          - img [ref=e20]
+  - generic [ref=e22]:
+    - button "Show metronome" [ref=e23] [cursor=pointer]:
+      - img [ref=e24]
+      - generic [ref=e26]: Metronome
+      - generic [ref=e27]: "90"
+    - generic [ref=e28]:
+      - generic [ref=e29]:
+        - img [ref=e30]
+        - generic [ref=e32]: Metronome
+      - group "Tempo" [ref=e33]:
+        - generic [ref=e34]:
+          - generic [ref=e35]: Tempo
+          - status [ref=e36]: "90"
+        - slider "Tempo" [ref=e42]: "90"
+      - generic [ref=e44]:
+        - generic [ref=e45]: Time signature
+        - button "4/4 Time signature" [ref=e46]:
+          - generic [ref=e48]: 4/4
+          - img [ref=e49]
+        - combobox [ref=e53]
+      - button "Start" [ref=e54] [cursor=pointer]
+  - generic [ref=e56]:
+    - generic [ref=e57]:
+      - paragraph [ref=e244]:
+        - text: Make this
+        - strong [ref=e245]: bold
+        - text: again.
+      - img "Lesson image" [ref=e65]
+      - img "Sheet Music" [ref=e70]:
+        - generic [ref=e87]: = 90
+      - img "Sheet Music" [ref=e149]:
+        - generic [ref=e166]: = 90
+      - generic [ref=e246]:
+        - generic [ref=e247]:
+          - generic [ref=e248]:
+            - img [ref=e250]
+            - generic [ref=e252]:
+              - img [ref=e253]
+              - text: Music
+          - toolbar "Cell actions" [ref=e255]:
+            - button "Move up" [ref=e256]:
+              - img [ref=e257]
+            - button "Move down" [ref=e259]:
+              - img [ref=e260]
+            - button "Duplicate" [ref=e262]:
+              - img [ref=e263]
+            - button "Delete cell" [ref=e265]:
+              - img [ref=e266]
+        - generic [ref=e269]:
+          - toolbar "Music" [ref=e270]:
+            - button "Play" [ref=e271]:
+              - img [ref=e272]
+            - group "Tempo" [ref=e274]:
+              - 'button "Tempo: previous" [ref=e275]':
+                - img [ref=e276]
+              - generic [ref=e278]: 90 BPM
+              - 'button "Tempo: next" [ref=e279]':
+                - img [ref=e280]
+            - button "Notes" [ref=e284]:
+              - generic [ref=e285]: C
+            - button "Accidentals" [ref=e287]:
+              - img [ref=e288]
+            - button "Octave" [ref=e291]:
+              - img [ref=e292]
+            - button "Length" [ref=e296]:
+              - img [ref=e297]
+            - button "Dotted rhythm" [ref=e300]:
+              - img [ref=e301]
+            - button "Tuplets" [ref=e304]:
+              - img [ref=e305]
+            - button "Phrasing" [ref=e308]:
+              - img [ref=e309]
+            - button "Rests" [ref=e313]:
+              - img [ref=e314]
+            - button "Bars & repeats" [ref=e317]:
+              - img [ref=e318]
+            - button "Octave shift" [ref=e321]:
+              - img [ref=e322]
+            - button "Clef" [ref=e325]:
+              - img [ref=e326]
+            - button "Ornaments & articulation" [ref=e330]:
+              - img [ref=e331]
+            - button "Dynamics" [ref=e334]:
+              - img [ref=e335]
+            - button "Fingering" [ref=e338]:
+              - img [ref=e339]
+            - button "Pedal" [ref=e342]:
+              - img [ref=e343]
+            - button "Chord symbol — type name inside" [ref=e346]:
+              - generic [ref=e347]: "\""
+            - button "Annotations" [ref=e349]:
+              - img [ref=e350]
+            - button "Lyrics line (w:)" [ref=e353]:
+              - img [ref=e354]
+            - button "Add staff" [ref=e357]:
+              - img [ref=e358]
+            - button "Remove staff" [ref=e360]:
+              - img [ref=e361]
+          - textbox "ABC header" [ref=e363]: "X:1 M:4/4 L:1/4 Q:1/4=90 %%score { (RH) (LH) } V:RH clef=treble V:LH clef=bass K:C"
+          - textbox "ABC music" [ref=e364]: "[V:RH] C D E F | G A B c | [V:LH] C,2 G,2 | C,2 G,2 |"
+    - generic [ref=e224]:
+      - generic [ref=e225]:
+        - separator [ref=e226]
+        - img [ref=e227]
+        - generic [ref=e229]: Add a cell
+        - separator [ref=e230]
+      - generic [ref=e231]:
+        - button "Add note" [ref=e232]:
+          - img [ref=e233]
+        - button "Add music staff" [active] [ref=e235]:
+          - img [ref=e236]
+        - button "Add image" [ref=e238]:
+          - img [ref=e239]
+        - button "Add PDF" [ref=e241]:
+          - img [ref=e242]

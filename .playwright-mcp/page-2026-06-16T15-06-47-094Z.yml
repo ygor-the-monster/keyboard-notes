@@ -1,0 +1,63 @@
+- generic [ref=e4]:
+  - banner [ref=e5]:
+    - generic [ref=e6]:
+      - generic [ref=e7]:
+        - generic [ref=e8]: 𝄞
+        - generic [ref=e9]: Piano Notes
+      - separator
+      - button "Lessons" [ref=e10]:
+        - img [ref=e11]
+      - textbox "Lesson title" [ref=e14]:
+        - /placeholder: Untitled lesson
+        - text: Editor toolbars
+      - separator
+      - toolbar "Lesson tools" [ref=e15]:
+        - button "Export JSON" [ref=e16]:
+          - img [ref=e17]
+        - button "Print / save PDF" [ref=e19]:
+          - img [ref=e20]
+  - generic [ref=e22]:
+    - button "Show metronome" [ref=e23] [cursor=pointer]:
+      - img [ref=e24]
+      - generic [ref=e26]: Metronome
+      - generic [ref=e27]: "90"
+    - generic [ref=e28]:
+      - generic [ref=e29]:
+        - img [ref=e30]
+        - generic [ref=e32]: Metronome
+      - group "Tempo" [ref=e33]:
+        - generic [ref=e34]:
+          - generic [ref=e35]: Tempo
+          - status [ref=e36]: "90"
+        - slider "Tempo" [ref=e42]: "90"
+      - generic [ref=e44]:
+        - generic [ref=e45]: Time signature
+        - button "4/4 Time signature" [ref=e46]:
+          - generic [ref=e48]: 4/4
+          - img [ref=e49]
+        - combobox [ref=e53]
+      - button "Start" [ref=e54] [cursor=pointer]
+  - generic [ref=e56]:
+    - generic [ref=e57]:
+      - paragraph [ref=e61]:
+        - text: Make this
+        - strong [ref=e62]: bold
+        - text: again.
+      - img "Lesson image" [ref=e65]
+      - img "Sheet Music" [ref=e70]:
+        - generic [ref=e87]: = 90
+    - generic [ref=e145]:
+      - generic [ref=e146]:
+        - separator [ref=e147]
+        - img [ref=e148]
+        - generic [ref=e150]: Add a cell
+        - separator [ref=e151]
+      - generic [ref=e152]:
+        - button "Add note" [ref=e153]:
+          - img [ref=e154]
+        - button "Add music staff" [ref=e156]:
+          - img [ref=e157]
+        - button "Add image" [ref=e159]:
+          - img [ref=e160]
+        - button "Add PDF" [ref=e162]:
+          - img [ref=e163]

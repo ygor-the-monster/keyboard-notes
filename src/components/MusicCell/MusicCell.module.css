@@ -1,0 +1,11 @@
+.col {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* Compact metadata editor for the ABC header fields (extends shared .codeMono). */
+.codeHeader {
+  min-height: 0;
+  font-size: 0.84rem;
+}

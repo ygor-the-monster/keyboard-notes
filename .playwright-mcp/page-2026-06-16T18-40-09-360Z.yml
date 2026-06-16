@@ -1,0 +1,67 @@
+- generic [ref=e4]:
+  - banner [ref=e5]:
+    - generic [ref=e6]:
+      - generic [ref=e7]:
+        - generic [ref=e8]: 𝄞
+        - generic [ref=e9]: Piano Notes
+      - separator
+      - button "Lessons" [ref=e10]:
+        - img [ref=e11]
+      - textbox "Lesson title" [ref=e14]:
+        - /placeholder: Untitled lesson
+        - text: Editor toolbars
+      - separator
+      - toolbar "Lesson tools" [ref=e15]:
+        - button "Export JSON" [ref=e16]:
+          - img [ref=e17]
+        - button "Print / save PDF" [ref=e19]:
+          - img [ref=e20]
+  - generic [ref=e22]:
+    - button "Show metronome" [ref=e23] [cursor=pointer]:
+      - img [ref=e24]
+      - generic [ref=e26]: Metronome
+      - generic [ref=e27]: "90"
+    - generic [ref=e28]:
+      - generic [ref=e29]:
+        - img [ref=e30]
+        - generic [ref=e32]: Metronome
+      - group "Tempo" [ref=e33]:
+        - generic [ref=e34]:
+          - generic [ref=e35]: Tempo
+          - status [ref=e36]: "90"
+        - slider "Tempo" [ref=e42]: "90"
+      - generic [ref=e44]:
+        - generic [ref=e45]: Time signature
+        - button "4/4 Time signature" [ref=e46]:
+          - generic [ref=e48]: 4/4
+          - img [ref=e49]
+        - combobox [ref=e53]
+      - button "Start" [ref=e54] [cursor=pointer]
+  - generic [ref=e56]:
+    - generic [ref=e57]:
+      - paragraph [ref=e61]:
+        - text: Make this
+        - strong [ref=e62]: bold
+        - text: again.
+      - img "Lesson image" [ref=e65]
+      - img "Sheet Music" [ref=e70]:
+        - generic [ref=e87]: = 90
+      - img "Sheet Music" [ref=e149]:
+        - generic [ref=e166]: = 90
+      - img "Sheet Music" [ref=e228]:
+        - generic [ref=e245]: = 90
+    - generic [ref=e303]:
+      - generic [ref=e304]:
+        - separator [ref=e305]
+        - img [ref=e306]
+        - generic [ref=e308]: Add a cell
+        - separator [ref=e309]
+      - generic [ref=e310]:
+        - button "Add note" [ref=e311]:
+          - img [ref=e312]
+        - button "Add music staff" [ref=e314]:
+          - img [ref=e315]
+        - button "Add image" [ref=e317]:
+          - img [ref=e318]
+        - button "Add PDF" [ref=e320]:
+          - img [ref=e321]

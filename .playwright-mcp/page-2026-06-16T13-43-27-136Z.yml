@@ -1,0 +1,100 @@
+- generic [ref=e4]:
+  - banner [ref=e5]:
+    - generic [ref=e6]:
+      - generic [ref=e7]:
+        - generic [ref=e8]: 𝄞
+        - generic [ref=e9]: Piano Notes
+      - separator
+      - button "Lessons" [ref=e10]:
+        - img [ref=e11]
+      - textbox "Lesson title" [ref=e14]:
+        - /placeholder: Untitled lesson
+        - text: Toolbar v2
+      - separator
+      - toolbar "Lesson tools" [ref=e15]:
+        - button "Export JSON" [ref=e16]:
+          - img [ref=e17]
+        - button "Print / save PDF" [ref=e19]:
+          - img [ref=e20]
+  - generic [ref=e22]:
+    - button "Show metronome" [ref=e23] [cursor=pointer]:
+      - img [ref=e24]
+      - generic [ref=e26]: Metronome
+      - generic [ref=e27]: "90"
+    - generic [ref=e28]:
+      - generic [ref=e29]:
+        - img [ref=e30]
+        - generic [ref=e32]: Metronome
+      - group "Tempo" [ref=e33]:
+        - generic [ref=e34]:
+          - generic [ref=e35]: Tempo
+          - status [ref=e36]: "90"
+        - slider "Tempo" [ref=e42]: "90"
+      - generic [ref=e44]:
+        - generic [ref=e45]: Time signature
+        - button "4/4 Time signature" [ref=e46]:
+          - generic [ref=e48]: 4/4
+          - img [ref=e49]
+        - combobox [ref=e53]
+      - button "Start" [ref=e54] [cursor=pointer]
+  - generic [ref=e56]:
+    - generic [ref=e60]:
+      - heading "Toolbar v2 test" [level=1] [ref=e61]
+      - paragraph [ref=e62]:
+        - strong [ref=e63]: Normal
+        - text: ","
+        - strong [ref=e64]: bold
+        - text: ","
+        - emphasis [ref=e65]: italic
+        - text: ","
+        - deletion [ref=e66]: struck
+        - text: ","
+        - code [ref=e67]: code
+        - text: ","
+        - mark [ref=e68]: highlighted
+        - text: .
+      - paragraph [ref=e69]:
+        - text: Water is H
+        - subscript [ref=e70]: "2"
+        - text: O and Einstein said E=mc
+        - superscript [ref=e71]: "2"
+        - text: .
+      - paragraph [ref=e72]:
+        - text: See the reference
+        - superscript [ref=e73]:
+          - link "1" [ref=e74] [cursor=pointer]:
+            - /url: "#fn-1"
+        - text: and another
+        - superscript [ref=e75]:
+          - link "2" [ref=e76] [cursor=pointer]:
+            - /url: "#fn-2"
+        - text: .
+      - blockquote [ref=e77]:
+        - paragraph [ref=e78]: A blockquote line.
+      - separator [ref=e79]
+      - list [ref=e80]:
+        - listitem [ref=e81]:
+          - text: First footnote definition.
+          - link "↩" [ref=e82] [cursor=pointer]:
+            - /url: "#fnref-1"
+        - listitem [ref=e83]:
+          - text: Second footnote with
+          - strong [ref=e84]: bold
+          - text: .
+          - link "↩" [ref=e85] [cursor=pointer]:
+            - /url: "#fnref-2"
+    - generic [ref=e86]:
+      - generic [ref=e87]:
+        - separator [ref=e88]
+        - img [ref=e89]
+        - generic [ref=e91]: Add a cell
+        - separator [ref=e92]
+      - generic [ref=e93]:
+        - button "Add note" [ref=e94]:
+          - img [ref=e95]
+        - button "Add music staff" [ref=e97]:
+          - img [ref=e98]
+        - button "Add image" [ref=e100]:
+          - img [ref=e101]
+        - button "Add PDF" [ref=e103]:
+          - img [ref=e104]
