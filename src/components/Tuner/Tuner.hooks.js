@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { PitchDetector } from "pitchy";
+import { useDialog } from "../../providers/DialogProvider/DialogProvider.jsx";
 
 const NOTE_NAMES = ["C", "C♯", "D", "D♯", "E", "F", "F♯", "G", "G♯", "A", "A♯", "B"];
 
@@ -17,6 +18,7 @@ export function hzToNote(hz) {
 // Live pitch detection from the microphone (via pitchy). Returns { listening, toggle,
 // reading } where reading is { note, octave, cents, hz } | null.
 export function useTuner() {
+  const { alert } = useDialog();
   const [listening, setListening] = useState(false);
   const [reading, setReading] = useState(null);
   const ctxRef = useRef(null);
@@ -59,7 +61,10 @@ export function useTuner() {
       };
       rafRef.current = requestAnimationFrame(loop);
     } catch {
-      alert("Microphone unavailable or permission denied.");
+      alert({
+        title: "Microphone unavailable",
+        message: "Permission denied or no microphone found.",
+      });
     }
   }
 

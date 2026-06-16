@@ -16,8 +16,10 @@ export default defineConfig({
     },
     VitePWA({
       registerType: "autoUpdate",
-      includeAssets: ["icon.svg"],
-      pwaAssets: { preset: "minimal-2023", image: "public/icon.svg" },
+      strategies: "injectManifest",
+      srcDir: "src",
+      filename: "sw.js",
+      pwaAssets: { preset: "minimal-2023", image: "public/icon.png" },
       manifest: {
         name: "Piano Notes",
         short_name: "Piano Notes",
@@ -28,23 +30,32 @@ export default defineConfig({
         orientation: "any",
         start_url: "./",
         scope: "./",
-      },
-      workbox: {
-        globPatterns: ["**/*.{js,css,html,svg,png,ico,woff2}"],
-        navigateFallback: "index.html",
-        // The image editor + PDF.js chunks are large; allow precaching them for offline use.
-        maximumFileSizeToCacheInBytes: 4 * 1024 * 1024,
-        runtimeCaching: [
-          {
-            urlPattern: /^https:\/\/fonts\.(googleapis|gstatic)\.com\/.*/i,
-            handler: "CacheFirst",
-            options: {
-              cacheName: "google-fonts",
-              expiration: { maxEntries: 20, maxAgeSeconds: 60 * 60 * 24 * 365 },
-              cacheableResponse: { statuses: [0, 200] },
-            },
+        // Desktop/ChromeOS: open .pnotes files directly (File Handling API).
+        file_handlers: [{ action: "./", accept: { "application/x-piano-notes": [".pnotes"] } }],
+        // Android: share a .pnotes file into the installed app (Web Share Target API).
+        share_target: {
+          action: "./share-target",
+          method: "POST",
+          enctype: "multipart/form-data",
+          params: {
+            files: [
+              {
+                name: "file",
+                accept: [
+                  "application/x-piano-notes",
+                  "application/json",
+                  "application/octet-stream",
+                  ".pnotes",
+                ],
+              },
+            ],
           },
-        ],
+        },
+        launch_handler: { client_mode: "focus-existing" },
+      },
+      injectManifest: {
+        globPatterns: ["**/*.{js,css,html,svg,png,ico,woff2,otf}"],
+        maximumFileSizeToCacheInBytes: 4 * 1024 * 1024,
       },
       devOptions: { enabled: false },
     }),

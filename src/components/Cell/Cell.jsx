@@ -12,6 +12,7 @@ import {
 } from "@phosphor-icons/react";
 import { useStore } from "../../providers/StoreProvider/StoreProvider.jsx";
 import { useEditing } from "../../providers/EditingProvider/EditingProvider.jsx";
+import { useDialog } from "../../providers/DialogProvider/DialogProvider.jsx";
 import IconBtn from "../IconBtn/IconBtn.jsx";
 import MarkdownCell from "../MarkdownCell/MarkdownCell.jsx";
 import MusicCell from "../MusicCell/MusicCell.jsx";
@@ -31,6 +32,7 @@ const META = {
 export default function Cell({ cell, index = 0 }) {
   const { moveCell, duplicateCell, deleteCell } = useStore();
   const { editingId } = useEditing();
+  const { confirm } = useDialog();
   const editing = editingId === cell.id;
   const meta = META[cell.type] || META.md;
   const TagIcon = meta.icon;
@@ -59,8 +61,16 @@ export default function Cell({ cell, index = 0 }) {
           <IconBtn
             icon={Trash}
             label="Delete cell"
-            onPress={() => {
-              if (confirm("Delete this cell?")) deleteCell(cell.id);
+            onPress={async () => {
+              if (
+                await confirm({
+                  title: "Delete this cell?",
+                  message: "This removes the cell and its contents.",
+                  confirmLabel: "Delete",
+                  variant: "destructive",
+                })
+              )
+                deleteCell(cell.id);
             }}
           />
         </div>

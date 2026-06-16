@@ -11,6 +11,7 @@ import {
 import { Notebook, DownloadSimple, Printer, CloudArrowDown } from "@phosphor-icons/react";
 import { useStore } from "../../providers/StoreProvider/StoreProvider.jsx";
 import { usePwa } from "../../providers/PWAProvider/PWAProvider.jsx";
+import { useDialog } from "../../providers/DialogProvider/DialogProvider.jsx";
 import IconBtn from "../IconBtn/IconBtn.jsx";
 import { vdiv, titleField } from "./Topbar.styled.jsx";
 import s from "./Topbar.module.css";
@@ -26,16 +27,25 @@ export default function Topbar() {
     importNotebook,
   } = useStore();
   const { canInstall, promptInstall } = usePwa();
+  const { confirm, alert } = useDialog();
   const fileRef = useRef(null);
 
   const lessons = state.order.filter((id) => state.notebooks[id]);
 
-  function onMenuAction(key) {
+  async function onMenuAction(key) {
     const k = String(key);
     if (k === "__new") createNotebook();
     else if (k === "__import") fileRef.current?.click();
     else if (k === "__delete") {
-      if (activeNotebook && confirm("Delete this lesson? This cannot be undone."))
+      if (
+        activeNotebook &&
+        (await confirm({
+          title: "Delete this lesson?",
+          message: "This cannot be undone.",
+          confirmLabel: "Delete",
+          variant: "destructive",
+        }))
+      )
         deleteNotebook(activeNotebook.id);
     } else selectNotebook(k);
   }
@@ -49,7 +59,7 @@ export default function Topbar() {
       try {
         importNotebook(JSON.parse(reader.result));
       } catch (err) {
-        alert("Import failed: " + err.message);
+        alert({ title: "Import failed", message: err.message });
       }
     };
     reader.readAsText(file);
@@ -62,10 +72,10 @@ export default function Topbar() {
       null,
       2,
     );
-    const blob = new Blob([data], { type: "application/json" });
+    const blob = new Blob([data], { type: "application/x-piano-notes" });
     const a = document.createElement("a");
     a.href = URL.createObjectURL(blob);
-    a.download = (activeNotebook.title || "lesson").replace(/[^\w-]+/g, "_") + ".json";
+    a.download = (activeNotebook.title || "lesson").replace(/[^\w-]+/g, "_") + ".pnotes";
     a.click();
     setTimeout(() => URL.revokeObjectURL(a.href), 1000);
   }
@@ -92,7 +102,7 @@ export default function Topbar() {
             </MenuSection>
             <MenuSection>
               <MenuItem id="__new">New lesson</MenuItem>
-              <MenuItem id="__import">Import lesson (.json)…</MenuItem>
+              <MenuItem id="__import">Import lesson…</MenuItem>
               <MenuItem id="__delete">Delete this lesson</MenuItem>
             </MenuSection>
           </Menu>
@@ -109,20 +119,14 @@ export default function Topbar() {
 
         <Divider orientation="vertical" styles={vdiv} />
         <div className={s.tools} role="toolbar" aria-label="Lesson tools">
-          <IconBtn icon={DownloadSimple} label="Export JSON" onPress={exportJson} />
+          <IconBtn icon={DownloadSimple} label="Export lesson" onPress={exportJson} />
           <IconBtn icon={Printer} label="Print / save PDF" onPress={() => window.print()} />
           {canInstall && (
             <IconBtn icon={CloudArrowDown} label="Install app" onPress={promptInstall} />
           )}
         </div>
 
-        <input
-          ref={fileRef}
-          type="file"
-          accept="application/json,.json"
-          hidden
-          onChange={onImportFile}
-        />
+        <input ref={fileRef} type="file" hidden onChange={onImportFile} />
       </div>
     </header>
   );

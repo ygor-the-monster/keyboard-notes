@@ -12,6 +12,7 @@ import {
   Waveform,
 } from "@phosphor-icons/react";
 import { useStore } from "../../providers/StoreProvider/StoreProvider.jsx";
+import { useDialog } from "../../providers/DialogProvider/DialogProvider.jsx";
 import {
   fileToDataUrl,
   audioCtx,
@@ -32,6 +33,7 @@ const BUCKETS = 600;
 
 export default function AudioCell({ cell, editing }) {
   const { updateCell } = useStore();
+  const { confirm, alert } = useDialog();
   const src = cell.dataUrl;
 
   const audioRef = useRef(null);
@@ -123,13 +125,16 @@ export default function AudioCell({ cell, editing }) {
   }
 
   // ---- editing (commit + history) -------------------------------------------
-  function commitAudio(dataUrl) {
+  async function commitAudio(dataUrl) {
     const sizeMB = (dataUrl.length * 0.75) / 1e6;
-    if (
-      sizeMB > 6 &&
-      !confirm(`This clip is ~${sizeMB.toFixed(1)} MB and may strain storage. Keep it?`)
-    )
-      return;
+    if (sizeMB > 6) {
+      const ok = await confirm({
+        title: "Large clip",
+        message: `This clip is ~${sizeMB.toFixed(1)} MB and may strain local storage. Keep it?`,
+        confirmLabel: "Keep",
+      });
+      if (!ok) return;
+    }
     historyRef.current.push(src || "");
     if (historyRef.current.length > 10) historyRef.current.shift();
     updateCell(cell.id, { dataUrl });
@@ -159,7 +164,10 @@ export default function AudioCell({ cell, editing }) {
       rec.start();
       setRecording(true);
     } catch {
-      alert("Microphone unavailable or permission denied.");
+      alert({
+        title: "Microphone unavailable",
+        message: "Permission denied or no microphone found.",
+      });
     }
   }
   async function finishRec() {
@@ -180,7 +188,7 @@ export default function AudioCell({ cell, editing }) {
       commitAudio(await fileToDataUrl(encodeWav(out)));
       setSel(null);
     } catch (e) {
-      alert("Could not process the recording: " + e.message);
+      alert({ title: "Recording failed", message: e.message });
     }
   }
 

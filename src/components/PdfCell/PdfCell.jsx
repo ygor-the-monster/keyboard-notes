@@ -15,6 +15,7 @@ import {
   UploadSimple,
 } from "@phosphor-icons/react";
 import { useStore } from "../../providers/StoreProvider/StoreProvider.jsx";
+import { useDialog } from "../../providers/DialogProvider/DialogProvider.jsx";
 import { pdfjsLib, dataUrlToBytes, bytesToDataUrl, fileToDataUrl } from "./PdfCell.utils.js";
 import Toolbar from "../Toolbar/Toolbar.jsx";
 import shared from "../../providers/ThemeProvider/ThemeProvider.module.css";
@@ -37,6 +38,7 @@ async function renderPage(doc, n, canvas, cssWidth) {
 
 export default function PdfCell({ cell, editing }) {
   const { updateCell } = useStore();
+  const { confirm } = useDialog();
   const src = cell.dataUrl || cell.url;
 
   const wrapRef = useRef(null);
@@ -99,9 +101,11 @@ export default function PdfCell({ cell, editing }) {
     const dataUrl = await fileToDataUrl(file);
     const sizeMB = (dataUrl.length * 0.75) / 1e6;
     if (sizeMB > 8) {
-      const ok = confirm(
-        `This PDF is ~${sizeMB.toFixed(1)} MB and may exceed local storage. Embed anyway?`,
-      );
+      const ok = await confirm({
+        title: "Large PDF",
+        message: `This PDF is ~${sizeMB.toFixed(1)} MB and may exceed local storage. Embed anyway?`,
+        confirmLabel: "Embed",
+      });
       if (!ok) return;
     }
     setPage(1);
@@ -155,7 +159,13 @@ export default function PdfCell({ cell, editing }) {
   }
   async function removeCurrentPage() {
     if (!cell.dataUrl || numPages <= 1) return;
-    if (!confirm(`Remove page ${page} of ${numPages}?`)) return;
+    const ok = await confirm({
+      title: `Remove page ${page}?`,
+      message: `Page ${page} of ${numPages} will be removed from the PDF.`,
+      confirmLabel: "Remove",
+      variant: "destructive",
+    });
+    if (!ok) return;
     const { pdf } = await loadPdf();
     pdf.removePage(page - 1);
     await commitPdf(pdf, Math.min(page, numPages - 1));
