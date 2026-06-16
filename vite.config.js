@@ -45,6 +45,7 @@ export default defineConfig({
                   "application/x-piano-notes",
                   "application/json",
                   "application/octet-stream",
+                  "text/plain",
                   ".pnotes",
                 ],
               },

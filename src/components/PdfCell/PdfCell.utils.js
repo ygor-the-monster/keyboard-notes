@@ -1,6 +1,9 @@
 // PDF.js setup + byte/file helpers for the PDF viewer. The worker is bundled by Vite
 // via the ?url import.
 import * as pdfjsLib from "pdfjs-dist";
+// Vite's `?url` import yields the bundled worker URL as the default export; oxlint analyses
+// the raw .mjs (which has no default) and false-positives, so silence that one rule here.
+// eslint-disable-next-line import/default
 import workerUrl from "pdfjs-dist/build/pdf.worker.min.mjs?url";
 
 pdfjsLib.GlobalWorkerOptions.workerSrc = workerUrl;

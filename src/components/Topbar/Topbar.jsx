@@ -8,7 +8,13 @@ import {
   TextField,
   Divider,
 } from "@react-spectrum/s2";
-import { Notebook, DownloadSimple, Printer, CloudArrowDown } from "@phosphor-icons/react";
+import {
+  Notebook,
+  DownloadSimple,
+  ShareNetwork,
+  Printer,
+  CloudArrowDown,
+} from "@phosphor-icons/react";
 import { useStore } from "../../providers/StoreProvider/StoreProvider.jsx";
 import { usePwa } from "../../providers/PWAProvider/PWAProvider.jsx";
 import { useDialog } from "../../providers/DialogProvider/DialogProvider.jsx";
@@ -65,19 +71,35 @@ export default function Topbar() {
     reader.readAsText(file);
   }
 
+  const lessonJson = () =>
+    JSON.stringify({ app: "pianoNotes", version: 2, notebook: activeNotebook }, null, 2);
+  const lessonFilename = () =>
+    (activeNotebook?.title || "lesson").replace(/[^\w-]+/g, "_") + ".pnotes";
+
   function exportJson() {
     if (!activeNotebook) return;
-    const data = JSON.stringify(
-      { app: "pianoNotes", version: 2, notebook: activeNotebook },
-      null,
-      2,
-    );
-    const blob = new Blob([data], { type: "application/x-piano-notes" });
+    const blob = new Blob([lessonJson()], { type: "application/x-piano-notes" });
     const a = document.createElement("a");
     a.href = URL.createObjectURL(blob);
-    a.download = (activeNotebook.title || "lesson").replace(/[^\w-]+/g, "_") + ".pnotes";
+    a.download = lessonFilename();
     a.click();
     setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+  }
+
+  // Outgoing Web Share (Android-friendly) — hand the lesson file to the OS share sheet.
+  // Shared as text/plain since that's reliably on Chrome's shareable-file allowlist.
+  const canShareFiles =
+    typeof navigator !== "undefined" &&
+    navigator.canShare?.({ files: [new File(["{}"], "l.pnotes", { type: "text/plain" })] });
+
+  async function shareLesson() {
+    if (!activeNotebook) return;
+    const file = new File([lessonJson()], lessonFilename(), { type: "text/plain" });
+    try {
+      await navigator.share({ files: [file], title: activeNotebook.title || "Piano Notes lesson" });
+    } catch (err) {
+      if (err.name !== "AbortError") alert({ title: "Share failed", message: err.message });
+    }
   }
 
   return (
@@ -120,6 +142,9 @@ export default function Topbar() {
         <Divider orientation="vertical" styles={vdiv} />
         <div className={s.tools} role="toolbar" aria-label="Lesson tools">
           <IconBtn icon={DownloadSimple} label="Export lesson" onPress={exportJson} />
+          {canShareFiles && (
+            <IconBtn icon={ShareNetwork} label="Share lesson" onPress={shareLesson} />
+          )}
           <IconBtn icon={Printer} label="Print / save PDF" onPress={() => window.print()} />
           {canInstall && (
             <IconBtn icon={CloudArrowDown} label="Install app" onPress={promptInstall} />
