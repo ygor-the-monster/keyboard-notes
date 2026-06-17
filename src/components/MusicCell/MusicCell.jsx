@@ -63,7 +63,7 @@ function readHB(cell) {
 
 export default function MusicCell({ cell, editing }) {
   const { updateCell } = useStore();
-  const { t } = useI18n();
+  const { t, localizeTools } = useI18n();
   const renderRef = useRef(null);
   const errRef = useRef(null);
   const synthRef = useRef(null);
@@ -87,13 +87,13 @@ export default function MusicCell({ cell, editing }) {
           add_classes: true,
         });
       } catch (e) {
-        if (errRef.current) errRef.current.textContent = "Notation error: " + e.message;
+        if (errRef.current) errRef.current.textContent = t("cell.errNotation", { msg: e.message });
       }
     })();
     return () => {
       cancelled = true;
     };
-  }, [source, editing]);
+  }, [source, editing, t]);
 
   // Uncontrolled editors (native undo); push external changes back into header / body.
   useEffect(() => {
@@ -114,8 +114,7 @@ export default function MusicCell({ cell, editing }) {
   async function play() {
     const abcjs = await getAbcjs();
     if (!abcjs.synth.supportsAudio()) {
-      if (errRef.current)
-        errRef.current.textContent = "Audio playback isn't supported in this browser.";
+      if (errRef.current) errRef.current.textContent = t("cell.errNoAudio");
       return;
     }
     try {
@@ -129,7 +128,7 @@ export default function MusicCell({ cell, editing }) {
       synth.start();
       setPlaying(true);
     } catch (e) {
-      if (errRef.current) errRef.current.textContent = "Could not play: " + e.message;
+      if (errRef.current) errRef.current.textContent = t("cell.errPlay", { msg: e.message });
     }
   }
 
@@ -580,12 +579,12 @@ export default function MusicCell({ cell, editing }) {
 
   return (
     <div className={s.col}>
-      <Toolbar label="Music" tools={tools} />
+      <Toolbar label={t("cell.scoreTools")} tools={localizeTools(tools)} />
       <textarea
         key="hdr"
         ref={headRef}
         className={`${shared.codeMono} ${s.codeHeader} no-print`}
-        aria-label="ABC header"
+        aria-label={t("cell.scoreHeader")}
         spellCheck={false}
         defaultValue={header}
         rows={Math.max(2, header.split("\n").length)}
@@ -595,7 +594,7 @@ export default function MusicCell({ cell, editing }) {
         key="src"
         ref={taRef}
         className={`${shared.codeMono} no-print`}
-        aria-label="ABC music"
+        aria-label={t("cell.scoreBody")}
         spellCheck={false}
         defaultValue={body}
         placeholder={"[V:RH] C D E F | G A B c |\n[V:LH] C,2 G,2 | C,2 G,2 |"}

@@ -186,7 +186,7 @@ export default function Topbar() {
         />
 
         <Divider orientation="vertical" styles={vdiv} />
-        <div className={s.tools} role="toolbar" aria-label="Lesson tools">
+        <div className={s.tools} role="toolbar" aria-label={t("topbar.lessonTools")}>
           <MenuTrigger>
             <ActionButton aria-label={t("lang.label")} isQuiet size="L">
               <Translate size={22} aria-hidden />

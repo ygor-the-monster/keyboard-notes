@@ -57,7 +57,38 @@ export function I18nProvider({ children }) {
     [locale],
   );
 
-  const value = useMemo(() => ({ locale, setLocale, locales: LOCALES, t }), [locale, setLocale, t]);
+  // Translate a toolbar label by its English text. Keys in the `toolLabels` map carry spaces
+  // and punctuation, so they can't go through the dotted-path t(); this looks the label up
+  // directly, falling back to English then to the label itself (graceful for un-mapped labels).
+  const tl = useCallback(
+    (label) => {
+      const here = MESSAGES[locale]?.toolLabels;
+      const en = MESSAGES[DEFAULT_LOCALE]?.toolLabels;
+      return (here && here[label]) ?? (en && en[label]) ?? label;
+    },
+    [locale],
+  );
+
+  // Run a Toolbar `tools` array through tl(), translating every label / altLabel (including
+  // nested group options) on the final composed strings — no per-label edits in the cells.
+  const localizeTools = useCallback(
+    (tools) =>
+      tools.map((it) => {
+        if (!it || it.kind === "sep") return it;
+        const out = { ...it };
+        if (out.label) out.label = tl(out.label);
+        if (out.altLabel) out.altLabel = tl(out.altLabel);
+        if (Array.isArray(out.options))
+          out.options = out.options.map((o) => (o.label ? { ...o, label: tl(o.label) } : o));
+        return out;
+      }),
+    [tl],
+  );
+
+  const value = useMemo(
+    () => ({ locale, setLocale, locales: LOCALES, t, tl, localizeTools }),
+    [locale, setLocale, t, tl, localizeTools],
+  );
   return <I18nContext.Provider value={value}>{children}</I18nContext.Provider>;
 }
 

@@ -25,7 +25,7 @@ import shared from "../../providers/ThemeProvider/ThemeProvider.module.css";
 
 export default function MarkdownCell({ cell, editing }) {
   const { updateCell } = useStore();
-  const { t } = useI18n();
+  const { t, localizeTools } = useI18n();
   const taRef = useRef(null);
 
   // Uncontrolled editor (keeps native undo); sync external source changes back in.
@@ -41,7 +41,7 @@ export default function MarkdownCell({ cell, editing }) {
       <div
         className="md-preview"
         dangerouslySetInnerHTML={{
-          __html: html || '<p style="opacity:.6">Empty note — click to edit.</p>',
+          __html: html || `<p style="opacity:.6">${t("cell.emptyNote")}</p>`,
         }}
         ref={(node) => {
           if (!node) return;
@@ -122,11 +122,11 @@ export default function MarkdownCell({ cell, editing }) {
 
   return (
     <div style={{ display: "flex", flexDirection: "column", rowGap: 8 }}>
-      <Toolbar label="Format" tools={tools} />
+      <Toolbar label={t("cell.formatTools")} tools={localizeTools(tools)} />
       <textarea
         ref={taRef}
         className={`${shared.codeMono} no-print`}
-        aria-label="Markdown source"
+        aria-label={t("cell.noteSource")}
         spellCheck
         defaultValue={cell.source}
         placeholder={t("cell.notePlaceholder")}
