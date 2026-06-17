@@ -37,6 +37,40 @@ export function transposeChord(sym, semis) {
   return out;
 }
 
+// A whitespace-separated token that looks like a chord symbol: root note + optional
+// accidental, then only chord-ish characters (qualities, extensions, slash bass). Kept
+// strict enough that ordinary lyric words ("Drawing", "without") fail.
+const CHORD_TOKEN =
+  /^[A-G][#b]?(?:m|maj|min|dim|aug|sus|add|M|°|ø|[0-9#b+()])*(?:\/[A-G][#b]?(?:m|maj|min|dim|aug|sus|add|M|°|ø|[0-9#b+()])*)?$/;
+
+// True when every token on the line is chord-shaped — i.e. it's a chord row, not lyrics.
+function isChordLine(line) {
+  const toks = line.trim().split(/\s+/);
+  return toks.length > 0 && toks.every((t) => CHORD_TOKEN.test(t));
+}
+
+// Re-transpose the chords on a standalone chord row (no lyric line beneath it).
+function transposeChordLine(line, semis) {
+  return semis ? line.replace(/\S+/g, (t) => transposeChord(t, semis)) : line;
+}
+
+// Pair a chord row with the lyric line beneath it, aligning each chord to the column it sits
+// over (how chord charts are laid out in PDFs). Produces the same { lead, segs } shape as the
+// bracket parser, so it renders aligned regardless of font — and chords get transposed.
+function alignChordLyric(chordLine, lyricLine, semis) {
+  const cols = [];
+  const re = /\S+/g;
+  let m;
+  while ((m = re.exec(chordLine))) cols.push({ at: m.index, chord: m[0] });
+  if (!cols.length) return { lead: lyricLine, segs: [] };
+  const lead = cols[0].at > 0 ? lyricLine.slice(0, cols[0].at) : "";
+  const segs = cols.map((c, i) => {
+    const end = i + 1 < cols.length ? cols[i + 1].at : lyricLine.length;
+    return { chord: transposeChord(c.chord, semis), text: lyricLine.slice(c.at, Math.max(c.at, end)) };
+  });
+  return { lead, segs };
+}
+
 // Split one lyric line into [{ chord, text }] segments. A leading text run (before the
 // first chord) yields { chord: "", text }.
 function parseLyricLine(line, semis) {
@@ -66,14 +100,44 @@ function parseLyricLine(line, semis) {
 //   { type: "plain", text }                       // literal line, no bracket chords
 //   { type: "line", lead, segs: [{chord,text}] }  // chord-over-lyric line
 export function parseCifra(source, semis = 0) {
-  return (source || "").split("\n").map((raw) => {
-    const line = raw.replace(/\s+$/, "");
-    if (!line.trim()) return { type: "blank" };
+  const lines = (source || "").split("\n").map((raw) => raw.replace(/\s+$/, ""));
+  const out = [];
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i];
+    if (!line.trim()) {
+      out.push({ type: "blank" });
+      continue;
+    }
     const heading = /^\{(.+)\}$/.exec(line.trim());
-    if (heading) return { type: "heading", text: heading[1].trim() };
-    if (line.includes("[")) return { type: "line", ...parseLyricLine(line, semis) };
-    return { type: "plain", text: line };
-  });
+    if (heading) {
+      out.push({ type: "heading", text: heading[1].trim() });
+      continue;
+    }
+    if (line.includes("[")) {
+      out.push({ type: "line", ...parseLyricLine(line, semis) });
+      continue;
+    }
+    // A chord row: if a lyric line follows, align the two; otherwise it's a standalone
+    // (instrumental) chord row — keep it literal but still transpose it.
+    if (isChordLine(line)) {
+      const next = lines[i + 1];
+      const nextIsLyric =
+        next != null &&
+        next.trim() &&
+        !/^\{(.+)\}$/.test(next.trim()) &&
+        !next.includes("[") &&
+        !isChordLine(next);
+      if (nextIsLyric) {
+        out.push({ type: "line", ...alignChordLyric(line, next, semis) });
+        i++; // consume the paired lyric line
+      } else {
+        out.push({ type: "plain", text: transposeChordLine(line, semis) });
+      }
+      continue;
+    }
+    out.push({ type: "plain", text: line });
+  }
+  return out;
 }
 
 // Human label for the current transpose offset, e.g. "+2" / "−3" / "0".
