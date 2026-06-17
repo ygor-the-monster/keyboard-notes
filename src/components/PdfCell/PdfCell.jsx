@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
-import { TextField, Text, Button, DropZone, FileTrigger, Divider } from "@react-spectrum/s2";
+import { TextField, Button, DropZone, FileTrigger, Divider } from "@react-spectrum/s2";
+import EmptyState from "../EmptyState/EmptyState.jsx";
 import {
   FilePdf,
   Square,
@@ -13,10 +14,17 @@ import {
   FilePlus,
   Trash,
   UploadSimple,
+  PencilSimpleLine,
+  Rows,
+  Play,
+  Pause,
 } from "@phosphor-icons/react";
 import { useStore } from "../../providers/StoreProvider/StoreProvider.jsx";
 import { useDialog } from "../../providers/DialogProvider/DialogProvider.jsx";
-import { pdfjsLib, dataUrlToBytes, bytesToDataUrl, fileToDataUrl } from "./PdfCell.utils.js";
+import { useI18n } from "../../providers/I18nProvider/I18nProvider.jsx";
+import { getPdfjs, dataUrlToBytes, bytesToDataUrl, fileToDataUrl } from "./PdfCell.utils.js";
+import { ANNOT_COLORS, buildAnnotationTools } from "../AnnotationLayer/AnnotationLayer.utils.js";
+import AnnotationLayer from "../AnnotationLayer/AnnotationLayer.jsx";
 import Toolbar from "../Toolbar/Toolbar.jsx";
 import shared from "../../providers/ThemeProvider/ThemeProvider.module.css";
 import { dropFull } from "./PdfCell.styled.jsx";
@@ -39,62 +47,125 @@ async function renderPage(doc, n, canvas, cssWidth) {
 export default function PdfCell({ cell, editing }) {
   const { updateCell } = useStore();
   const { confirm } = useDialog();
+  const { t } = useI18n();
   const src = cell.dataUrl || cell.url;
 
   const wrapRef = useRef(null);
-  const canvasA = useRef(null);
-  const canvasB = useRef(null);
+  const rootRef = useRef(null);
+  const canvasRefs = useRef({}); // page number → <canvas>
   const docRef = useRef(null);
   const fileRef = useRef(null);
   const appendRef = useRef(null);
+  const accRef = useRef(0);
   const [numPages, setNumPages] = useState(0);
   const [page, setPage] = useState(1);
   const [view, setView] = useState("single"); // 'single' | 'double'
+  const [flow, setFlow] = useState("paged"); // 'paged' (current page/spread) | 'all' (continuous)
+  const [scrolling, setScrolling] = useState(false);
+  const [scrollSpeed, setScrollSpeed] = useState(2);
   const [renderErr, setRenderErr] = useState("");
 
-  // Load the document whenever the source changes.
+  // Non-destructive annotation overlay (per page). `annotations` maps page number → strokes.
+  const annotations = cell.annotations || {};
+  const [annMode, setAnnMode] = useState(false);
+  const [color, setColor] = useState(ANNOT_COLORS[0].c);
+  const [thick, setThick] = useState("m");
+  const [opacity, setOpacity] = useState(1);
+  const [eraser, setEraser] = useState(false);
+  const setPageStrokes = (pageNum, next) =>
+    updateCell(cell.id, { annotations: { ...annotations, [pageNum]: next } });
+
+  // Load the document whenever the source changes (pdf.js is loaded lazily on first use).
   useEffect(() => {
     if (!src) return;
     let cancelled = false;
+    let task;
     setRenderErr("");
-    const params = cell.dataUrl ? { data: dataUrlToBytes(cell.dataUrl) } : { url: cell.url };
-    const task = pdfjsLib.getDocument(params);
-    task.promise.then(
-      (doc) => {
-        if (cancelled) return;
-        docRef.current = doc;
-        setNumPages(doc.numPages);
-        setPage((p) => Math.min(p, doc.numPages));
-      },
-      (e) => !cancelled && setRenderErr("Couldn't open PDF: " + e.message),
-    );
+    (async () => {
+      const pdfjsLib = await getPdfjs();
+      if (cancelled) return;
+      const params = cell.dataUrl ? { data: dataUrlToBytes(cell.dataUrl) } : { url: cell.url };
+      task = pdfjsLib.getDocument(params);
+      task.promise.then(
+        (doc) => {
+          if (cancelled) return;
+          docRef.current = doc;
+          setNumPages(doc.numPages);
+          setPage((p) => Math.min(p, doc.numPages));
+        },
+        (e) => !cancelled && setRenderErr(t("pdf.openFailed", { msg: e.message })),
+      );
+    })();
     return () => {
       cancelled = true;
-      task.destroy?.();
+      task?.destroy?.();
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [src, cell.dataUrl, cell.url]);
 
-  // (Re)render the visible page(s) to fit the cell width.
+  // (Re)render the visible page(s) to fit the cell width. In 'all' (continuous) flow every
+  // page is rendered stacked; in 'paged' flow only the current page (and its spread).
   useEffect(() => {
     const doc = docRef.current;
     if (!doc || !wrapRef.current) return;
     const wrapW = wrapRef.current.clientWidth || 600;
-    const showTwo = view === "double" && page < numPages;
-    const gap = 12;
-    const cssW = showTwo ? Math.floor((wrapW - gap) / 2) : wrapW;
     let cancelled = false;
     (async () => {
       try {
-        if (canvasA.current) await renderPage(doc, page, canvasA.current, cssW);
-        if (showTwo && canvasB.current) await renderPage(doc, page + 1, canvasB.current, cssW);
+        const refs = canvasRefs.current;
+        if (flow === "all") {
+          for (let n = 1; n <= numPages && !cancelled; n++) {
+            if (refs[n]) await renderPage(doc, n, refs[n], wrapW);
+          }
+        } else {
+          const showTwo = view === "double" && page < numPages;
+          const cssW = showTwo ? Math.floor((wrapW - 12) / 2) : wrapW;
+          if (refs[page]) await renderPage(doc, page, refs[page], cssW);
+          if (showTwo && refs[page + 1]) await renderPage(doc, page + 1, refs[page + 1], cssW);
+        }
       } catch (e) {
-        if (!cancelled) setRenderErr("Render failed: " + e.message);
+        if (!cancelled) setRenderErr(t("pdf.renderFailed", { msg: e.message }));
       }
     })();
     return () => {
       cancelled = true;
     };
-  }, [numPages, page, view, editing, src]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [numPages, page, view, flow, editing, src]);
+
+  // Hands-free auto-scroll of the lesson (Ultimate-Guitar style) — most useful in the
+  // continuous 'all' flow for reading through a multi-page score.
+  useEffect(() => {
+    if (!scrolling) return;
+    const container = rootRef.current?.closest(".app-scroll") || document.scrollingElement;
+    if (!container) return;
+    let raf = 0;
+    let stopped = false;
+    const tick = () => {
+      if (stopped) return;
+      accRef.current += scrollSpeed * 0.4;
+      const px = Math.floor(accRef.current);
+      if (px >= 1) {
+        container.scrollTop += px;
+        accRef.current -= px;
+      }
+      // Stop once the end of the block reaches the middle of the viewport (or we bottom out).
+      const contRect = container.getBoundingClientRect();
+      const center = contRect.top + container.clientHeight / 2;
+      const blockBottom = rootRef.current?.getBoundingClientRect().bottom ?? Infinity;
+      const atBottom = container.scrollTop + container.clientHeight >= container.scrollHeight - 1;
+      if (blockBottom <= center || atBottom) {
+        setScrolling(false);
+        return;
+      }
+      raf = requestAnimationFrame(tick);
+    };
+    raf = requestAnimationFrame(tick);
+    return () => {
+      stopped = true;
+      cancelAnimationFrame(raf);
+    };
+  }, [scrolling, scrollSpeed]);
 
   async function addFile(file) {
     if (!file || file.type !== "application/pdf") return;
@@ -102,9 +173,9 @@ export default function PdfCell({ cell, editing }) {
     const sizeMB = (dataUrl.length * 0.75) / 1e6;
     if (sizeMB > 8) {
       const ok = await confirm({
-        title: "Large PDF",
-        message: `This PDF is ~${sizeMB.toFixed(1)} MB and may exceed local storage. Embed anyway?`,
-        confirmLabel: "Embed",
+        title: t("pdf.largeTitle"),
+        message: t("pdf.largeMsg", { mb: sizeMB.toFixed(1) }),
+        confirmLabel: t("common.embed"),
       });
       if (!ok) return;
     }
@@ -160,9 +231,9 @@ export default function PdfCell({ cell, editing }) {
   async function removeCurrentPage() {
     if (!cell.dataUrl || numPages <= 1) return;
     const ok = await confirm({
-      title: `Remove page ${page}?`,
-      message: `Page ${page} of ${numPages} will be removed from the PDF.`,
-      confirmLabel: "Remove",
+      title: t("pdf.deletePageTitle", { page }),
+      message: t("pdf.deletePageMsg", { page, total: numPages }),
+      confirmLabel: t("common.remove"),
       variant: "destructive",
     });
     if (!ok) return;
@@ -171,24 +242,52 @@ export default function PdfCell({ cell, editing }) {
     await commitPdf(pdf, Math.min(page, numPages - 1));
   }
 
-  const pageLayer = (canvasRef) => (
-    <div className={css.pdfPage}>
-      <canvas ref={canvasRef} className={css.pdfCanvas} />
+  const pageLayer = (pageNum) => (
+    <div className={css.pdfPage} key={pageNum}>
+      <canvas
+        ref={(el) => {
+          if (el) canvasRefs.current[pageNum] = el;
+          else delete canvasRefs.current[pageNum];
+        }}
+        className={css.pdfCanvas}
+      />
+      <AnnotationLayer
+        strokes={annotations[pageNum] || []}
+        onChange={(next) => setPageStrokes(pageNum, next)}
+        active={editing && annMode}
+        color={color}
+        thick={thick}
+        opacity={opacity}
+        eraser={eraser}
+      />
     </div>
   );
 
+  // Which pages are on screen: every page in continuous flow, else the current page/spread.
+  const visiblePages =
+    flow === "all"
+      ? Array.from({ length: numPages }, (_, i) => i + 1)
+      : view === "double" && page < numPages
+        ? [page, page + 1]
+        : [page];
+
   const viewer = src && (
     <div ref={wrapRef} className={css.pdfViewer}>
-      <div className={css.pdfPages}>
-        {pageLayer(canvasA)}
-        {view === "double" && page < numPages && pageLayer(canvasB)}
+      <div className={flow === "all" ? css.pdfPagesAll : css.pdfPages}>
+        {visiblePages.map((n) => pageLayer(n))}
       </div>
       {renderErr && <div className="abc-error">{renderErr}</div>}
     </div>
   );
 
   if (!editing) {
-    return src ? <div className={css.col}>{viewer}</div> : <Text>No PDF — click to add one.</Text>;
+    return src ? (
+      <div ref={rootRef} className={css.col}>
+        {viewer}
+      </div>
+    ) : (
+      <EmptyState kind="pdf" title={t("pdf.noPdf")} compact />
+    );
   }
 
   // Editing with a loaded PDF: page navigation + page manipulation.
@@ -201,86 +300,158 @@ export default function PdfCell({ cell, editing }) {
             kind: "group",
             id: "rotate",
             icon: ArrowClockwise,
-            label: "Rotate page",
+            label: t("pdf.rotatePage"),
             options: [
               {
                 id: "rl",
                 icon: ArrowCounterClockwise,
-                label: "Rotate left",
+                label: t("image.rotateLeft"),
                 onUse: () => rotatePage(-1),
               },
-              { id: "rr", icon: ArrowClockwise, label: "Rotate right", onUse: () => rotatePage(1) },
+              {
+                id: "rr",
+                icon: ArrowClockwise,
+                label: t("image.rotateRight"),
+                onUse: () => rotatePage(1),
+              },
             ],
           },
           {
             kind: "group",
             id: "move",
             icon: ArrowsDownUp,
-            label: "Move page",
+            label: t("pdf.movePage"),
             options: [
-              { id: "up", icon: ArrowUp, label: "Move earlier", onUse: () => movePage(-1) },
-              { id: "down", icon: ArrowDown, label: "Move later", onUse: () => movePage(1) },
+              { id: "up", icon: ArrowUp, label: t("pdf.moveEarlier"), onUse: () => movePage(-1) },
+              { id: "down", icon: ArrowDown, label: t("pdf.moveLater"), onUse: () => movePage(1) },
             ],
           },
           {
             kind: "action",
             id: "dup",
             icon: CopySimple,
-            label: "Duplicate page",
+            label: t("pdf.duplicatePage"),
             onUse: duplicatePage,
           },
           {
             kind: "action",
             id: "append",
             icon: FilePlus,
-            label: "Append a PDF",
+            label: t("pdf.appendPdf"),
             onUse: () => appendRef.current?.click(),
           },
           {
             kind: "action",
             id: "del",
             icon: Trash,
-            label: "Delete page",
+            label: t("pdf.deletePage"),
             onUse: removeCurrentPage,
             disabled: numPages <= 1,
           },
         ]
       : [];
-    const tools = [
-      {
-        kind: "spinner",
-        id: "page",
-        label: "Page",
-        display: `${page} / ${numPages || "…"}`,
-        onPrev: () => setPage((p) => Math.max(1, p - 1)),
-        onNext: () => setPage((p) => Math.min(numPages, p + 1)),
-        prevDisabled: page <= 1,
-        nextDisabled: page >= numPages,
-      },
+    const pageStrokes = annotations[page] || [];
+    const annTools = [
       { kind: "sep" },
       {
         kind: "toggle",
-        id: "view",
-        icon: Square,
-        altIcon: Columns,
-        label: "View: one page",
-        altLabel: "View: two pages",
-        value: view === "double",
-        onToggle: () => setView((v) => (v === "single" ? "double" : "single")),
+        id: "annotate",
+        icon: PencilSimpleLine,
+        label: t("annotate.pen"),
+        value: annMode,
+        onToggle: () => setAnnMode((v) => !v),
       },
+      ...(annMode
+        ? buildAnnotationTools({
+            t,
+            color,
+            setColor,
+            thick,
+            setThick,
+            opacity,
+            setOpacity,
+            eraser,
+            setEraser,
+            onUndo: () => setPageStrokes(page, pageStrokes.slice(0, -1)),
+            onClear: () => setPageStrokes(page, []),
+            canUndo: pageStrokes.length > 0,
+            canClear: pageStrokes.length > 0,
+          })
+        : []),
+    ];
+    // Page navigation / spread only apply to the paged flow.
+    const navTools =
+      flow === "paged"
+        ? [
+            {
+              kind: "spinner",
+              id: "page",
+              label: t("pdf.page"),
+              display: `${page} / ${numPages || "…"}`,
+              onPrev: () => setPage((p) => Math.max(1, p - 1)),
+              onNext: () => setPage((p) => Math.min(numPages, p + 1)),
+              prevDisabled: page <= 1,
+              nextDisabled: page >= numPages,
+            },
+            {
+              kind: "toggle",
+              id: "view",
+              icon: Square,
+              altIcon: Columns,
+              label: t("pdf.viewOne"),
+              altLabel: t("pdf.viewTwo"),
+              value: view === "double",
+              onToggle: () => setView((v) => (v === "single" ? "double" : "single")),
+            },
+          ]
+        : [];
+    const tools = [
+      {
+        kind: "toggle",
+        id: "flow",
+        icon: Square,
+        altIcon: Rows,
+        label: t("pdf.viewPaged"),
+        altLabel: t("pdf.viewAll"),
+        value: flow === "all",
+        onToggle: () => setFlow((f) => (f === "paged" ? "all" : "paged")),
+      },
+      ...navTools,
+      { kind: "sep" },
+      {
+        kind: "toggle",
+        id: "scroll",
+        icon: Play,
+        altIcon: Pause,
+        label: t("cifra.autoScroll"),
+        altLabel: t("cifra.stopScroll"),
+        value: scrolling,
+        onToggle: () => setScrolling((v) => !v),
+      },
+      {
+        kind: "spinner",
+        id: "speed",
+        label: t("cifra.scrollSpeed"),
+        display: `${scrollSpeed}×`,
+        onPrev: () => setScrollSpeed((spd) => Math.max(1, spd - 1)),
+        onNext: () => setScrollSpeed((spd) => Math.min(5, spd + 1)),
+        prevDisabled: scrollSpeed <= 1,
+        nextDisabled: scrollSpeed >= 5,
+      },
+      ...annTools,
       ...pageTools,
       { kind: "sep" },
       {
         kind: "action",
         id: "replace",
         icon: UploadSimple,
-        label: "Replace PDF",
+        label: t("pdf.replace"),
         onUse: () => fileRef.current?.click(),
       },
     ];
     return (
-      <div className={css.col}>
-        <Toolbar label="PDF" tools={tools} />
+      <div ref={rootRef} className={css.col}>
+        <Toolbar label={t("cell.pdf")} tools={tools} />
         {viewer}
         <input
           ref={fileRef}
@@ -320,21 +491,23 @@ export default function PdfCell({ cell, editing }) {
       >
         <div className={shared.mediaEmpty}>
           <FilePdf size={40} aria-hidden />
-          <span className={shared.mediaEmptyTitle}>{cell.name ? cell.name : "Embed a PDF"}</span>
+          <span className={shared.mediaEmptyTitle}>
+            {cell.name ? cell.name : t("pdf.embedTitle")}
+          </span>
           <FileTrigger
             acceptedFileTypes={["application/pdf"]}
             onSelect={(files) => files && addFile(files[0])}
           >
-            <Button variant="primary">Browse…</Button>
+            <Button variant="primary">{t("common.browse")}</Button>
           </FileTrigger>
         </div>
       </DropZone>
       <Divider />
       <TextField
-        label="…or embed by URL (best for large files)"
+        label={t("pdf.byUrl")}
         value={cell.url || ""}
         onChange={(url) => updateCell(cell.id, { url, dataUrl: "", name: "" })}
-        placeholder="https://example.com/score.pdf"
+        placeholder={t("pdf.urlPlaceholder")}
         styles={dropFull}
       />
     </div>

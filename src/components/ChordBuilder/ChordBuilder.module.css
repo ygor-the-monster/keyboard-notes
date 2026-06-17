@@ -1,0 +1,185 @@
+/* Pull-tab dock (mirrors the others) — interactive chord builder. Seafoam accent (relates to the Image cell). */
+.dock {
+  --card-w: 290px;
+  position: relative;
+  display: flex;
+  align-items: flex-start;
+  transform: translateX(var(--card-w));
+  transition: transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+.dock.open {
+  transform: translateX(0);
+}
+.tab {
+  flex: none;
+  width: 42px;
+  align-self: flex-start;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  padding: 16px 0 18px;
+  border: none;
+  cursor: pointer;
+  color: #fff;
+  background: var(--s-seafoam);
+  border-radius: var(--radius) 0 0 var(--radius);
+  box-shadow: var(--shadow-pop);
+}
+.tabLabel {
+  writing-mode: vertical-rl;
+  text-orientation: mixed;
+  font-family: var(--font-ui);
+  font-weight: 600;
+  font-size: 0.78rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+.tabChord {
+  font-family: var(--font-mono);
+  font-size: 0.74rem;
+  font-weight: 600;
+  padding: 2px 0;
+  max-width: 38px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.card {
+  width: var(--card-w);
+  --accent: var(--s-seafoam);
+  --accent-strong: var(--s-seafoam-strong);
+  --accent-tint: var(--s-seafoam-tint);
+  --accent-ring: var(--s-seafoam-ring);
+  background: var(--surface);
+  border: 1px solid var(--s-line);
+  border-right: none;
+  box-shadow: var(--shadow-pop);
+  border-radius: 0 0 0 var(--radius);
+  padding: 18px 18px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  overflow: hidden;
+  max-height: 70vh;
+  transition:
+    max-height 0.4s cubic-bezier(0.2, 0.8, 0.2, 1),
+    padding 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+.dock:not(.open) .card {
+  max-height: 0;
+  padding-top: 0;
+  padding-bottom: 0;
+  border-top: none;
+  border-bottom: none;
+}
+.head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--font-content);
+  font-weight: 600;
+  font-size: 1.05rem;
+  color: var(--s-ink);
+}
+.readout {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  min-height: 40px;
+}
+.chord {
+  font-family: var(--font-content);
+  font-weight: 600;
+  font-size: 1.9rem;
+  line-height: 1;
+  color: var(--accent-strong);
+}
+.hint {
+  font-family: var(--font-ui);
+  font-size: 0.9rem;
+  color: var(--s-ink-muted);
+}
+.clear {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-family: var(--font-ui);
+  font-size: 0.8rem;
+  color: var(--s-ink-muted);
+  background: var(--canvas);
+  border: 1px solid var(--s-line);
+  border-radius: var(--radius-pill);
+  padding: 4px 10px;
+  cursor: pointer;
+}
+.clear:hover {
+  color: var(--accent-strong);
+  border-color: var(--accent);
+}
+
+/* Clickable one-octave keyboard. */
+.kbd {
+  width: 100%;
+  height: auto;
+  touch-action: manipulation;
+}
+.white,
+.whiteOn,
+.black,
+.blackOn {
+  cursor: pointer;
+}
+.white {
+  fill: #f6f4ef;
+  stroke: var(--s-line-strong);
+  stroke-width: 1;
+}
+.whiteOn {
+  fill: var(--accent-tint);
+  stroke: var(--accent);
+  stroke-width: 1.4;
+}
+.black {
+  fill: #211f1c;
+  stroke: var(--s-line-strong);
+  stroke-width: 0.5;
+}
+.blackOn {
+  fill: var(--accent);
+  stroke: var(--accent-strong);
+  stroke-width: 0.5;
+}
+.label {
+  fill: var(--s-ink-muted);
+  font-family: var(--font-mono);
+  font-size: 11px;
+}
+/* Octave badges drawn on a selected key (▲ an octave up, ▼ an octave down). */
+.octUp,
+.octDown {
+  fill: var(--accent-strong);
+  font-size: 9px;
+  pointer-events: none;
+}
+.octUpDark,
+.octDownDark {
+  fill: #fff;
+  font-size: 8px;
+  pointer-events: none;
+}
+.octHint {
+  margin: 0;
+  font-family: var(--font-ui);
+  font-size: 0.74rem;
+  line-height: 1.35;
+  color: var(--s-ink-muted);
+  text-align: center;
+}
+@media (prefers-reduced-motion: reduce) {
+  .dock,
+  .card {
+    transition: none;
+  }
+}

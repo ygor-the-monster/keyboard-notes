@@ -1,23 +1,48 @@
 import { useEffect } from "react";
-import { IllustratedMessage, Heading, Content } from "@react-spectrum/s2";
 import { useStore } from "../../providers/StoreProvider/StoreProvider.jsx";
 import { useEditing } from "../../providers/EditingProvider/EditingProvider.jsx";
 import { useDialog } from "../../providers/DialogProvider/DialogProvider.jsx";
+import { useI18n } from "../../providers/I18nProvider/I18nProvider.jsx";
 import Topbar from "../Topbar/Topbar.jsx";
 import Cell from "../Cell/Cell.jsx";
+import EmptyState from "../EmptyState/EmptyState.jsx";
 import AddBar from "../AddBar/AddBar.jsx";
 import Metronome from "../Metronome/Metronome.jsx";
 import Tuner from "../Tuner/Tuner.jsx";
+import Drone from "../Drone/Drone.jsx";
+import Scratchpad from "../Scratchpad/Scratchpad.jsx";
+import SyntaxRef from "../SyntaxRef/SyntaxRef.jsx";
+import ChordBuilder from "../ChordBuilder/ChordBuilder.jsx";
 import shared from "../../providers/ThemeProvider/ThemeProvider.module.css";
 import s from "./App.module.css";
 
 const OVERLAY_SELECTOR =
   "[data-react-aria-top-layer], [role=dialog], [role=listbox], [role=menu], [role=presentation]";
 
+// Each cell type's rainbow hue (mirrors Cell.module.css). Gold is pale, so the undo button
+// uses its -strong variant to stay legible on the dark toast.
+const TYPE_HUE = { abc: "magenta", cifra: "cinnamon", snd: "gold", img: "seafoam", pdf: "blue", md: "purple" };
+const undoAccent = (deleted) => {
+  const hue = TYPE_HUE[deleted?.cell?.type] || "magenta";
+  return {
+    "--accent": `var(--s-${hue === "gold" ? "gold-strong" : hue})`,
+    "--accent-strong": `var(--s-${hue}-strong)`,
+  };
+};
+
 export default function App() {
-  const { activeNotebook, createNotebook, importNotebook } = useStore();
+  const { activeNotebook, createNotebook, importNotebook, hydrated, lastDeleted, undoDelete, dismissUndo } =
+    useStore();
   const { setEditing } = useEditing();
   const { alert } = useDialog();
+  const { t } = useI18n();
+
+  // Auto-dismiss the "cell deleted — undo" affordance after a few seconds.
+  useEffect(() => {
+    if (!lastDeleted) return;
+    const id = setTimeout(() => dismissUndo(), 7000);
+    return () => clearTimeout(id);
+  }, [lastDeleted, dismissUndo]);
 
   // PWA file handling — open .pnotes files launched from the OS (Chromium desktop, installed).
   useEffect(() => {
@@ -28,11 +53,11 @@ export default function App() {
           const file = await handle.getFile();
           importNotebook(JSON.parse(await file.text()));
         } catch (err) {
-          alert({ title: "Couldn't open file", message: err.message });
+          alert({ title: t("dialogs.openFileFailedTitle"), message: err.message });
         }
       }
     });
-  }, [importNotebook, alert]);
+  }, [importNotebook, alert, t]);
 
   // Android Web Share Target — the service worker stashes the shared file and redirects here.
   useEffect(() => {
@@ -46,11 +71,11 @@ export default function App() {
           await cache.delete("lesson");
         }
       } catch (err) {
-        alert({ title: "Couldn't open shared file", message: err.message });
+        alert({ title: t("dialogs.openSharedFailedTitle"), message: err.message });
       }
       window.history.replaceState(null, "", "./");
     })();
-  }, [importNotebook, alert]);
+  }, [importNotebook, alert, t]);
 
   // Click-to-edit / click-away-to-render (Jupyter-style active cell).
   useEffect(() => {
@@ -66,31 +91,57 @@ export default function App() {
   return (
     <div className="app-shell">
       <Topbar />
-      <Metronome />
-      <Tuner />
+      {/* Each dock wears the colour of the cell it relates to (a distinct one each), ordered
+          to follow the cell rainbow: Metronome→Score(magenta) · Tuner→Chords(cinnamon) ·
+          Drone→Audio(gold) · Reference→Image(seafoam) · Scratchpad→PDF(blue) ·
+          Syntax→Note(purple). */}
+      <div className={`${s.utilityDock} no-print`}>
+        <Metronome />
+        <Tuner />
+        <Drone />
+        <ChordBuilder />
+        <Scratchpad />
+        <SyntaxRef />
+      </div>
       <div className="app-scroll">
-        {activeNotebook ? (
+        {!hydrated ? null : activeNotebook ? (
           <div className={s.page}>
-            <div className={s.stack}>
-              {activeNotebook.cells.map((cell, i) => (
-                <Cell key={cell.id} cell={cell} index={i} />
-              ))}
-            </div>
+            {activeNotebook.cells.length === 0 ? (
+              <div className={s.emptyCells}>
+                <EmptyState
+                  kind="general"
+                  neutral
+                  title={t("app.emptyLesson")}
+                  hint={t("app.emptyLessonHint")}
+                />
+              </div>
+            ) : (
+              <div className={s.stack}>
+                {activeNotebook.cells.map((cell, i) => (
+                  <Cell key={cell.id} cell={cell} index={i} />
+                ))}
+              </div>
+            )}
             <AddBar />
           </div>
         ) : (
           <div className={s.empty}>
-            <IllustratedMessage>
-              <Heading>No lesson open</Heading>
-              <Content>
-                <button type="button" className={shared.btnMagenta} onClick={createNotebook}>
-                  Create your first lesson
-                </button>
-              </Content>
-            </IllustratedMessage>
+            <EmptyState kind="general" neutral title={t("app.noLessonOpen")}>
+              <button type="button" className={shared.btnMagenta} onClick={createNotebook}>
+                {t("app.createFirst")}
+              </button>
+            </EmptyState>
           </div>
         )}
       </div>
+      {lastDeleted && (
+        <div className={`${s.undoToast} no-print`} role="status" style={undoAccent(lastDeleted)}>
+          <span>{t("undo.deleted")}</span>
+          <button type="button" className={s.undoBtn} onClick={undoDelete}>
+            {t("undo.action")}
+          </button>
+        </div>
+      )}
     </div>
   );
 }

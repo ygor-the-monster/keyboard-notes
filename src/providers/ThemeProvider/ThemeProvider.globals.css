@@ -13,8 +13,16 @@
 
 :root {
   /* Manuscript identity (the one deliberate non-Spectrum color) */
-  --canvas: #f6f5f1;
+  --canvas: #f6f5f1; /* page background */
+  --surface: #ffffff; /* cell cards, docks, toolbars (paper-white media keeps literal #fff) */
+  --topbar-bg: rgba(255, 255, 255, 0.82); /* frosted sticky top bar */
   --staff-line: rgba(28, 27, 25, 0.035);
+
+  /* Empty-state illustration neutrals (the accent comes from the surrounding --accent). */
+  --ill-ink: rgb(70, 68, 92);
+  --ill-ink-2: rgb(47, 46, 65);
+  --ill-soft: rgb(230, 230, 238);
+  --ill-soft-2: rgb(243, 243, 246);
 
   /* Spectrum 2 light tokens — exact values from @react-spectrum/s2 spectrum-theme.
      magenta (primary/active) + seafoam (spark) + gray neutrals. */
@@ -24,14 +32,26 @@
   --s-magenta-wash: rgba(217, 35, 97, 0.05); /* faint even-row stripe */
   --s-magenta-line: rgba(217, 35, 97, 0.28); /* table / hairline borders */
   --s-magenta-ring: rgba(217, 35, 97, 0.34);
-  --s-seafoam: rgb(7, 129, 109); /* seafoam-900 */
+  --s-seafoam: rgb(7, 129, 109); /* seafoam-900 — music accent + utility docks (metronome) */
   --s-seafoam-strong: rgb(5, 108, 92); /* seafoam-1000 */
   --s-seafoam-tint: rgb(211, 246, 234); /* seafoam-200 */
   --s-seafoam-ring: rgba(7, 129, 109, 0.32);
+  --s-cinnamon: rgb(155, 82, 54); /* cinnamon-900 — PDF accent (terracotta, clear of yellow) */
+  --s-cinnamon-strong: rgb(131, 67, 43); /* cinnamon-1000 */
+  --s-cinnamon-tint: rgb(245, 224, 213); /* cinnamon-200 */
+  --s-cinnamon-ring: rgba(155, 82, 54, 0.3);
   --s-indigo: rgb(113, 85, 250); /* indigo-900 */
   --s-indigo-strong: rgb(99, 56, 238); /* indigo-1000 */
   --s-indigo-tint: rgb(235, 238, 255); /* indigo-200 */
   --s-indigo-ring: rgba(113, 85, 250, 0.3);
+  --s-blue: rgb(35, 101, 224); /* blue-900 — image accent */
+  --s-blue-strong: rgb(21, 83, 205); /* blue-1000 */
+  --s-blue-tint: rgb(223, 232, 253); /* blue-200 */
+  --s-blue-ring: rgba(35, 101, 224, 0.3);
+  --s-gold: rgb(213, 160, 0); /* yellow-900 — chords accent (dark-gold "strong" for text) */
+  --s-gold-strong: rgb(150, 110, 0); /* yellow-1100, readable on white */
+  --s-gold-tint: rgb(255, 243, 199); /* yellow-200 */
+  --s-gold-ring: rgba(213, 160, 0, 0.35);
   --s-orange: rgb(194, 78, 0); /* orange-900 */
   --s-orange-strong: rgb(167, 62, 0); /* orange-1000 */
   --s-orange-tint: rgb(255, 236, 207); /* orange-200 */
@@ -64,6 +84,56 @@
   --radius-pill: 999px;
   --shadow-card: 0 1px 2px rgba(28, 27, 25, 0.04), 0 6px 18px rgba(28, 27, 25, 0.05);
   --shadow-pop: 0 12px 32px rgba(28, 27, 25, 0.14);
+}
+
+/* Dark scheme — overrides the neutrals only; accent hues stay, and paper-white media
+   (music staves, PDF pages) deliberately keep their literal #fff so scores read naturally. */
+html[data-color-scheme="dark"] {
+  --canvas: rgb(24, 23, 21);
+  --surface: rgb(38, 37, 34);
+  --topbar-bg: rgba(30, 29, 27, 0.85);
+  --staff-line: rgba(255, 255, 255, 0.045);
+  --s-ink: rgb(236, 234, 230);
+  --s-ink-muted: rgb(166, 163, 157);
+  --s-line: rgb(60, 58, 54);
+  --s-line-strong: rgb(86, 83, 78);
+  --s-neutral-tint: rgb(58, 56, 52);
+  --shadow-card: 0 1px 2px rgba(0, 0, 0, 0.3), 0 6px 18px rgba(0, 0, 0, 0.34);
+  --shadow-pop: 0 14px 34px rgba(0, 0, 0, 0.52);
+
+  /* Flip the accent shades for a cohesive dark look: tints become dark, translucent washes
+     (so chips/pills sit *into* the surface), and the "strong" text shades lighten so accent
+     text stays legible on dark. */
+  --s-magenta-strong: rgb(255, 124, 170);
+  --s-magenta-tint: rgba(217, 35, 97, 0.22);
+  --s-seafoam-strong: rgb(92, 198, 176);
+  --s-seafoam-tint: rgba(7, 129, 109, 0.26);
+  --s-purple-strong: rgb(199, 156, 250);
+  --s-purple-tint: rgba(154, 71, 226, 0.26);
+  --s-gold-strong: rgb(236, 197, 92);
+  --s-gold-tint: rgba(213, 160, 0, 0.22);
+  --s-blue-strong: rgb(138, 174, 255);
+  --s-blue-tint: rgba(35, 101, 224, 0.26);
+  --s-cinnamon-strong: rgb(224, 152, 122);
+  --s-cinnamon-tint: rgba(155, 82, 54, 0.32);
+
+  /* Illustration neutrals invert so figures stay visible on dark. */
+  --ill-ink: rgb(208, 206, 216);
+  --ill-ink-2: rgb(230, 228, 238);
+  --ill-soft: rgb(64, 62, 58);
+  --ill-soft-2: rgb(52, 50, 47);
+}
+/* Soften the top "stage light" glow on dark (a bright white radial would look wrong). */
+html[data-color-scheme="dark"] .app-shell {
+  background-image:
+    radial-gradient(120% 80% at 50% -10%, rgba(255, 255, 255, 0.05), transparent 60%),
+    repeating-linear-gradient(
+      to bottom,
+      transparent 0,
+      transparent 27px,
+      var(--staff-line) 27px,
+      var(--staff-line) 28px
+    );
 }
 
 html,
@@ -251,15 +321,14 @@ body {
 }
 
 /* ----- Music staff (abcjs injects the SVG) — always fills the cell width ----- */
+/* abcjs draws in `currentColor`, so the staff follows the scheme: dark ink on the light
+   surface, light ink on the dark surface (the SVG background tracks --surface). */
 .abc-render {
   display: block;
   overflow-x: auto;
-  background: #ffffff;
+  background: var(--surface);
   color: var(--s-ink);
-  border: 1px solid var(--s-line);
-  border-radius: var(--radius-sm);
-  box-shadow: var(--shadow-card);
-  padding: 18px 20px;
+  padding: 6px 2px;
 }
 .abc-render svg {
   display: block;
@@ -270,6 +339,28 @@ body {
 .abc-error {
   color: #d7373f;
   font-size: 0.85rem;
+}
+
+/* Empty-state illustrations are inlined so we can recolor unDraw's fixed palette: the
+   accent shapes take the surrounding cell's --accent, the figures/fills map to theme
+   neutrals (which invert for dark mode). */
+.ill svg [fill="#6c63ff"],
+.ill svg [fill="#ff6584"] {
+  fill: var(--accent);
+}
+.ill svg [fill="#3f3d56"] {
+  fill: var(--ill-ink);
+}
+.ill svg [fill="#2f2e41"] {
+  fill: var(--ill-ink-2);
+}
+.ill svg [fill="#e6e6e6"],
+.ill svg [fill="#d6d6e3"] {
+  fill: var(--ill-soft);
+}
+.ill svg [fill="#f2f2f2"],
+.ill svg [fill="#f0f0f0"] {
+  fill: var(--ill-soft-2);
 }
 
 /* Rendered (compact) image — fit & centered. */

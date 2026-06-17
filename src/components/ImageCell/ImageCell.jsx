@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
-import { Button, DropZone, FileTrigger, Text } from "@react-spectrum/s2";
+import { Button, DropZone, FileTrigger } from "@react-spectrum/s2";
+import EmptyState from "../EmptyState/EmptyState.jsx";
 import {
   Crop,
   Check,
@@ -9,296 +10,161 @@ import {
   FlipVertical,
   Sun,
   CircleHalf,
-  Sparkle,
-  ArrowUUpLeft,
-  ImageSquare,
-  Palette,
-  PaintBrush,
   Drop,
-  DropHalf,
+  ImageSquare,
   UploadSimple,
+  ArrowUUpLeft,
+  ArrowsOut,
 } from "@phosphor-icons/react";
 import { useStore } from "../../providers/StoreProvider/StoreProvider.jsx";
-import { loadImage, normalizeImage, fileToDataUrl } from "./ImageCell.utils.js";
+import { useDialog } from "../../providers/DialogProvider/DialogProvider.jsx";
+import { useI18n } from "../../providers/I18nProvider/I18nProvider.jsx";
+import { DEFAULT_IMAGE_EDITS } from "../../providers/StoreProvider/StoreProvider.utils.js";
+import {
+  loadImage,
+  normalizeImage,
+  fileToDataUrl,
+  renderEdited,
+  composeCrop,
+  rotateCrop,
+  flipCrop,
+} from "./ImageCell.utils.js";
+import { ANNOT_COLORS, buildAnnotationTools } from "../AnnotationLayer/AnnotationLayer.utils.js";
+import AnnotationLayer from "../AnnotationLayer/AnnotationLayer.jsx";
 import Toolbar from "../Toolbar/Toolbar.jsx";
 import shared from "../../providers/ThemeProvider/ThemeProvider.module.css";
 import { dropFull } from "./ImageCell.styled.jsx";
 import css from "./ImageCell.module.css";
 
-// Pen / text colors — rainbow (Spectrum shades) + pink, black, white.
-const COLORS = [
-  { c: "rgb(215,50,32)", name: "Red" },
-  { c: "rgb(194,78,0)", name: "Orange" },
-  { c: "rgb(219,164,0)", name: "Yellow" },
-  { c: "rgb(5,131,78)", name: "Green" },
-  { c: "rgb(59,99,251)", name: "Blue" },
-  { c: "rgb(113,85,250)", name: "Indigo" },
-  { c: "rgb(154,71,226)", name: "Violet" },
-  { c: "rgb(217,35,97)", name: "Pink" },
-  { c: "rgb(19,19,19)", name: "Black" },
-  { c: "#ffffff", name: "White" },
-];
-// Stroke size as a fraction of image width.
-const THICKNESS = [
-  { key: "s", name: "Fine", f: 1 / 500, dot: 7 },
-  { key: "m", name: "Medium", f: 1 / 260, dot: 11 },
-  { key: "l", name: "Large", f: 1 / 120, dot: 16 },
-];
-// Pen opacity presets.
-const OPACITY = [
-  { a: 1, name: "Opaque" },
-  { a: 0.66, name: "Medium" },
-  { a: 0.33, name: "Light" },
-];
-
-// Apply an alpha to an "rgb(…)" or "#hex" color, yielding "rgba(…)".
-function withAlpha(c, a) {
-  if (c.startsWith("#")) {
-    let h = c.slice(1);
-    if (h.length === 3)
-      h = h
-        .split("")
-        .map((x) => x + x)
-        .join("");
-    return `rgba(${parseInt(h.slice(0, 2), 16)},${parseInt(h.slice(2, 4), 16)},${parseInt(h.slice(4, 6), 16)},${a})`;
-  }
-  return c.replace(/^rgb\(/, "rgba(").replace(/\)$/, `,${a})`);
-}
+const ADJUST_LIMIT = 6;
+const clampStep = (n) => Math.max(-ADJUST_LIMIT, Math.min(ADJUST_LIMIT, n));
 
 export default function ImageCell({ cell, editing }) {
   const { updateCell } = useStore();
+  const { confirm } = useDialog();
+  const { t } = useI18n();
   const canvasRef = useRef(null);
+  const imgRef = useRef(null);
   const fileRef = useRef(null);
-  const historyRef = useRef([]);
-  const drawing = useRef(false);
-  const snapRef = useRef(null); // canvas snapshot taken at stroke start
-  const pointsRef = useRef([]); // current stroke's points
   const cropStart = useRef(null);
+
   const [mode, setMode] = useState("pen"); // 'pen' | 'crop'
-  const [color, setColor] = useState(COLORS[0].c);
+  const [color, setColor] = useState(ANNOT_COLORS[0].c);
   const [thick, setThick] = useState("m");
   const [opacity, setOpacity] = useState(1);
-  const [cropRect, setCropRect] = useState(null);
+  const [eraser, setEraser] = useState(false);
+  const [cropRect, setCropRect] = useState(null); // live, normalised over the display
 
-  const tf = () => (THICKNESS.find((t) => t.key === thick) || THICKNESS[1]).f;
+  const edits = cell.edits || DEFAULT_IMAGE_EDITS;
+  const strokes = cell.strokes || [];
 
+  // Load the original once per source, then (re)paint the edited result whenever the
+  // reversible edit parameters change. The original `dataUrl` is never modified.
   useEffect(() => {
-    if (!editing || !cell.dataUrl || !canvasRef.current) return;
+    if (!cell.dataUrl) {
+      imgRef.current = null;
+      return;
+    }
     let cancelled = false;
     loadImage(cell.dataUrl).then((img) => {
-      if (cancelled || !canvasRef.current) return;
-      const c = canvasRef.current;
-      c.width = img.naturalWidth;
-      c.height = img.naturalHeight;
-      c.getContext("2d").drawImage(img, 0, 0);
+      if (cancelled) return;
+      imgRef.current = img;
+      if (canvasRef.current) renderEdited(canvasRef.current, img, edits);
     });
     return () => {
       cancelled = true;
     };
-  }, [cell.dataUrl, editing]);
+    // Reload only when the source changes; the edits effect below repaints on edit changes.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [cell.dataUrl]);
+
+  useEffect(() => {
+    if (imgRef.current && canvasRef.current) renderEdited(canvasRef.current, imgRef.current, edits);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [edits, editing]);
 
   async function addFile(file) {
     if (!file || !file.type.startsWith("image/")) return;
-    updateCell(cell.id, { dataUrl: await normalizeImage(await fileToDataUrl(file)) });
+    updateCell(cell.id, {
+      dataUrl: await normalizeImage(await fileToDataUrl(file)),
+      edits: { ...DEFAULT_IMAGE_EDITS },
+      strokes: [],
+    });
   }
 
-  function pushHistory() {
-    historyRef.current.push(cell.dataUrl);
-    if (historyRef.current.length > 15) historyRef.current.shift();
-  }
-  const commitCanvas = () =>
-    updateCell(cell.id, { dataUrl: canvasRef.current.toDataURL("image/jpeg", 0.9) });
+  const updateEdits = (patch) => updateCell(cell.id, { edits: { ...edits, ...patch } });
+  const setStrokes = (next) => updateCell(cell.id, { strokes: next });
 
-  function canvasPoint(e) {
-    const c = canvasRef.current;
-    const r = c.getBoundingClientRect();
-    return {
-      x: ((e.clientX - r.left) / r.width) * c.width,
-      y: ((e.clientY - r.top) / r.height) * c.height,
-    };
-  }
-  function onPointerDown(e) {
-    e.currentTarget.setPointerCapture?.(e.pointerId);
-    const p = canvasPoint(e);
-    if (mode === "crop") {
-      cropStart.current = p;
-      setCropRect({ x: p.x, y: p.y, w: 0, h: 0 });
-    } else {
-      pushHistory();
-      drawing.current = true;
-      // Snapshot the canvas so each frame redraws the whole stroke as one path — lets a
-      // semi-transparent pen composite correctly instead of compounding at every segment.
-      const c = canvasRef.current;
-      const snap = document.createElement("canvas");
-      snap.width = c.width;
-      snap.height = c.height;
-      snap.getContext("2d").drawImage(c, 0, 0);
-      snapRef.current = snap;
-      pointsRef.current = [p];
-    }
-  }
-  function onPointerMove(e) {
-    const p = canvasPoint(e);
-    if (mode === "pen" && drawing.current) {
-      const c = canvasRef.current;
-      const ctx = c.getContext("2d");
-      pointsRef.current.push(p);
-      ctx.clearRect(0, 0, c.width, c.height);
-      ctx.drawImage(snapRef.current, 0, 0);
-      ctx.globalAlpha = opacity;
-      ctx.strokeStyle = color;
-      ctx.lineWidth = Math.max(1.5, c.width * tf());
-      ctx.lineCap = "round";
-      ctx.lineJoin = "round";
-      ctx.beginPath();
-      const pts = pointsRef.current;
-      ctx.moveTo(pts[0].x, pts[0].y);
-      for (let i = 1; i < pts.length; i++) ctx.lineTo(pts[i].x, pts[i].y);
-      ctx.stroke();
-      ctx.globalAlpha = 1;
-    } else if (mode === "crop" && cropStart.current) {
-      const s = cropStart.current;
-      setCropRect({
-        x: Math.min(s.x, p.x),
-        y: Math.min(s.y, p.y),
-        w: Math.abs(p.x - s.x),
-        h: Math.abs(p.y - s.y),
-      });
-    }
-  }
-  function onPointerUp() {
-    if (mode === "pen" && drawing.current) {
-      drawing.current = false;
-      snapRef.current = null;
-      commitCanvas();
-    }
-    if (mode === "crop") cropStart.current = null;
-  }
-  function applyCrop() {
-    if (!cropRect || cropRect.w < 5 || cropRect.h < 5) return;
-    pushHistory();
-    const out = document.createElement("canvas");
-    out.width = Math.round(cropRect.w);
-    out.height = Math.round(cropRect.h);
-    out
-      .getContext("2d")
-      .drawImage(
-        canvasRef.current,
-        cropRect.x,
-        cropRect.y,
-        cropRect.w,
-        cropRect.h,
-        0,
-        0,
-        out.width,
-        out.height,
-      );
-    setCropRect(null);
-    updateCell(cell.id, { dataUrl: out.toDataURL("image/jpeg", 0.9) });
-  }
   function rotate(dir) {
-    const c = canvasRef.current;
-    if (!c) return;
-    const t = document.createElement("canvas");
-    t.width = c.height;
-    t.height = c.width;
-    const x = t.getContext("2d");
-    x.translate(t.width / 2, t.height / 2);
-    x.rotate((dir * Math.PI) / 2);
-    x.drawImage(c, -c.width / 2, -c.height / 2);
-    pushHistory();
-    updateCell(cell.id, { dataUrl: t.toDataURL("image/jpeg", 0.9) });
+    updateEdits({
+      rotate: ((edits.rotate || 0) + dir * 90 + 360) % 360,
+      crop: rotateCrop(edits.crop, dir),
+    });
   }
   function flip(horizontal) {
-    const c = canvasRef.current;
-    if (!c) return;
-    const t = document.createElement("canvas");
-    t.width = c.width;
-    t.height = c.height;
-    const x = t.getContext("2d");
-    if (horizontal) {
-      x.translate(c.width, 0);
-      x.scale(-1, 1);
+    updateEdits({
+      [horizontal ? "flipH" : "flipV"]: !edits[horizontal ? "flipH" : "flipV"],
+      crop: flipCrop(edits.crop, horizontal),
+    });
+  }
+  const adjust = (field, delta) => updateEdits({ [field]: clampStep((edits[field] || 0) + delta) });
+
+  // Crop point in display-normalised coordinates, read off the visible canvas box.
+  function cropPoint(e) {
+    const r = canvasRef.current.getBoundingClientRect();
+    return [
+      Math.max(0, Math.min(1, (e.clientX - r.left) / r.width)),
+      Math.max(0, Math.min(1, (e.clientY - r.top) / r.height)),
+    ];
+  }
+  function onCropDown(e) {
+    e.currentTarget.setPointerCapture?.(e.pointerId);
+    cropStart.current = cropPoint(e);
+    setCropRect({ x: cropStart.current[0], y: cropStart.current[1], w: 0, h: 0 });
+  }
+  function onCropMove(e) {
+    if (!cropStart.current) return;
+    const [px, py] = cropPoint(e);
+    const [sx, sy] = cropStart.current;
+    setCropRect({
+      x: Math.min(sx, px),
+      y: Math.min(sy, py),
+      w: Math.abs(px - sx),
+      h: Math.abs(py - sy),
+    });
+  }
+  const onCropUp = () => {
+    cropStart.current = null;
+  };
+  function applyCrop() {
+    if (cropRect && cropRect.w > 0.02 && cropRect.h > 0.02) {
+      updateEdits({ crop: composeCrop(edits.crop, cropRect) });
+    }
+    setCropRect(null);
+  }
+  const toggleCrop = () => {
+    if (mode === "crop") {
+      applyCrop();
+      setMode("pen");
     } else {
-      x.translate(0, c.height);
-      x.scale(1, -1);
+      setEraser(false);
+      setMode("crop");
     }
-    x.drawImage(c, 0, 0);
-    pushHistory();
-    updateCell(cell.id, { dataUrl: t.toDataURL("image/jpeg", 0.9) });
-  }
-  // Pixel adjustments via the Canvas API (brightness/contrast filters + a sharpen kernel).
-  function adjust(op) {
-    const c = canvasRef.current;
-    if (!c) return;
-    pushHistory();
-    if (op === "sharpen") {
-      sharpen(c);
-    } else {
-      const f = {
-        "bright+": "brightness(1.08)",
-        "bright-": "brightness(0.92)",
-        "contrast+": "contrast(1.12)",
-        "contrast-": "contrast(0.9)",
-        "sat+": "saturate(1.2)",
-        "sat-": "saturate(0.82)",
-      }[op];
-      const t = document.createElement("canvas");
-      t.width = c.width;
-      t.height = c.height;
-      const x = t.getContext("2d");
-      x.filter = f;
-      x.drawImage(c, 0, 0);
-      const cx = c.getContext("2d");
-      cx.clearRect(0, 0, c.width, c.height);
-      cx.drawImage(t, 0, 0);
-    }
-    commitCanvas();
-  }
-  function sharpen(c) {
-    const ctx = c.getContext("2d");
-    const w = c.width;
-    const h = c.height;
-    const src = ctx.getImageData(0, 0, w, h);
-    const out = ctx.createImageData(w, h);
-    const s = src.data;
-    const o = out.data;
-    const k = [0, -1, 0, -1, 5, -1, 0, -1, 0];
-    for (let y = 0; y < h; y++) {
-      for (let x = 0; x < w; x++) {
-        const oi = (y * w + x) * 4;
-        for (let ch = 0; ch < 3; ch++) {
-          let sum = 0;
-          let ki = 0;
-          for (let ky = -1; ky <= 1; ky++) {
-            for (let kx = -1; kx <= 1; kx++) {
-              const px = Math.min(w - 1, Math.max(0, x + kx));
-              const py = Math.min(h - 1, Math.max(0, y + ky));
-              sum += s[(py * w + px) * 4 + ch] * k[ki++];
-            }
-          }
-          o[oi + ch] = sum < 0 ? 0 : sum > 255 ? 255 : sum;
-        }
-        o[oi + 3] = s[oi + 3];
-      }
-    }
-    ctx.putImageData(out, 0, 0);
-  }
-  function undo() {
-    const prev = historyRef.current.pop();
-    if (prev != null) updateCell(cell.id, { dataUrl: prev });
+  };
+  const undoStroke = () => setStrokes(strokes.slice(0, -1));
+
+  async function revert() {
+    const ok = await confirm({
+      title: t("image.revertTitle"),
+      message: t("image.revertMsg"),
+      confirmLabel: t("image.revert"),
+    });
+    if (ok) updateCell(cell.id, { edits: { ...DEFAULT_IMAGE_EDITS }, strokes: [] });
   }
 
-  // Compact view — image, fit and centered.
-  if (!editing) {
-    return cell.dataUrl ? (
-      <img className="img-rendered" src={cell.dataUrl} alt="Lesson image" />
-    ) : (
-      <Text>No image — click to add one.</Text>
-    );
-  }
-
+  // ---- empty state -----------------------------------------------------------
   if (!cell.dataUrl) {
+    if (!editing) return <EmptyState kind="image" title={t("image.noImage")} compact />;
     return (
       <div
         onPaste={(e) => {
@@ -315,12 +181,12 @@ export default function ImageCell({ cell, editing }) {
         >
           <div className={shared.mediaEmpty}>
             <ImageSquare size={40} aria-hidden />
-            <span className={shared.mediaEmptyTitle}>Add an image</span>
+            <span className={shared.mediaEmptyTitle}>{t("image.addTitle")}</span>
             <FileTrigger
               acceptedFileTypes={["image/*"]}
               onSelect={(files) => files && addFile(files[0])}
             >
-              <Button variant="primary">Browse…</Button>
+              <Button variant="primary">{t("common.browse")}</Button>
             </FileTrigger>
           </div>
         </DropZone>
@@ -328,140 +194,138 @@ export default function ImageCell({ cell, editing }) {
     );
   }
 
-  const r = canvasRef.current?.getBoundingClientRect();
-  const scale = r && canvasRef.current ? r.width / canvasRef.current.width : 1;
+  const stage = (
+    <div className={css.imgStage}>
+      <canvas ref={canvasRef} className={css.baseCanvas} />
+      <AnnotationLayer
+        strokes={strokes}
+        onChange={setStrokes}
+        active={editing && mode === "pen"}
+        color={color}
+        thick={thick}
+        opacity={opacity}
+        eraser={eraser}
+      />
+      {editing && mode === "crop" && (
+        <div
+          className={css.cropCapture}
+          onPointerDown={onCropDown}
+          onPointerMove={onCropMove}
+          onPointerUp={onCropUp}
+          onPointerCancel={onCropUp}
+        >
+          {cropRect && (
+            <div
+              className={css.cropRect}
+              style={{
+                left: `${cropRect.x * 100}%`,
+                top: `${cropRect.y * 100}%`,
+                width: `${cropRect.w * 100}%`,
+                height: `${cropRect.h * 100}%`,
+              }}
+            />
+          )}
+        </div>
+      )}
+    </div>
+  );
 
-  const pickColor = (c) => {
-    setColor(c);
-    if (mode === "crop") setMode("pen");
-  };
-  const pickThick = (k) => {
-    setThick(k);
-    if (mode === "crop") setMode("pen");
-  };
-  const pickOpacity = (a) => {
-    setOpacity(a);
-    if (mode === "crop") setMode("pen");
-  };
-  // Crop toggle: first press arms crop mode; second press confirms (applies) and returns to pen.
-  const toggleCrop = () => {
-    if (mode === "crop") {
-      applyCrop();
-      setMode("pen");
-    } else {
-      setMode("crop");
-    }
-  };
+  if (!editing) return <div className={css.col}>{stage}</div>;
+
+  const transformOptions = [
+    {
+      id: "rl",
+      icon: ArrowCounterClockwise,
+      label: t("image.rotateLeft"),
+      onUse: () => rotate(-1),
+    },
+    { id: "rr", icon: ArrowClockwise, label: t("image.rotateRight"), onUse: () => rotate(1) },
+    { id: "mh", icon: FlipHorizontal, label: t("image.mirrorH"), onUse: () => flip(true) },
+    { id: "mv", icon: FlipVertical, label: t("image.mirrorV"), onUse: () => flip(false) },
+  ];
+  if (edits.crop)
+    transformOptions.push({
+      id: "rc",
+      icon: ArrowsOut,
+      label: t("image.resetCrop"),
+      onUse: () => updateEdits({ crop: null }),
+    });
 
   const tools = [
     {
       kind: "group",
       id: "transform",
       icon: ArrowClockwise,
-      label: "Transform",
-      options: [
-        { id: "rl", icon: ArrowCounterClockwise, label: "Rotate left", onUse: () => rotate(-1) },
-        { id: "rr", icon: ArrowClockwise, label: "Rotate right", onUse: () => rotate(1) },
-        { id: "mh", icon: FlipHorizontal, label: "Mirror horizontal", onUse: () => flip(true) },
-        { id: "mv", icon: FlipVertical, label: "Mirror vertical", onUse: () => flip(false) },
-      ],
+      label: t("image.transform"),
+      options: transformOptions,
     },
     {
       kind: "toggle",
       id: "crop",
       icon: Crop,
       altIcon: Check,
-      label: "Crop",
-      altLabel: "Apply crop",
+      label: t("image.crop"),
+      altLabel: t("image.applyCrop"),
       value: mode === "crop",
       onToggle: toggleCrop,
     },
-    { kind: "sep" },
     {
       kind: "spinner",
       id: "bright",
       icon: Sun,
-      label: "Brightness",
-      onPrev: () => adjust("bright-"),
-      onNext: () => adjust("bright+"),
+      label: t("image.brightness"),
+      onPrev: () => adjust("bright", -1),
+      onNext: () => adjust("bright", 1),
     },
     {
       kind: "spinner",
       id: "contrast",
       icon: CircleHalf,
-      label: "Contrast",
-      onPrev: () => adjust("contrast-"),
-      onNext: () => adjust("contrast+"),
+      label: t("image.contrast"),
+      onPrev: () => adjust("contrast", -1),
+      onNext: () => adjust("contrast", 1),
     },
     {
       kind: "spinner",
       id: "sat",
       icon: Drop,
-      label: "Saturation",
-      onPrev: () => adjust("sat-"),
-      onNext: () => adjust("sat+"),
-    },
-    {
-      kind: "action",
-      id: "sharpen",
-      icon: Sparkle,
-      label: "Sharpen",
-      onUse: () => adjust("sharpen"),
+      label: t("image.saturation"),
+      onPrev: () => adjust("sat", -1),
+      onNext: () => adjust("sat", 1),
     },
     { kind: "sep" },
-    {
-      kind: "group",
-      id: "color",
-      icon: Palette,
-      label: "Color",
-      options: COLORS.map((o) => ({
-        id: o.name,
-        swatch: o.c,
-        label: o.name,
-        selected: color === o.c,
-        onUse: () => pickColor(o.c),
-      })),
-    },
-    {
-      kind: "group",
-      id: "thick",
-      icon: PaintBrush,
-      label: "Thickness",
-      options: THICKNESS.map((o) => ({
-        id: o.key,
-        dot: o.dot,
-        label: `${o.name} pen`,
-        selected: thick === o.key,
-        onUse: () => pickThick(o.key),
-      })),
-    },
-    {
-      kind: "group",
-      id: "opacity",
-      icon: DropHalf,
-      label: "Opacity",
-      options: OPACITY.map((o) => ({
-        id: o.name,
-        swatch: withAlpha(color, o.a),
-        label: `${o.name} (${Math.round(o.a * 100)}%)`,
-        selected: opacity === o.a,
-        onUse: () => pickOpacity(o.a),
-      })),
-    },
+    ...buildAnnotationTools({
+      t,
+      color,
+      setColor,
+      thick,
+      setThick,
+      opacity,
+      setOpacity,
+      eraser,
+      setEraser: (v) => {
+        setEraser(v);
+        if (v && mode === "crop") setMode("pen");
+      },
+      onUndo: undoStroke,
+      onClear: () => setStrokes([]),
+      canUndo: strokes.length > 0,
+      canClear: strokes.length > 0,
+    }),
     { kind: "sep" },
     {
       kind: "action",
       id: "replace",
       icon: UploadSimple,
-      label: "Replace image",
+      label: t("image.replace"),
       onUse: () => fileRef.current?.click(),
     },
-    { kind: "action", id: "undo", icon: ArrowUUpLeft, label: "Undo", onUse: undo },
+    { kind: "action", id: "revert", icon: ArrowUUpLeft, label: t("image.revert"), onUse: revert },
   ];
 
   return (
     <div className={css.col}>
-      <Toolbar label="Image" tools={tools} />
+      <Toolbar label={t("cell.image")} tools={tools} />
       <input
         ref={fileRef}
         type="file"
@@ -473,29 +337,7 @@ export default function ImageCell({ cell, editing }) {
           if (f) addFile(f);
         }}
       />
-
-      <div className={css.imgStage}>
-        <canvas
-          ref={canvasRef}
-          onPointerDown={onPointerDown}
-          onPointerMove={onPointerMove}
-          onPointerUp={onPointerUp}
-        />
-        {cropRect && (
-          <div
-            style={{
-              position: "absolute",
-              left: cropRect.x * scale,
-              top: cropRect.y * scale,
-              width: cropRect.w * scale,
-              height: cropRect.h * scale,
-              border: "2px dashed var(--s-magenta)",
-              background: "var(--s-magenta-ring)",
-              pointerEvents: "none",
-            }}
-          />
-        )}
-      </div>
+      {stage}
     </div>
   );
 }

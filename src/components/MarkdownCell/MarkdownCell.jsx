@@ -17,12 +17,15 @@ import {
   Minus,
 } from "@phosphor-icons/react";
 import { useStore } from "../../providers/StoreProvider/StoreProvider.jsx";
+import { useI18n } from "../../providers/I18nProvider/I18nProvider.jsx";
 import { renderMarkdown, toggleTask, applyFormat, replaceTextarea } from "./MarkdownCell.utils.js";
+import EmptyState from "../EmptyState/EmptyState.jsx";
 import Toolbar from "../Toolbar/Toolbar.jsx";
 import shared from "../../providers/ThemeProvider/ThemeProvider.module.css";
 
 export default function MarkdownCell({ cell, editing }) {
   const { updateCell } = useStore();
+  const { t } = useI18n();
   const taRef = useRef(null);
 
   // Uncontrolled editor (keeps native undo); sync external source changes back in.
@@ -32,6 +35,7 @@ export default function MarkdownCell({ cell, editing }) {
   }, [cell.source]);
 
   if (!editing) {
+    if (!cell.source.trim()) return <EmptyState kind="note" title={t("cell.emptyNote")} compact />;
     const html = renderMarkdown(cell.source);
     return (
       <div
@@ -125,11 +129,21 @@ export default function MarkdownCell({ cell, editing }) {
         aria-label="Markdown source"
         spellCheck
         defaultValue={cell.source}
+        placeholder={t("cell.notePlaceholder")}
         rows={Math.max(4, cell.source.split("\n").length + 1)}
         onChange={(e) => updateCell(cell.id, { source: e.target.value })}
         autoFocus
         style={{ marginTop: 4 }}
       />
+      {cell.source.trim() && (
+        <div className={`${shared.previewCard} no-print`}>
+          <span className={shared.previewLabel}>{t("cell.preview")}</span>
+          <div
+            className="md-preview"
+            dangerouslySetInnerHTML={{ __html: renderMarkdown(cell.source) }}
+          />
+        </div>
+      )}
     </div>
   );
 }

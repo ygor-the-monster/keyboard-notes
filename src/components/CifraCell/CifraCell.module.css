@@ -1,0 +1,63 @@
+.col {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+/* The rendered chord chart — monospace so hand-aligned chord lines keep their spacing,
+   and chord-over-lyric columns stack cleanly. */
+.chart {
+  font-family: var(--font-mono);
+  font-size: 0.98rem;
+  line-height: 1.35;
+  color: var(--s-ink);
+  overflow-x: auto;
+}
+
+.heading {
+  font-family: var(--font-ui);
+  font-weight: 700;
+  font-size: 0.8rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--accent-strong);
+  margin: 14px 0 4px;
+}
+.heading:first-child {
+  margin-top: 0;
+}
+.blank {
+  height: 0.9em;
+}
+.plain {
+  white-space: pre-wrap;
+}
+
+/* A chord-over-lyric line: a row of segments, each stacking its chord above its lyric. */
+.line {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  margin: 2px 0;
+}
+.seg {
+  display: inline-flex;
+  flex-direction: column;
+  white-space: pre;
+}
+.chord {
+  font-weight: 700;
+  color: var(--accent-strong);
+  min-height: 1.25em;
+  line-height: 1.1;
+  padding-right: 0.4em; /* keep adjacent chords from touching */
+}
+.lyric {
+  white-space: pre;
+}
+
+@media print {
+  .chord {
+    color: #000;
+  }
+}

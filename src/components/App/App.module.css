@@ -14,3 +14,75 @@
   align-items: center;
   justify-content: center;
 }
+
+/* Shown when a lesson has no cells yet — sits above the Add-a-cell palette. */
+.emptyCells {
+  display: flex;
+  justify-content: center;
+  text-align: center;
+  padding: 40px 16px 8px;
+  color: var(--s-ink-muted);
+}
+
+/* Right-edge utility sidebar — stacks the floating docks (metronome, tuner) vertically
+   so their agenda tabs can never overlap, regardless of viewport height. The column is
+   click-through; each dock re-enables pointer events for itself. */
+.utilityDock {
+  position: fixed;
+  top: 0;
+  right: 0;
+  height: 100dvh;
+  z-index: 40;
+  display: flex;
+  flex-direction: column;
+  /* Centered when the docks fit; falls back to top-aligned (no clipping) when they don't,
+     and the column scrolls so every tab stays reachable even on short screens / open cards. */
+  justify-content: safe center;
+  align-items: flex-end;
+  gap: 16px;
+  padding-block: 8px;
+  overflow-x: hidden;
+  overflow-y: auto;
+  pointer-events: none;
+  scrollbar-width: none;
+}
+.utilityDock::-webkit-scrollbar {
+  display: none;
+}
+.utilityDock > * {
+  pointer-events: auto;
+}
+
+/* Transient "cell deleted — undo" toast, bottom-centre. */
+.undoToast {
+  position: fixed;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 60;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 10px 12px 10px 18px;
+  background: var(--s-ink);
+  color: var(--canvas);
+  border-radius: var(--radius-pill);
+  box-shadow: var(--shadow-pop);
+  font-family: var(--font-ui);
+  font-size: 0.92rem;
+  animation: bar-in 0.3s cubic-bezier(0.2, 0.7, 0.2, 1) backwards;
+}
+.undoBtn {
+  border: none;
+  background: var(--accent);
+  color: #fff;
+  font-family: var(--font-ui);
+  font-weight: 600;
+  font-size: 0.88rem;
+  padding: 6px 14px;
+  border-radius: var(--radius-pill);
+  cursor: pointer;
+}
+.undoBtn:hover {
+  background: var(--accent-strong);
+}

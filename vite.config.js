@@ -19,7 +19,10 @@ export default defineConfig({
       strategies: "injectManifest",
       srcDir: "src",
       filename: "sw.js",
-      pwaAssets: { preset: "minimal-2023", image: "public/icon.png" },
+      // Raster app icons are generated from the detailed PNG (best at larger sizes);
+      // icon-simple.svg is the crisp scalable favicon + in-app logo (wired in index.html /
+      // Topbar).
+      pwaAssets: { preset: "minimal-2023", image: "public/icon-detailed.png" },
       manifest: {
         name: "Piano Notes",
         short_name: "Piano Notes",
@@ -55,7 +58,9 @@ export default defineConfig({
         launch_handler: { client_mode: "focus-existing" },
       },
       injectManifest: {
-        globPatterns: ["**/*.{js,css,html,svg,png,ico,woff2,otf}"],
+        // Include .mjs so the pdf.js worker (pdf.worker.min-*.mjs) is precached and PDFs
+        // render offline. 4 MB cap covers the ~1.2 MB worker.
+        globPatterns: ["**/*.{js,mjs,css,html,svg,png,ico,woff2,otf}"],
         maximumFileSizeToCacheInBytes: 4 * 1024 * 1024,
       },
       devOptions: { enabled: false },

@@ -1,5 +1,6 @@
 import { createContext, useCallback, useContext, useMemo, useRef, useState } from "react";
 import { AlertDialog, DialogContainer } from "@react-spectrum/s2";
+import { useI18n } from "../I18nProvider/I18nProvider.jsx";
 
 const DialogContext = createContext(null);
 
@@ -7,6 +8,7 @@ const DialogContext = createContext(null);
 // AlertDialog. useDialog() → { confirm(opts) => Promise<boolean>, alert(opts) => Promise<void> }.
 // `opts` is a string (used as the title) or { title, message, confirmLabel, cancelLabel, variant }.
 export function DialogProvider({ children }) {
+  const { t } = useI18n();
   const [opts, setOpts] = useState(null);
   const resolveRef = useRef(null);
 
@@ -41,8 +43,10 @@ export function DialogProvider({ children }) {
           <AlertDialog
             variant={opts.variant || (opts.alert ? "information" : "confirmation")}
             title={opts.title || ""}
-            primaryActionLabel={opts.confirmLabel || (opts.alert ? "OK" : "Confirm")}
-            cancelLabel={opts.alert ? undefined : opts.cancelLabel || "Cancel"}
+            primaryActionLabel={
+              opts.confirmLabel || (opts.alert ? t("common.ok") : t("common.confirm"))
+            }
+            cancelLabel={opts.alert ? undefined : opts.cancelLabel || t("common.cancel")}
             autoFocusButton={opts.alert ? "primary" : "cancel"}
             onPrimaryAction={() => settle(true)}
             onCancel={() => settle(false)}

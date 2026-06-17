@@ -1,5 +1,4 @@
 import { useEffect, useRef, useState } from "react";
-import abcjs from "abcjs";
 import {
   Play,
   Stop,
@@ -33,7 +32,10 @@ import {
   UserSound,
 } from "@phosphor-icons/react";
 import { useStore } from "../../providers/StoreProvider/StoreProvider.jsx";
+import { useI18n } from "../../providers/I18nProvider/I18nProvider.jsx";
+import EmptyState from "../EmptyState/EmptyState.jsx";
 import {
+  getAbcjs,
   splitAbc,
   joinAbc,
   cleanAbc,
@@ -61,6 +63,7 @@ function readHB(cell) {
 
 export default function MusicCell({ cell, editing }) {
   const { updateCell } = useStore();
+  const { t } = useI18n();
   const renderRef = useRef(null);
   const errRef = useRef(null);
   const synthRef = useRef(null);
@@ -73,15 +76,23 @@ export default function MusicCell({ cell, editing }) {
 
   useEffect(() => {
     if (!renderRef.current) return;
-    if (errRef.current) errRef.current.textContent = "";
-    try {
-      abcjs.renderAbc(renderRef.current, "%%stretchlast 1\n" + cleanAbc(source), {
-        responsive: "resize",
-        add_classes: true,
-      });
-    } catch (e) {
-      if (errRef.current) errRef.current.textContent = "Notation error: " + e.message;
-    }
+    let cancelled = false;
+    (async () => {
+      const abcjs = await getAbcjs();
+      if (cancelled || !renderRef.current) return;
+      if (errRef.current) errRef.current.textContent = "";
+      try {
+        abcjs.renderAbc(renderRef.current, "%%stretchlast 1\n" + cleanAbc(source), {
+          responsive: "resize",
+          add_classes: true,
+        });
+      } catch (e) {
+        if (errRef.current) errRef.current.textContent = "Notation error: " + e.message;
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
   }, [source, editing]);
 
   // Uncontrolled editors (native undo); push external changes back into header / body.
@@ -101,6 +112,7 @@ export default function MusicCell({ cell, editing }) {
     }
   }
   async function play() {
+    const abcjs = await getAbcjs();
     if (!abcjs.synth.supportsAudio()) {
       if (errRef.current)
         errRef.current.textContent = "Audio playback isn't supported in this browser.";
@@ -166,6 +178,7 @@ export default function MusicCell({ cell, editing }) {
   const err = <div key="err" className="abc-error no-print" ref={errRef} />;
 
   if (!editing) {
+    if (!body.trim()) return <EmptyState kind="score" title={t("cell.emptyScore")} compact />;
     return (
       <div className={s.col}>
         {staff}
@@ -585,10 +598,17 @@ export default function MusicCell({ cell, editing }) {
         aria-label="ABC music"
         spellCheck={false}
         defaultValue={body}
+        placeholder={"[V:RH] C D E F | G A B c |\n[V:LH] C,2 G,2 | C,2 G,2 |"}
         rows={Math.max(3, body.split("\n").length + 1)}
         onChange={setBody}
       />
       {err}
+      {body.trim() && (
+        <div className={`${shared.previewCard} no-print`}>
+          <span className={shared.previewLabel}>{t("cell.preview")}</span>
+          {staff}
+        </div>
+      )}
     </div>
   );
 }

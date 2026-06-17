@@ -1,0 +1,7 @@
+{
+    "explorer.fileNesting.patterns": {
+        "package.json": "package-lock.json",
+        "vite.config.js": "index.html, .oxfmtrc.json, .oxlintrc.json",
+        "README.md": ".gitignore",
+    }
+}

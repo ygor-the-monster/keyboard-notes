@@ -13,21 +13,21 @@
   position: sticky;
   top: 0;
   z-index: 10;
-  background: rgba(255, 255, 255, 0.82);
+  background: var(--topbar-bg);
   backdrop-filter: saturate(1.4) blur(10px);
   border-bottom: 1px solid var(--s-line);
   animation: bar-in 0.5s cubic-bezier(0.2, 0.7, 0.2, 1) backwards;
 }
 .brandMark {
   display: inline-flex;
-  align-items: baseline;
-  gap: 8px;
+  align-items: center;
+  gap: 9px;
   user-select: none;
 }
-.brandGlyph {
-  font-size: 1.4rem;
-  line-height: 1;
-  color: var(--s-magenta);
+.brandLogo {
+  height: 30px;
+  width: auto;
+  display: block;
 }
 .brandWord {
   font-family: var(--font-content);

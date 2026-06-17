@@ -12,6 +12,17 @@
   justify-content: center;
   align-items: flex-start;
 }
+/* Continuous flow — every page stacked vertically, each at full width. */
+.pdfPagesAll {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  align-items: center;
+}
+.pdfPagesAll .pdfPage {
+  flex: none;
+  width: 100%;
+}
 .pdfPage {
   position: relative;
   flex: 1 1 0;

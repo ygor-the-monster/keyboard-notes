@@ -1,7 +1,9 @@
-import { createContext, useCallback, useContext, useMemo, useState } from "react";
+import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
 import {
   loadState,
   saveState,
+  flushState,
+  requestPersistentStorage,
   uid,
   newNotebook,
   newMarkdownCell,
@@ -9,21 +11,47 @@ import {
   newImageCell,
   newPdfCell,
   newAudioCell,
+  newCifraCell,
 } from "./StoreProvider.utils.js";
 
 const StoreContext = createContext(null);
 
 export function StoreProvider({ children }) {
-  const [state, setState] = useState(() => {
-    const s = loadState();
-    if (!s.activeId && s.order.length === 0) {
-      const nb = newNotebook();
-      s.notebooks[nb.id] = nb;
-      s.order = [nb.id];
-      s.activeId = nb.id;
-    }
-    return s;
-  });
+  const [state, setState] = useState({ notebooks: {}, order: [], activeId: null });
+  const [hydrated, setHydrated] = useState(false);
+
+  // IndexedDB reads are async, so load after mount (rather than in a useState initializer).
+  // A default lesson is created only if there's genuinely nothing stored.
+  useEffect(() => {
+    let active = true;
+    (async () => {
+      let s = await loadState();
+      if (!s.activeId && s.order.length === 0) {
+        const nb = newNotebook();
+        s = { notebooks: { [nb.id]: nb }, order: [nb.id], activeId: nb.id };
+        saveState(s);
+      }
+      if (active) {
+        setState(s);
+        setHydrated(true);
+      }
+      requestPersistentStorage(); // make IndexedDB durable (best-effort)
+    })();
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  // Flush the debounced save the moment the tab is hidden/closed, so the last edit lands.
+  useEffect(() => {
+    const onHide = () => flushState();
+    document.addEventListener("visibilitychange", onHide);
+    window.addEventListener("pagehide", onHide);
+    return () => {
+      document.removeEventListener("visibilitychange", onHide);
+      window.removeEventListener("pagehide", onHide);
+    };
+  }, []);
 
   // commit a mutator that receives a *draft* clone and returns nothing
   const commit = useCallback((mutate) => {
@@ -33,6 +61,18 @@ export function StoreProvider({ children }) {
       saveState(draft);
       return draft;
     });
+  }, []);
+
+  // Latest state, readable synchronously inside actions (the setState updater runs later).
+  const stateRef = useRef(state);
+  stateRef.current = state;
+
+  // Last deleted cell, held off to the side for a transient Undo (not persisted).
+  const [lastDeleted, setLastDeletedState] = useState(null);
+  const lastDeletedRef = useRef(null);
+  const setLastDeleted = useCallback((v) => {
+    lastDeletedRef.current = v;
+    setLastDeletedState(v);
   }, []);
 
   const activeNotebook = state.activeId ? state.notebooks[state.activeId] : null;
@@ -76,13 +116,15 @@ export function StoreProvider({ children }) {
         const cell =
           type === "abc"
             ? newMusicCell()
-            : type === "img"
-              ? newImageCell()
-              : type === "pdf"
-                ? newPdfCell()
-                : type === "snd"
-                  ? newAudioCell()
-                  : newMarkdownCell();
+            : type === "cifra"
+              ? newCifraCell()
+              : type === "img"
+                ? newImageCell()
+                : type === "pdf"
+                  ? newPdfCell()
+                  : type === "snd"
+                    ? newAudioCell()
+                    : newMarkdownCell();
         commit((d) => {
           const nb = d.notebooks[d.activeId];
           if (!nb) return;
@@ -112,6 +154,20 @@ export function StoreProvider({ children }) {
           touch(d);
         });
       },
+      // Move a cell to an absolute index (used by drag-to-reorder).
+      moveCellTo(cellId, toIndex) {
+        commit((d) => {
+          const nb = d.notebooks[d.activeId];
+          if (!nb) return;
+          const i = nb.cells.findIndex((x) => x.id === cellId);
+          if (i < 0) return;
+          const j = Math.max(0, Math.min(toIndex, nb.cells.length - 1));
+          if (j === i) return;
+          const [c] = nb.cells.splice(i, 1);
+          nb.cells.splice(j, 0, c);
+          touch(d);
+        });
+      },
       duplicateCell(cellId) {
         commit((d) => {
           const nb = d.notebooks[d.activeId];
@@ -125,12 +181,38 @@ export function StoreProvider({ children }) {
         });
       },
       deleteCell(cellId) {
+        // Stash the cell + its position so the delete can be undone (transient, not saved).
+        const st = stateRef.current;
+        const nb0 = st.notebooks[st.activeId];
+        const idx = nb0 ? nb0.cells.findIndex((x) => x.id === cellId) : -1;
+        if (idx >= 0) {
+          setLastDeleted({
+            notebookId: st.activeId,
+            index: idx,
+            cell: structuredClone(nb0.cells[idx]),
+          });
+        }
         commit((d) => {
           const nb = d.notebooks[d.activeId];
           if (!nb) return;
           nb.cells = nb.cells.filter((x) => x.id !== cellId);
           touch(d);
         });
+      },
+      undoDelete() {
+        const ld = lastDeletedRef.current;
+        if (!ld) return;
+        commit((d) => {
+          const nb = d.notebooks[ld.notebookId];
+          if (!nb) return;
+          nb.cells.splice(Math.min(ld.index, nb.cells.length), 0, ld.cell);
+          nb.updated = Date.now();
+          d.activeId = ld.notebookId;
+        });
+        setLastDeleted(null);
+      },
+      dismissUndo() {
+        setLastDeleted(null);
       },
       importNotebook(parsed) {
         commit((d) => {
@@ -144,10 +226,37 @@ export function StoreProvider({ children }) {
           d.activeId = nb.id;
         });
       },
+      // Restore a full-library backup: every notebook is added with a fresh id (so it never
+      // clobbers existing lessons).
+      importLibrary(parsed) {
+        commit((d) => {
+          const lib = parsed.library || parsed;
+          const nbs = lib.notebooks;
+          if (!nbs || typeof nbs !== "object") throw new Error("Not a Piano Notes backup");
+          const order =
+            Array.isArray(lib.order) && lib.order.length
+              ? lib.order.filter((id) => nbs[id])
+              : Object.keys(nbs);
+          let firstNew = null;
+          for (const oldId of order) {
+            const nb = structuredClone(nbs[oldId]);
+            nb.id = uid();
+            if (!nb.created) nb.created = Date.now();
+            nb.updated = Date.now();
+            d.notebooks[nb.id] = nb;
+            d.order.push(nb.id);
+            if (!firstNew) firstNew = nb.id;
+          }
+          if (firstNew) d.activeId = firstNew;
+        });
+      },
     };
-  }, [commit]);
+  }, [commit, setLastDeleted]);
 
-  const value = useMemo(() => ({ state, activeNotebook, ...api }), [state, activeNotebook, api]);
+  const value = useMemo(
+    () => ({ state, activeNotebook, hydrated, lastDeleted, ...api }),
+    [state, activeNotebook, hydrated, lastDeleted, api],
+  );
   return <StoreContext.Provider value={value}>{children}</StoreContext.Provider>;
 }
 

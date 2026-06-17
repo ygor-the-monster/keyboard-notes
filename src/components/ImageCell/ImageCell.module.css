@@ -4,7 +4,9 @@
   gap: 8px;
 }
 
-/* Image editing canvas — fit & centered. */
+/* Image stage — the edited base image plus its non-destructive annotation overlay,
+   fit & centered. The stage is sized to the displayed image so the absolutely positioned
+   overlay / crop layers line up with it. */
 .imgStage {
   position: relative;
   display: block;
@@ -13,11 +15,24 @@
   margin-inline: auto;
   touch-action: none;
 }
-.imgStage canvas {
+.baseCanvas {
   max-width: 100%;
   max-height: 68vh;
   border: 1px solid var(--s-line);
   border-radius: var(--radius-sm);
   display: block;
+}
+
+/* Crop capture overlay — sits above the annotation layer while crop mode is armed. */
+.cropCapture {
+  position: absolute;
+  inset: 0;
   cursor: crosshair;
+  touch-action: none;
+}
+.cropRect {
+  position: absolute;
+  border: 2px dashed var(--s-magenta);
+  background: var(--s-magenta-ring);
+  pointer-events: none;
 }

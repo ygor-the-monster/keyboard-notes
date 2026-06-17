@@ -1,10 +1,8 @@
-/* Floating side dock with an agenda tab — sits below the metronome dock. */
+/* Floating side dock with an agenda tab — stacked under the metronome in the utility
+   sidebar (see App.module.css .utilityDock), so the two tabs never overlap. */
 .dock {
   --card-w: 280px;
-  position: fixed;
-  top: 56%;
-  right: 0;
-  z-index: 40;
+  position: relative;
   display: flex;
   align-items: flex-start;
   transform: translateX(var(--card-w));
@@ -25,7 +23,7 @@
   border: none;
   cursor: pointer;
   color: #fff;
-  background: var(--s-purple);
+  background: var(--s-cinnamon-strong);
   border-radius: var(--radius) 0 0 var(--radius);
   box-shadow: var(--shadow-pop);
 }
@@ -55,20 +53,36 @@
   to {
     box-shadow:
       var(--shadow-pop),
-      0 0 0 4px var(--s-purple-ring);
+      0 0 0 4px var(--s-cinnamon-ring);
   }
 }
 .card {
   width: var(--card-w);
-  background: #fff;
+  --accent: var(--s-cinnamon-strong);
+  --accent-strong: var(--s-cinnamon-strong);
+  --accent-ring: var(--s-cinnamon-ring);
+  background: var(--surface);
   border: 1px solid var(--s-line);
   border-right: none;
   box-shadow: var(--shadow-pop);
-  border-radius: var(--radius) 0 0 var(--radius);
+  border-radius: 0 0 0 var(--radius);
   padding: 20px;
   display: flex;
   flex-direction: column;
   gap: 16px;
+  overflow: hidden;
+  max-height: 420px; /* a touch above the card's content height — keeps the collapse snappy */
+  transition:
+    max-height 0.4s cubic-bezier(0.2, 0.8, 0.2, 1),
+    padding 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+/* Closed: collapse to the pull tab's height; expand only when open. */
+.dock:not(.open) .card {
+  max-height: 0;
+  padding-top: 0;
+  padding-bottom: 0;
+  border-top: none;
+  border-bottom: none;
 }
 .head {
   display: flex;
@@ -98,7 +112,7 @@
   color: var(--s-ink-muted);
 }
 .readout.inTune .note {
-  color: var(--s-purple-strong);
+  color: var(--s-cinnamon-strong);
 }
 .hz {
   font-family: var(--font-mono);
@@ -128,12 +142,12 @@
   bottom: -3px;
   width: 4px;
   border-radius: 2px;
-  background: var(--s-purple);
+  background: var(--s-cinnamon-strong);
   transform: translateX(-50%);
   transition: left 0.08s linear;
 }
 .readout.inTune ~ .meter .needle {
-  background: var(--s-purple-strong);
+  background: var(--s-cinnamon-strong);
 }
 .meterScale {
   display: flex;
@@ -142,11 +156,40 @@
   font-size: 0.7rem;
   color: var(--s-ink-muted);
 }
+/* Reference-pitch (A=440/442) segmented selector. */
+.refRow {
+  display: flex;
+  gap: 6px;
+}
+.refBtn {
+  flex: 1 1 0;
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  padding: 6px 0;
+  border: 1px solid var(--s-line);
+  border-radius: var(--radius-sm);
+  background: var(--canvas);
+  color: var(--s-ink-muted);
+  cursor: pointer;
+  transition:
+    background 0.15s ease,
+    color 0.15s ease,
+    border-color 0.15s ease;
+}
+.refBtnOn {
+  border-color: var(--s-cinnamon-strong);
+  background: var(--s-cinnamon-tint);
+  color: var(--s-cinnamon-strong);
+  font-weight: 600;
+}
 .start {
   width: 100%;
 }
 @media (prefers-reduced-motion: reduce) {
   .dock {
+    transition: none;
+  }
+  .card {
     transition: none;
   }
   .dock.live .tab {

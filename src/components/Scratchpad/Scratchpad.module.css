@@ -1,0 +1,105 @@
+/* Pull-tab dock — mirrors the metronome/tuner docks (collapses to the tab when closed,
+   seamless square top-left where the card meets the tab). Blue accent (relates to the PDF cell). */
+.dock {
+  --card-w: 280px;
+  position: relative;
+  display: flex;
+  align-items: flex-start;
+  transform: translateX(var(--card-w));
+  transition: transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+.dock.open {
+  transform: translateX(0);
+}
+.tab {
+  flex: none;
+  width: 42px;
+  align-self: flex-start;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  padding: 16px 0 18px;
+  border: none;
+  cursor: pointer;
+  color: #fff;
+  background: var(--s-blue);
+  border-radius: var(--radius) 0 0 var(--radius);
+  box-shadow: var(--shadow-pop);
+}
+.tabLabel {
+  writing-mode: vertical-rl;
+  text-orientation: mixed;
+  font-family: var(--font-ui);
+  font-weight: 600;
+  font-size: 0.78rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+.tabCount {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  font-weight: 500;
+  padding: 2px 0;
+  opacity: 0.85;
+}
+.card {
+  width: var(--card-w);
+  --accent: var(--s-blue);
+  --accent-strong: var(--s-blue-strong);
+  --accent-ring: var(--s-blue-ring);
+  background: var(--surface);
+  border: 1px solid var(--s-line);
+  border-right: none;
+  box-shadow: var(--shadow-pop);
+  border-radius: 0 0 0 var(--radius);
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  overflow: hidden;
+  max-height: 420px;
+  transition:
+    max-height 0.4s cubic-bezier(0.2, 0.8, 0.2, 1),
+    padding 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+.dock:not(.open) .card {
+  max-height: 0;
+  padding-top: 0;
+  padding-bottom: 0;
+  border-top: none;
+  border-bottom: none;
+}
+.head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--font-content);
+  font-weight: 600;
+  font-size: 1.05rem;
+  color: var(--s-ink);
+}
+.area {
+  width: 100%;
+  min-height: 200px;
+  resize: vertical;
+  font-family: var(--font-content);
+  font-size: 0.95rem;
+  line-height: 1.5;
+  color: var(--s-ink);
+  background: var(--canvas);
+  border: 1px solid var(--s-line);
+  border-radius: var(--radius-sm);
+  padding: 10px 12px;
+}
+.area:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-ring);
+}
+@media (prefers-reduced-motion: reduce) {
+  .dock,
+  .card {
+    transition: none;
+  }
+}

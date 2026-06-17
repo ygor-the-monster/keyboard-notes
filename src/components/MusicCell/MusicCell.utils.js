@@ -1,5 +1,15 @@
 // ABC header/body handling + textarea insertion for the music editor.
-import abcjs from "abcjs";
+
+// abcjs is large, so it's loaded lazily (kept out of the initial bundle). Cached after the
+// first load; MusicCell calls getAbcjs() on mount, so by the time the smart-note editor
+// runs, the instance is ready (and degrades to a plain insert if it somehow isn't).
+let _abcjs = null;
+export async function getAbcjs() {
+  if (_abcjs) return _abcjs;
+  const m = await import("abcjs");
+  _abcjs = m.default ?? m;
+  return _abcjs;
+}
 
 // SMuFL codepoints (rendered in the Leland font) for notation glyph faces.
 const G = (h) => String.fromCharCode(parseInt(h, 16));
@@ -124,9 +134,10 @@ const NOTE_RE = /^([_^=]*)([A-Ga-g])([',]*)(.*)$/;
 // Every note element's char span, mapped back to offsets into `body`.
 function bodyNotes(header, body) {
   const hdrLen = header ? header.length + 1 : 0;
+  if (!_abcjs) return []; // abcjs not loaded yet → caller falls back to a plain insert
   let tunes;
   try {
-    tunes = abcjs.parseOnly(joinAbc(header, body));
+    tunes = _abcjs.parseOnly(joinAbc(header, body));
   } catch {
     return [];
   }

@@ -9,11 +9,52 @@
   display: flex;
   align-items: center;
   column-gap: 8px;
-  opacity: 0.55;
+  color: var(--s-ink-muted);
+  font-family: var(--font-ui);
+  font-size: 0.92rem;
+}
+/* Flanking hairlines — flex spans so they sit dead-centre with the label text/icon. */
+.rule {
+  width: 48px;
+  height: 1px;
+  background: var(--s-line-strong);
+}
+.labelText {
+  white-space: nowrap;
 }
 .row {
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
-  gap: 8px;
+  gap: 10px;
+}
+/* Colored "palette" add buttons — icon in the cell type's accent, tint wash on hover. */
+.addBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 54px;
+  height: 54px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--s-line);
+  background: var(--surface);
+  color: var(--c);
+  cursor: pointer;
+  transition:
+    background 0.15s ease,
+    border-color 0.15s ease,
+    transform 0.06s ease,
+    box-shadow 0.15s ease;
+}
+.addBtn:hover {
+  background: var(--ct);
+  border-color: var(--c);
+}
+.addBtn:active {
+  transform: translateY(1px);
+}
+.addBtn:focus-visible {
+  outline: none;
+  border-color: var(--c);
+  box-shadow: 0 0 0 3px var(--ct);
 }

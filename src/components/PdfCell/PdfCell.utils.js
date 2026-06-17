@@ -1,14 +1,19 @@
-// PDF.js setup + byte/file helpers for the PDF viewer. The worker is bundled by Vite
-// via the ?url import.
-import * as pdfjsLib from "pdfjs-dist";
+// PDF.js byte/file helpers for the PDF viewer. pdf.js (and its worker) are large, so the
+// library is loaded lazily — only when a PDF cell actually opens a document. The worker URL
+// is bundled by Vite via the ?url import (just a string, so it stays a static import).
 // Vite's `?url` import yields the bundled worker URL as the default export; oxlint analyses
 // the raw .mjs (which has no default) and false-positives, so silence that one rule here.
 // eslint-disable-next-line import/default
 import workerUrl from "pdfjs-dist/build/pdf.worker.min.mjs?url";
 
-pdfjsLib.GlobalWorkerOptions.workerSrc = workerUrl;
-
-export { pdfjsLib };
+let _pdfjs = null;
+export async function getPdfjs() {
+  if (_pdfjs) return _pdfjs;
+  const lib = await import("pdfjs-dist");
+  lib.GlobalWorkerOptions.workerSrc = workerUrl;
+  _pdfjs = lib;
+  return lib;
+}
 
 export function fileToDataUrl(file) {
   return new Promise((resolve, reject) => {

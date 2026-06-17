@@ -109,3 +109,52 @@ export function fmtTime(s) {
   const sec = Math.floor(s % 60);
   return `${m}:${sec.toString().padStart(2, "0")}`;
 }
+
+// ---- Annotation marks (non-destructive overlay on the waveform) -------------------
+// A mark is a timed pin or a span region, each with a colour and a note:
+//   { id, kind: "point"|"region", time, end?, color, label }
+
+// After a TRIM to [start,end): keep only marks intersecting the kept range and rebase
+// their times to the new zero. Out-of-range marks are dropped.
+export function remapMarksAfterTrim(marks, start, end) {
+  const out = [];
+  for (const m of marks || []) {
+    if (m.kind === "region") {
+      const s = Math.max(m.time, start);
+      const e = Math.min(m.end, end);
+      if (e - s > 0.02) out.push({ ...m, time: s - start, end: e - start });
+    } else if (m.time >= start && m.time <= end) {
+      out.push({ ...m, time: m.time - start });
+    }
+  }
+  return out;
+}
+
+// After DELETING the [start,end) span: drop marks inside it and pull later marks back by
+// the removed duration. Regions overlapping the cut are clamped.
+export function remapMarksAfterCut(marks, start, end) {
+  const span = end - start;
+  const out = [];
+  for (const m of marks || []) {
+    if (m.kind === "region") {
+      let s = m.time;
+      let e = m.end;
+      if (e <= start) {
+        out.push({ ...m });
+      } else if (s >= end) {
+        out.push({ ...m, time: s - span, end: e - span });
+      } else {
+        // overlaps the cut — remove the cut portion, keep what survives on either side
+        s = s < start ? s : start;
+        e = e > end ? e - span : start;
+        if (e - s > 0.02) out.push({ ...m, time: s, end: e });
+      }
+    } else if (m.time <= start) {
+      out.push({ ...m });
+    } else if (m.time >= end) {
+      out.push({ ...m, time: m.time - span });
+    }
+    // points strictly inside the cut are dropped
+  }
+  return out;
+}

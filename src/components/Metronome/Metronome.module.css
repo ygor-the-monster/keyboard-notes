@@ -1,10 +1,7 @@
 /* Floating side dock with an agenda-style tab. */
 .metroDock {
   --metro-card-w: 280px;
-  position: fixed;
-  top: 38%;
-  right: 0;
-  z-index: 40;
+  position: relative;
   display: flex;
   align-items: flex-start;
   transform: translateX(var(--metro-card-w));
@@ -26,7 +23,7 @@
   border: none;
   cursor: pointer;
   color: #fff;
-  background: var(--s-seafoam);
+  background: var(--s-magenta);
   border-radius: var(--radius) 0 0 var(--radius);
   box-shadow: var(--shadow-pop);
 }
@@ -56,24 +53,39 @@
   to {
     box-shadow:
       var(--shadow-pop),
-      0 0 0 4px var(--s-seafoam-ring);
+      0 0 0 4px var(--s-magenta-ring);
   }
 }
-/* The sliding card */
+/* The sliding card. Top-left corner is square so the card's top edge is seamless with
+   the pull tab on its left; only the free bottom-left corner is rounded. */
 .metroCard {
   width: var(--metro-card-w);
-  --accent: var(--s-seafoam);
-  --accent-strong: var(--s-seafoam-strong);
-  --accent-ring: var(--s-seafoam-ring);
-  background: #fff;
+  --accent: var(--s-magenta);
+  --accent-strong: var(--s-magenta-strong);
+  --accent-ring: var(--s-magenta-ring);
+  background: var(--surface);
   border: 1px solid var(--s-line);
   border-right: none;
   box-shadow: var(--shadow-pop);
-  border-radius: var(--radius) 0 0 var(--radius);
+  border-radius: 0 0 0 var(--radius);
   padding: 20px;
   display: flex;
   flex-direction: column;
   gap: 18px;
+  overflow: hidden;
+  max-height: 420px; /* a touch above the card's content height — keeps the collapse snappy */
+  transition:
+    max-height 0.4s cubic-bezier(0.2, 0.8, 0.2, 1),
+    padding 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+/* Closed: collapse the card to nothing so the dock is only as tall as the pull tab; it
+   expands in height (and pushes the dock below) only when open. */
+.metroDock:not(.open) .metroCard {
+  max-height: 0;
+  padding-top: 0;
+  padding-bottom: 0;
+  border-top: none;
+  border-bottom: none;
 }
 .metroHead {
   display: flex;
@@ -84,11 +96,37 @@
   font-size: 1.05rem;
   color: var(--s-ink);
 }
+.metroButtons {
+  display: flex;
+  gap: 8px;
+}
 .metroStart {
-  width: 100%;
+  flex: 1 1 auto;
+}
+.metroTap {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--font-ui);
+  font-weight: 600;
+  font-size: 0.9rem;
+  color: var(--s-magenta-strong);
+  background: var(--s-magenta-tint);
+  border: none;
+  border-radius: var(--radius-pill);
+  padding: 0 16px;
+  cursor: pointer;
+  transition: transform 0.06s ease;
+}
+.metroTap:active {
+  transform: translateY(1px);
 }
 @media (prefers-reduced-motion: reduce) {
   .metroDock {
+    transition: none;
+  }
+  .metroCard {
     transition: none;
   }
   .metroDock.running .metroTab {

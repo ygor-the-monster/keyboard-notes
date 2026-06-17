@@ -1,29 +1,37 @@
-/* Per-block accent colors (Spectrum hues) — set --accent for everything inside the cell. */
-.typeMd {
+/* Per-block accent colors (Spectrum hues) — set --accent for everything inside the cell.
+   Rainbow order across the add-bar — Score · Chords · Audio · Image · PDF · Note
+   = magenta → cinnamon → gold → seafoam → blue → purple. */
+.typeAbc {
   --accent: var(--s-magenta);
   --accent-strong: var(--s-magenta-strong);
   --accent-tint: var(--s-magenta-tint);
   --accent-ring: var(--s-magenta-ring);
 }
-.typeAbc {
+.typeCifra {
+  --accent: var(--s-cinnamon);
+  --accent-strong: var(--s-cinnamon-strong);
+  --accent-tint: var(--s-cinnamon-tint);
+  --accent-ring: var(--s-cinnamon-ring);
+}
+.typeSnd {
+  --accent: var(--s-gold);
+  --accent-strong: var(--s-gold-strong);
+  --accent-tint: var(--s-gold-tint);
+  --accent-ring: var(--s-gold-ring);
+}
+.typeImg {
   --accent: var(--s-seafoam);
   --accent-strong: var(--s-seafoam-strong);
   --accent-tint: var(--s-seafoam-tint);
   --accent-ring: var(--s-seafoam-ring);
 }
-.typeImg {
-  --accent: var(--s-indigo);
-  --accent-strong: var(--s-indigo-strong);
-  --accent-tint: var(--s-indigo-tint);
-  --accent-ring: var(--s-indigo-ring);
-}
 .typePdf {
-  --accent: var(--s-orange);
-  --accent-strong: var(--s-orange-strong);
-  --accent-tint: var(--s-orange-tint);
-  --accent-ring: var(--s-orange-ring);
+  --accent: var(--s-blue);
+  --accent-strong: var(--s-blue-strong);
+  --accent-tint: var(--s-blue-tint);
+  --accent-ring: var(--s-blue-ring);
 }
-.typeSnd {
+.typeMd {
   --accent: var(--s-purple);
   --accent-strong: var(--s-purple-strong);
   --accent-tint: var(--s-purple-tint);
@@ -44,7 +52,7 @@
 
 .cell {
   position: relative;
-  background: #ffffff;
+  background: var(--surface);
   border: 1px solid var(--s-line);
   border-radius: var(--radius);
   padding: 26px 30px;
@@ -99,6 +107,19 @@
   opacity: 0.5;
   cursor: grab;
   display: inline-flex;
+  touch-action: none;
+}
+.cellDrag:active {
+  cursor: grabbing;
+}
+/* Lifted while being dragged to reorder. */
+.cell.dragging {
+  box-shadow:
+    var(--shadow-card),
+    var(--shadow-pop);
+  opacity: 0.96;
+  cursor: grabbing;
+  z-index: 5;
 }
 
 /* Cell type tag — subtle tinted pill in the block's accent. */
