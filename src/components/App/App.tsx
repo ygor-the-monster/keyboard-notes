@@ -61,8 +61,16 @@ export default function App() {
 
   // PWA file handling — open .pnotes files launched from the OS (Chromium desktop, installed).
   useEffect(() => {
-    if (!("launchQueue" in window)) return;
-    (window as any).launchQueue.setConsumer(async (params: any) => {
+    interface LaunchParams {
+      files: FileSystemFileHandle[];
+    }
+    const wq = (
+      window as Window & {
+        launchQueue?: { setConsumer(cb: (params: LaunchParams) => void): void };
+      }
+    ).launchQueue;
+    if (!wq) return;
+    wq.setConsumer(async (params) => {
       for (const handle of params.files || []) {
         try {
           const file = await handle.getFile();

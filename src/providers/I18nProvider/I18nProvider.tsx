@@ -8,6 +8,7 @@ import {
   type ReactNode,
 } from "react";
 import { LOCALES, MESSAGES, DEFAULT_LOCALE } from "./locales/index.ts";
+import type { Tool } from "../../components/Toolbar/Toolbar.tsx";
 
 // Tiny app-level i18n. useI18n() → { locale, setLocale, locales, t, tl, localizeTools }.
 //   t("audio.largeMsg", { mb: "5.2" })  → interpolates {mb} placeholders.
@@ -20,9 +21,8 @@ export interface I18nValue {
   locales: readonly string[];
   t: (key: string, vars?: Record<string, unknown>) => string;
   tl: (label: string) => string;
-  // Localizes a Toolbar `tools` array in place of each label; typed loosely until the Tool
-  // discriminated union lands.
-  localizeTools: (tools: any[]) => any[];
+  // Localizes a Toolbar `tools` array — translates each label / altLabel / option label.
+  localizeTools: (tools: Tool[]) => Tool[];
 }
 
 const I18nContext = createContext<I18nValue | null>(null);
@@ -99,14 +99,13 @@ export function I18nProvider({ children }: { children: ReactNode }) {
   // Run a Toolbar `tools` array through tl(), translating every label / altLabel (including
   // nested group options) on the final composed strings — no per-label edits in the cells.
   const localizeTools = useCallback(
-    (tools: any[]) =>
+    (tools: Tool[]): Tool[] =>
       tools.map((it) => {
-        if (!it || it.kind === "sep") return it;
+        if (it.kind === "sep") return it;
         const out = { ...it };
-        if (out.label) out.label = tl(out.label);
-        if (out.altLabel) out.altLabel = tl(out.altLabel);
-        if (Array.isArray(out.options))
-          out.options = out.options.map((o: any) => (o.label ? { ...o, label: tl(o.label) } : o));
+        out.label = tl(out.label);
+        if ("altLabel" in out && out.altLabel) out.altLabel = tl(out.altLabel);
+        if ("options" in out) out.options = out.options.map((o) => ({ ...o, label: tl(o.label) }));
         return out;
       }),
     [tl],
