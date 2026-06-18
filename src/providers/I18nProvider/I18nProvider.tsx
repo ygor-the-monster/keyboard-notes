@@ -7,7 +7,7 @@ import {
   useState,
   type ReactNode,
 } from "react";
-import { LOCALES, MESSAGES, DEFAULT_LOCALE } from "./locales/index.js";
+import { LOCALES, MESSAGES, DEFAULT_LOCALE } from "./locales/index.ts";
 
 // Tiny app-level i18n. useI18n() → { locale, setLocale, locales, t, tl, localizeTools }.
 //   t("audio.largeMsg", { mb: "5.2" })  → interpolates {mb} placeholders.
