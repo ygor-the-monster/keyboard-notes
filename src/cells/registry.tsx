@@ -17,7 +17,7 @@ import ScoreCell from "../components/ScoreCell/ScoreCell.jsx";
 import CifraCell from "../components/CifraCell/CifraCell.tsx";
 import ImageCell from "../components/ImageCell/ImageCell.tsx";
 import PdfCell from "../components/PdfCell/PdfCell.jsx";
-import AudioCell from "../components/AudioCell/AudioCell.jsx";
+import AudioCell from "../components/AudioCell/AudioCell.tsx";
 
 export interface CellView {
   component: ComponentType<{ cell: Cell; editing: boolean }>;
@@ -73,7 +73,7 @@ export const cellRegistry: Record<Kind, CellView> = {
     accent: { c: "--s-blue", ct: "--s-blue-tint" },
   },
   audio: {
-    component: AudioCell,
+    component: AudioCell as CellView["component"],
     icon: Waveform,
     tagLabelKey: "cell.audio",
     addLabelKey: "addbar.audio",

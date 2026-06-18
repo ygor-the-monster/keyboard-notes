@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, type PointerEvent as ReactPointerEvent } from "react";
 import { Button, DropZone, FileTrigger } from "@react-spectrum/s2";
 import EmptyState from "../EmptyState/EmptyState.tsx";
 import {
@@ -29,41 +29,45 @@ import {
   fmtTime,
   remapMarksAfterTrim,
   remapMarksAfterCut,
-} from "./AudioCell.utils.js";
+} from "./AudioCell.utils.ts";
 import { ANNOT_COLORS, withAlpha } from "../AnnotationLayer/AnnotationLayer.utils.ts";
 import Toolbar from "../Toolbar/Toolbar.tsx";
+import type { Tool } from "../Toolbar/Toolbar.tsx";
+import type { CellOf, Mark } from "../../cells/kinds.ts";
 import shared from "../../providers/ThemeProvider/ThemeProvider.module.css";
 import { dropFull } from "./AudioCell.styled.jsx";
 import css from "./AudioCell.module.css";
 
 const BUCKETS = 600;
-const EMPTY_MARKS = []; // stable reference so the waveform effect doesn't re-run each render
+const EMPTY_MARKS: Mark[] = []; // stable reference so the waveform effect doesn't re-run each render
 const uid = () => "m-" + Math.random().toString(36).slice(2, 9);
 
-export default function AudioCell({ cell, editing }) {
+type Sel = { start: number; end: number };
+
+export default function AudioCell({ cell, editing }: { cell: CellOf<"audio">; editing: boolean }) {
   const { updateCell } = useStore();
   const { confirm, alert } = useDialog();
   const { t } = useI18n();
   const src = cell.dataUrl;
   const marks = cell.marks || EMPTY_MARKS;
 
-  const audioRef = useRef(null);
-  const wfRef = useRef(null);
-  const fileRef = useRef(null);
-  const recRef = useRef(null); // MediaRecorder
-  const chunksRef = useRef([]);
-  const punchRef = useRef(null); // region being re-recorded over
-  const bufRef = useRef(null); // decoded AudioBuffer (for splicing)
-  const historyRef = useRef([]);
-  const dragRef = useRef(null);
+  const audioRef = useRef<HTMLAudioElement>(null);
+  const wfRef = useRef<HTMLCanvasElement>(null);
+  const fileRef = useRef<HTMLInputElement>(null);
+  const recRef = useRef<MediaRecorder | null>(null);
+  const chunksRef = useRef<Blob[]>([]);
+  const punchRef = useRef<Sel | null>(null); // region being re-recorded over
+  const bufRef = useRef<AudioBuffer | null>(null); // decoded AudioBuffer (for splicing)
+  const historyRef = useRef<{ dataUrl: string; marks: Mark[] }[]>([]);
+  const dragRef = useRef<{ t0: number; moved: boolean } | null>(null);
 
   const [playing, setPlaying] = useState(false);
   const [recording, setRecording] = useState(false);
   const [cur, setCur] = useState(0);
   const [dur, setDur] = useState(0);
   const [rate, setRate] = useState(1);
-  const [peaks, setPeaks] = useState(null);
-  const [sel, setSel] = useState(null); // { start, end } in seconds
+  const [peaks, setPeaks] = useState<Float32Array | null>(null);
+  const [sel, setSel] = useState<Sel | null>(null); // in seconds
 
   // Decode + compute waveform peaks whenever the audio changes.
   useEffect(() => {
@@ -100,7 +104,7 @@ export default function AudioCell({ cell, editing }) {
     const dpr = Math.min(window.devicePixelRatio || 1, 2);
     cv.width = w * dpr;
     cv.height = h * dpr;
-    const ctx = cv.getContext("2d");
+    const ctx = cv.getContext("2d")!;
     ctx.scale(dpr, dpr);
     ctx.clearRect(0, 0, w, h);
     const accent = getComputedStyle(cv).getPropertyValue("--accent").trim() || "rgb(154,71,226)";
@@ -127,7 +131,7 @@ export default function AudioCell({ cell, editing }) {
         const col = m.color || accent;
         if (m.kind === "region") {
           const rx = (m.time / dur) * w;
-          const rw = Math.max(2, ((m.end - m.time) / dur) * w);
+          const rw = Math.max(2, (((m.end ?? m.time) - m.time) / dur) * w);
           ctx.fillStyle = withAlpha(col, 0.18);
           ctx.fillRect(rx, 0, rw, h);
           ctx.fillStyle = col;
@@ -158,13 +162,13 @@ export default function AudioCell({ cell, editing }) {
     if (a.paused) a.play();
     else a.pause();
   }
-  function changeRate(d) {
+  function changeRate(d: number) {
     setRate((r) => Math.min(1.5, Math.max(0.5, +(r + d).toFixed(2))));
   }
 
   // ---- editing (commit + history) -------------------------------------------
   // Snapshots both audio bytes and marks so undo restores them together.
-  async function commitAudio(dataUrl, nextMarks) {
+  async function commitAudio(dataUrl: string, nextMarks?: Mark[]) {
     const sizeMB = (dataUrl.length * 0.75) / 1e6;
     if (sizeMB > 6) {
       const ok = await confirm({
@@ -176,11 +180,11 @@ export default function AudioCell({ cell, editing }) {
     }
     historyRef.current.push({ dataUrl: src || "", marks });
     if (historyRef.current.length > 10) historyRef.current.shift();
-    const patch = { dataUrl };
+    const patch: { dataUrl: string; marks?: Mark[] } = { dataUrl };
     if (nextMarks !== undefined) patch.marks = nextMarks;
     updateCell(cell.id, patch);
   }
-  async function baseBuffer() {
+  async function baseBuffer(): Promise<AudioBuffer> {
     return bufRef.current || (await decodeDataUrl(src));
   }
 
@@ -194,9 +198,11 @@ export default function AudioCell({ cell, editing }) {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
       const rec = new MediaRecorder(stream);
       chunksRef.current = [];
-      rec.ondataavailable = (e) => e.data.size && chunksRef.current.push(e.data);
+      rec.ondataavailable = (e) => {
+        if (e.data.size) chunksRef.current.push(e.data);
+      };
       rec.onstop = () => {
-        stream.getTracks().forEach((t) => t.stop());
+        stream.getTracks().forEach((tr) => tr.stop());
         finishRec();
       };
       recRef.current = rec;
@@ -205,10 +211,7 @@ export default function AudioCell({ cell, editing }) {
       rec.start();
       setRecording(true);
     } catch {
-      alert({
-        title: t("audio.micUnavailableTitle"),
-        message: t("audio.micUnavailableMsg"),
-      });
+      alert({ title: t("audio.micUnavailableTitle"), message: t("audio.micUnavailableMsg") });
     }
   }
   async function finishRec() {
@@ -229,11 +232,11 @@ export default function AudioCell({ cell, editing }) {
       commitAudio(await fileToDataUrl(encodeWav(out)));
       setSel(null);
     } catch (e) {
-      alert({ title: t("audio.recordingFailedTitle"), message: e.message });
+      alert({ title: t("audio.recordingFailedTitle"), message: (e as Error).message });
     }
   }
 
-  async function upload(file) {
+  async function upload(file: File | null) {
     if (!file || !file.type.startsWith("audio/")) return;
     commitAudio(await fileToDataUrl(file), []);
   }
@@ -260,42 +263,43 @@ export default function AudioCell({ cell, editing }) {
   // ---- annotation marks ------------------------------------------------------
   function addMark() {
     const color = ANNOT_COLORS[marks.length % ANNOT_COLORS.length].c;
-    const m =
+    const m: Mark =
       sel && sel.end - sel.start > 0.05
         ? { id: uid(), kind: "region", time: sel.start, end: sel.end, color, label: "" }
         : { id: uid(), kind: "point", time: cur, color, label: "" };
     updateCell(cell.id, { marks: [...marks, m].sort((a, b) => a.time - b.time) });
     setSel(null);
   }
-  const updateMark = (id, patch) =>
+  const updateMark = (id: string, patch: Partial<Mark>) =>
     updateCell(cell.id, { marks: marks.map((m) => (m.id === id ? { ...m, ...patch } : m)) });
-  const deleteMark = (id) => updateCell(cell.id, { marks: marks.filter((m) => m.id !== id) });
-  function cycleMarkColor(m) {
+  const deleteMark = (id: string) =>
+    updateCell(cell.id, { marks: marks.filter((m) => m.id !== id) });
+  function cycleMarkColor(m: Mark) {
     const i = ANNOT_COLORS.findIndex((c) => c.c === m.color);
     updateMark(m.id, { color: ANNOT_COLORS[(i + 1) % ANNOT_COLORS.length].c });
   }
-  function seekTo(time) {
+  function seekTo(time: number) {
     if (audioRef.current) audioRef.current.currentTime = time;
     setCur(time);
   }
 
   // ---- waveform pointer (seek / select region) -------------------------------
-  function xToTime(e) {
-    const r = wfRef.current.getBoundingClientRect();
+  function xToTime(e: ReactPointerEvent): number {
+    const r = wfRef.current!.getBoundingClientRect();
     return Math.max(0, Math.min(dur, ((e.clientX - r.left) / r.width) * dur));
   }
-  function onDown(e) {
+  function onDown(e: ReactPointerEvent) {
     if (!dur) return;
     e.currentTarget.setPointerCapture?.(e.pointerId);
     dragRef.current = { t0: xToTime(e), moved: false };
   }
-  function onMove(e) {
+  function onMove(e: ReactPointerEvent) {
     const d = dragRef.current;
     if (!d) return;
-    const t = xToTime(e);
-    if (editing && Math.abs(t - d.t0) > 0.05) {
+    const tm = xToTime(e);
+    if (editing && Math.abs(tm - d.t0) > 0.05) {
       d.moved = true;
-      setSel({ start: Math.min(d.t0, t), end: Math.max(d.t0, t) });
+      setSel({ start: Math.min(d.t0, tm), end: Math.max(d.t0, tm) });
     }
   }
   function onUp() {
@@ -313,8 +317,10 @@ export default function AudioCell({ cell, editing }) {
       src={src || undefined}
       preload="metadata"
       hidden
-      onLoadedMetadata={(e) => isFinite(e.target.duration) && setDur(e.target.duration)}
-      onTimeUpdate={(e) => setCur(e.target.currentTime)}
+      onLoadedMetadata={(e) =>
+        isFinite(e.currentTarget.duration) && setDur(e.currentTarget.duration)
+      }
+      onTimeUpdate={(e) => setCur(e.currentTarget.currentTime)}
       onPlay={() => setPlaying(true)}
       onPause={() => setPlaying(false)}
       onEnded={() => setPlaying(false)}
@@ -330,7 +336,7 @@ export default function AudioCell({ cell, editing }) {
         <DropZone
           onDrop={async (e) => {
             const f = e.items.find((i) => i.kind === "file");
-            if (f) upload(await f.getFile());
+            if (f && f.kind === "file") upload(await f.getFile());
           }}
           styles={dropFull}
         >
@@ -354,7 +360,7 @@ export default function AudioCell({ cell, editing }) {
     );
   }
 
-  const tools = [
+  const tools: Tool[] = [
     {
       kind: "toggle",
       id: "play",
@@ -376,13 +382,7 @@ export default function AudioCell({ cell, editing }) {
       nextDisabled: rate >= 1.5,
     },
     { kind: "sep" },
-    {
-      kind: "action",
-      id: "mark",
-      icon: MapPin,
-      label: t("audio.addMark"),
-      onUse: addMark,
-    },
+    { kind: "action", id: "mark", icon: MapPin, label: t("audio.addMark"), onUse: addMark },
     {
       kind: "toggle",
       id: "rec",
@@ -449,7 +449,9 @@ export default function AudioCell({ cell, editing }) {
             aria-label={t("audio.markColor")}
           />
           <button type="button" className={css.markTime} onClick={() => editing && seekTo(m.time)}>
-            {m.kind === "region" ? `${fmtTime(m.time)}–${fmtTime(m.end)}` : fmtTime(m.time)}
+            {m.kind === "region"
+              ? `${fmtTime(m.time)}–${fmtTime(m.end ?? m.time)}`
+              : fmtTime(m.time)}
           </button>
           {editing ? (
             <input
@@ -477,8 +479,8 @@ export default function AudioCell({ cell, editing }) {
   );
 
   if (!editing) {
-    // Compact view is display-only — clicking inside the cell switches to edit mode, so a
-    // play control can't live here. Show the waveform + duration + any markers.
+    // Compact view is display-only — clicking inside the cell switches to edit mode, so a play
+    // control can't live here. Show the waveform + duration + any markers.
     return (
       <div className={css.col}>
         <div className={css.waveWrap}>
@@ -503,7 +505,7 @@ export default function AudioCell({ cell, editing }) {
         accept="audio/*"
         hidden
         onChange={(e) => {
-          const f = e.target.files[0];
+          const f = e.target.files?.[0];
           e.target.value = "";
           if (f) upload(f);
         }}

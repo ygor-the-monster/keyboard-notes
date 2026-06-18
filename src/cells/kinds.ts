@@ -39,6 +39,7 @@ export interface AnnotationStroke {
 
 // A saved point (or region) in time on an Audio Cell.
 export interface Mark {
+  id: string;
   time: number;
   end?: number;
   color?: string;
