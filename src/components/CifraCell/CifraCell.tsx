@@ -1,5 +1,5 @@
 import { useEffect, useRef } from "react";
-import { ArrowUUpLeft } from "@phosphor-icons/react";
+import { ArrowUUpLeftIcon as ArrowUUpLeft } from "@phosphor-icons/react";
 import { useStore } from "../../providers/StoreProvider/StoreProvider.tsx";
 import { useI18n } from "../../providers/I18nProvider/I18nProvider.tsx";
 import { useAutoScroll, buildScrollTools } from "../../hooks/useAutoScroll.ts";

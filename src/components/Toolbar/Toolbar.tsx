@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { ActionButton, ToggleButton, Text, TooltipTrigger, Tooltip } from "@react-spectrum/s2";
-import { CaretLeft, CaretRight } from "@phosphor-icons/react";
+import { CaretLeftIcon as CaretLeft, CaretRightIcon as CaretRight } from "@phosphor-icons/react";
 import type { Icon } from "@phosphor-icons/react";
 import shared from "../../providers/ThemeProvider/ThemeProvider.module.css";
 import s from "./Toolbar.module.css";

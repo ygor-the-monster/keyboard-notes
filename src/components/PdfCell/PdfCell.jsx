@@ -2,20 +2,20 @@ import { useEffect, useRef, useState } from "react";
 import { TextField, Button, DropZone, FileTrigger, Divider } from "@react-spectrum/s2";
 import EmptyState from "../EmptyState/EmptyState.tsx";
 import {
-  FilePdf,
-  Square,
-  Columns,
-  ArrowCounterClockwise,
-  ArrowClockwise,
-  ArrowsDownUp,
-  ArrowUp,
-  ArrowDown,
-  CopySimple,
-  FilePlus,
-  Trash,
-  UploadSimple,
-  PencilSimpleLine,
-  Rows,
+  FilePdfIcon as FilePdf,
+  SquareIcon as Square,
+  ColumnsIcon as Columns,
+  ArrowCounterClockwiseIcon as ArrowCounterClockwise,
+  ArrowClockwiseIcon as ArrowClockwise,
+  ArrowsDownUpIcon as ArrowsDownUp,
+  ArrowUpIcon as ArrowUp,
+  ArrowDownIcon as ArrowDown,
+  CopySimpleIcon as CopySimple,
+  FilePlusIcon as FilePlus,
+  TrashIcon as Trash,
+  UploadSimpleIcon as UploadSimple,
+  PencilSimpleLineIcon as PencilSimpleLine,
+  RowsIcon as Rows,
 } from "@phosphor-icons/react";
 import { useStore } from "../../providers/StoreProvider/StoreProvider.tsx";
 import { useDialog } from "../../providers/DialogProvider/DialogProvider.tsx";

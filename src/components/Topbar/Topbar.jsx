@@ -9,14 +9,14 @@ import {
   Divider,
 } from "@react-spectrum/s2";
 import {
-  Notebook,
-  DownloadSimple,
-  ShareNetwork,
-  Printer,
-  CloudArrowDown,
-  Translate,
-  Moon,
-  Sun,
+  NotebookIcon as Notebook,
+  DownloadSimpleIcon as DownloadSimple,
+  ShareNetworkIcon as ShareNetwork,
+  PrinterIcon as Printer,
+  CloudArrowDownIcon as CloudArrowDown,
+  TranslateIcon as Translate,
+  MoonIcon as Moon,
+  SunIcon as Sun,
 } from "@phosphor-icons/react";
 import { useStore } from "../../providers/StoreProvider/StoreProvider.tsx";
 import { storageEstimate } from "../../providers/StoreProvider/StoreProvider.utils.ts";

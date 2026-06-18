@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Code } from "@phosphor-icons/react";
+import { CodeIcon as Code } from "@phosphor-icons/react";
 import { useI18n } from "../../providers/I18nProvider/I18nProvider.tsx";
 import s from "./SyntaxRef.module.css";
 

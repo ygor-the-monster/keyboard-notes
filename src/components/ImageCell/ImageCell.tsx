@@ -2,19 +2,19 @@ import { useEffect, useRef, useState, type PointerEvent as ReactPointerEvent } f
 import { Button, DropZone, FileTrigger } from "@react-spectrum/s2";
 import EmptyState from "../EmptyState/EmptyState.tsx";
 import {
-  Crop,
-  Check,
-  ArrowCounterClockwise,
-  ArrowClockwise,
-  FlipHorizontal,
-  FlipVertical,
-  Sun,
-  CircleHalf,
-  Drop,
-  ImageSquare,
-  UploadSimple,
-  ArrowUUpLeft,
-  ArrowsOut,
+  CropIcon as Crop,
+  CheckIcon as Check,
+  ArrowCounterClockwiseIcon as ArrowCounterClockwise,
+  ArrowClockwiseIcon as ArrowClockwise,
+  FlipHorizontalIcon as FlipHorizontal,
+  FlipVerticalIcon as FlipVertical,
+  SunIcon as Sun,
+  CircleHalfIcon as CircleHalf,
+  DropIcon as Drop,
+  ImageSquareIcon as ImageSquare,
+  UploadSimpleIcon as UploadSimple,
+  ArrowUUpLeftIcon as ArrowUUpLeft,
+  ArrowsOutIcon as ArrowsOut,
 } from "@phosphor-icons/react";
 import { useStore } from "../../providers/StoreProvider/StoreProvider.tsx";
 import { useDialog } from "../../providers/DialogProvider/DialogProvider.tsx";

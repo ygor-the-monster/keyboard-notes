@@ -4,12 +4,12 @@
 import type { ComponentType } from "react";
 import type { Icon } from "@phosphor-icons/react";
 import {
-  Article,
-  MusicNotes,
-  Guitar,
-  Image as ImageIcon,
-  FilePdf,
-  Waveform,
+  ArticleIcon as Article,
+  MusicNotesIcon as MusicNotes,
+  GuitarIcon as Guitar,
+  ImageIcon,
+  FilePdfIcon as FilePdf,
+  WaveformIcon as Waveform,
 } from "@phosphor-icons/react";
 import type { Cell, Kind } from "./kinds.ts";
 import NoteCell from "../components/NoteCell/NoteCell.tsx";

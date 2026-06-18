@@ -1,12 +1,12 @@
 import {
-  PencilSimpleLine,
-  Eraser,
-  Palette,
-  PaintBrush,
-  DropHalf,
-  ArrowUUpLeft,
-  ArrowUUpRight,
-  TrashSimple,
+  PencilSimpleLineIcon as PencilSimpleLine,
+  EraserIcon as Eraser,
+  PaletteIcon as Palette,
+  PaintBrushIcon as PaintBrush,
+  DropHalfIcon as DropHalf,
+  ArrowUUpLeftIcon as ArrowUUpLeft,
+  ArrowUUpRightIcon as ArrowUUpRight,
+  TrashSimpleIcon as TrashSimple,
 } from "@phosphor-icons/react";
 import type { AnnotationStroke } from "../../cells/kinds.ts";
 import type { Tool } from "../Toolbar/Toolbar.tsx";

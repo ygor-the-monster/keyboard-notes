@@ -1,5 +1,5 @@
 import { useRef, useState } from "react";
-import { PianoKeys, X } from "@phosphor-icons/react";
+import { PianoKeysIcon as PianoKeys, XIcon as X } from "@phosphor-icons/react";
 import { useI18n } from "../../providers/I18nProvider/I18nProvider.tsx";
 import { identifyChord } from "./ChordBuilder.utils.js";
 import s from "./ChordBuilder.module.css";

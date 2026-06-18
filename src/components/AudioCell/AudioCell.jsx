@@ -2,17 +2,17 @@ import { useEffect, useRef, useState } from "react";
 import { Button, DropZone, FileTrigger } from "@react-spectrum/s2";
 import EmptyState from "../EmptyState/EmptyState.tsx";
 import {
-  Play,
-  Pause,
-  Microphone,
-  Stop,
-  UploadSimple,
-  Scissors,
-  TrashSimple,
-  ArrowUUpLeft,
-  Waveform,
-  MapPin,
-  X,
+  PlayIcon as Play,
+  PauseIcon as Pause,
+  MicrophoneIcon as Microphone,
+  StopIcon as Stop,
+  UploadSimpleIcon as UploadSimple,
+  ScissorsIcon as Scissors,
+  TrashSimpleIcon as TrashSimple,
+  ArrowUUpLeftIcon as ArrowUUpLeft,
+  WaveformIcon as Waveform,
+  MapPinIcon as MapPin,
+  XIcon as X,
 } from "@phosphor-icons/react";
 import { useStore } from "../../providers/StoreProvider/StoreProvider.tsx";
 import { useDialog } from "../../providers/DialogProvider/DialogProvider.tsx";

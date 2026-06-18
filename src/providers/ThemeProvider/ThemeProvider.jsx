@@ -19,14 +19,20 @@ export default function ThemeProvider({ children }) {
   }, [scheme]);
 
   const value = useMemo(
-    () => ({ scheme, setScheme, toggle: () => setScheme((s) => (s === "dark" ? "light" : "dark")) }),
+    () => ({
+      scheme,
+      setScheme,
+      toggle: () => setScheme((s) => (s === "dark" ? "light" : "dark")),
+    }),
     [scheme, setScheme],
   );
 
   return (
     <Provider background="base" colorScheme={scheme}>
       <ThemeContext.Provider value={value}>
-        <IconContext.Provider value={{ weight: "light", size: 20 }}>{children}</IconContext.Provider>
+        <IconContext.Provider value={{ weight: "light", size: 20 }}>
+          {children}
+        </IconContext.Provider>
       </ThemeContext.Provider>
     </Provider>
   );

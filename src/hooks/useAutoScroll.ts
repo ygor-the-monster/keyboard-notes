@@ -6,7 +6,7 @@ import {
   type RefObject,
   type SetStateAction,
 } from "react";
-import { Play, Pause } from "@phosphor-icons/react";
+import { PlayIcon as Play, PauseIcon as Pause } from "@phosphor-icons/react";
 import type { Tool } from "../components/Toolbar/Toolbar.tsx";
 
 const STEP = 0.4; // px per frame per speed unit

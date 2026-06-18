@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Picker, PickerItem, Slider } from "@react-spectrum/s2";
-import { Waveform } from "@phosphor-icons/react";
+import { WaveformIcon as Waveform } from "@phosphor-icons/react";
 import { useI18n } from "../../providers/I18nProvider/I18nProvider.tsx";
 import { usePref } from "../../providers/StoreProvider/StoreProvider.utils.ts";
 import { useDrone } from "./Drone.hooks.ts";

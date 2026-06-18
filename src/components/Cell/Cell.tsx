@@ -4,7 +4,13 @@ import {
   type CSSProperties,
   type PointerEvent as ReactPointerEvent,
 } from "react";
-import { CaretUp, CaretDown, Copy, Trash, DotsSixVertical } from "@phosphor-icons/react";
+import {
+  CaretUpIcon as CaretUp,
+  CaretDownIcon as CaretDown,
+  CopyIcon as Copy,
+  TrashIcon as Trash,
+  DotsSixVerticalIcon as DotsSixVertical,
+} from "@phosphor-icons/react";
 import type { Icon } from "@phosphor-icons/react";
 import { useStore } from "../../providers/StoreProvider/StoreProvider.tsx";
 import { useEditing } from "../../providers/EditingProvider/EditingProvider.tsx";
