@@ -35,7 +35,7 @@ import Toolbar from "../Toolbar/Toolbar.tsx";
 import type { Tool } from "../Toolbar/Toolbar.tsx";
 import type { CellOf, Mark } from "../../cells/kinds.ts";
 import shared from "../../providers/ThemeProvider/ThemeProvider.module.css";
-import { dropFull } from "./AudioCell.styled.jsx";
+import { dropFull } from "./AudioCell.styled.ts";
 import css from "./AudioCell.module.css";
 
 const BUCKETS = 600;

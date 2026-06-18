@@ -4,7 +4,7 @@ import { WaveformIcon as Waveform } from "@phosphor-icons/react";
 import { useI18n } from "../../providers/I18nProvider/I18nProvider.tsx";
 import { usePref } from "../../providers/StoreProvider/StoreProvider.utils.ts";
 import { useDrone } from "./Drone.hooks.ts";
-import { fullWidth } from "./Drone.styled.jsx";
+import { fullWidth } from "./Drone.styled.ts";
 import shared from "../../providers/ThemeProvider/ThemeProvider.module.css";
 import s from "./Drone.module.css";
 

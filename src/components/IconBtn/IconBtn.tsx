@@ -1,9 +1,10 @@
 import { ActionButton, ToggleButton, TooltipTrigger, Tooltip } from "@react-spectrum/s2";
+import type { Icon } from "@phosphor-icons/react";
 
 // S2 ActionButton (or ToggleButton) holding a Phosphor icon, with a hover/focus tooltip.
 // Icon-only + larger default size for tablet-friendly touch targets.
 export default function IconBtn({
-  icon: Icon,
+  icon: IconCmp,
   label,
   onPress,
   isDisabled,
@@ -13,6 +14,17 @@ export default function IconBtn({
   size = 22,
   buttonSize = "L",
   delay = 450,
+}: {
+  icon: Icon;
+  label: string;
+  onPress?: () => void;
+  isDisabled?: boolean;
+  isQuiet?: boolean;
+  isSelected?: boolean;
+  onChange?: (isSelected: boolean) => void;
+  size?: number;
+  buttonSize?: "S" | "M" | "L" | "XL";
+  delay?: number;
 }) {
   const toggle = isSelected !== undefined || onChange !== undefined;
   return (
@@ -27,7 +39,7 @@ export default function IconBtn({
           isDisabled={isDisabled}
           UNSAFE_className="btn-icononly"
         >
-          <Icon size={size} aria-hidden />
+          <IconCmp size={size} aria-hidden />
         </ToggleButton>
       ) : (
         <ActionButton
@@ -38,7 +50,7 @@ export default function IconBtn({
           isDisabled={isDisabled}
           UNSAFE_className="btn-icononly"
         >
-          <Icon size={size} aria-hidden />
+          <IconCmp size={size} aria-hidden />
         </ActionButton>
       )}
       <Tooltip>{label}</Tooltip>

@@ -24,8 +24,8 @@ import { usePwa } from "../../providers/PWAProvider/PWAProvider.jsx";
 import { useDialog } from "../../providers/DialogProvider/DialogProvider.tsx";
 import { useI18n } from "../../providers/I18nProvider/I18nProvider.tsx";
 import { useTheme } from "../../providers/ThemeProvider/ThemeProvider.jsx";
-import IconBtn from "../IconBtn/IconBtn.jsx";
-import { vdiv, titleField } from "./Topbar.styled.jsx";
+import IconBtn from "../IconBtn/IconBtn.tsx";
+import { vdiv, titleField } from "./Topbar.styled.ts";
 import s from "./Topbar.module.css";
 
 const mb = (bytes) => (bytes ? (bytes / 1e6).toFixed(1) : "0");

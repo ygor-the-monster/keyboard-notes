@@ -8,7 +8,7 @@ import { PWAProvider } from "./providers/PWAProvider/PWAProvider.jsx";
 import { EditingProvider } from "./providers/EditingProvider/EditingProvider.tsx";
 import App from "./components/App/App.jsx";
 
-createRoot(document.getElementById("root")).render(
+createRoot(document.getElementById("root")!).render(
   <React.StrictMode>
     <ThemeProvider>
       <I18nProvider>

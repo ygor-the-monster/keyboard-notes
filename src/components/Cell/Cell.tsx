@@ -1,9 +1,4 @@
-import {
-  useState,
-  type ComponentType,
-  type CSSProperties,
-  type PointerEvent as ReactPointerEvent,
-} from "react";
+import { useState, type CSSProperties, type PointerEvent as ReactPointerEvent } from "react";
 import {
   CaretUpIcon as CaretUp,
   CaretDownIcon as CaretDown,
@@ -11,22 +6,14 @@ import {
   TrashIcon as Trash,
   DotsSixVerticalIcon as DotsSixVertical,
 } from "@phosphor-icons/react";
-import type { Icon } from "@phosphor-icons/react";
 import { useStore } from "../../providers/StoreProvider/StoreProvider.tsx";
 import { useEditing } from "../../providers/EditingProvider/EditingProvider.tsx";
 import { useDialog } from "../../providers/DialogProvider/DialogProvider.tsx";
 import { useI18n } from "../../providers/I18nProvider/I18nProvider.tsx";
-import IconBtnRaw from "../IconBtn/IconBtn.jsx";
+import IconBtn from "../IconBtn/IconBtn.tsx";
 import { cellRegistry } from "../../cells/registry.tsx";
 import type { Cell as CellModel } from "../../cells/kinds.ts";
 import s from "./Cell.module.css";
-
-// IconBtn is still .jsx; type it as a component until it migrates to TS.
-const IconBtn = IconBtnRaw as ComponentType<{
-  icon: Icon;
-  label: string;
-  onPress: () => void | Promise<void>;
-}>;
 
 export default function Cell({ cell, index = 0 }: { cell: CellModel; index?: number }) {
   const { moveCell, moveCellTo, duplicateCell, deleteCell } = useStore();

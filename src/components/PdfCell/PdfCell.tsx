@@ -29,7 +29,7 @@ import Toolbar from "../Toolbar/Toolbar.tsx";
 import type { Tool } from "../Toolbar/Toolbar.tsx";
 import type { AnnotationStroke, CellOf } from "../../cells/kinds.ts";
 import shared from "../../providers/ThemeProvider/ThemeProvider.module.css";
-import { dropFull } from "./PdfCell.styled.jsx";
+import { dropFull } from "./PdfCell.styled.ts";
 import css from "./PdfCell.module.css";
 
 // Render one pdf.js page into a canvas, fit to `cssWidth`. pdf.js objects are typed `any` —

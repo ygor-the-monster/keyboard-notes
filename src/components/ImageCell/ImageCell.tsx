@@ -36,7 +36,7 @@ import AnnotationLayer from "../AnnotationLayer/AnnotationLayer.tsx";
 import Toolbar from "../Toolbar/Toolbar.tsx";
 import type { GroupOption, Tool } from "../Toolbar/Toolbar.tsx";
 import shared from "../../providers/ThemeProvider/ThemeProvider.module.css";
-import { dropFull } from "./ImageCell.styled.jsx";
+import { dropFull } from "./ImageCell.styled.ts";
 import css from "./ImageCell.module.css";
 
 const ADJUST_LIMIT = 6;

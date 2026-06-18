@@ -4,7 +4,7 @@ import { MetronomeIcon, HandTapIcon as HandTap } from "@phosphor-icons/react";
 import { useMetronome } from "./Metronome.hooks.ts";
 import { useI18n } from "../../providers/I18nProvider/I18nProvider.tsx";
 import { usePref } from "../../providers/StoreProvider/StoreProvider.utils.ts";
-import { fullWidth } from "./Metronome.styled.jsx";
+import { fullWidth } from "./Metronome.styled.ts";
 import shared from "../../providers/ThemeProvider/ThemeProvider.module.css";
 import m from "./Metronome.module.css";
 
