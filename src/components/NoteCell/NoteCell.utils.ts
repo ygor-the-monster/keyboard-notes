@@ -3,36 +3,41 @@ import { marked } from "marked";
 marked.setOptions({ gfm: true, breaks: true });
 
 // --- Custom inline/block syntax marked doesn't ship with ----------------------
-// Highlight (==x==), superscript (^x^), subscript (~x~, single tilde so it never
-// clashes with ~~strikethrough~~), and footnotes ([^id] refs + [^id]: defs).
-let footnotes = [];
+// Highlight (==x==), superscript (^x^), subscript (~x~, single tilde so it never clashes with
+// ~~strikethrough~~), and footnotes ([^id] refs + [^id]: defs). The marked extension surface is
+// dynamic (its `this` lexer/parser context), so the config below stays loosely typed.
+interface Footnote {
+  id: string;
+  text: string;
+}
+let footnotes: Footnote[] = [];
 
-const inlineWrap = (name, open, tag, re) => ({
+const inlineWrap = (name: string, open: string, tag: string, re: RegExp) => ({
   name,
-  level: "inline",
-  start(src) {
+  level: "inline" as const,
+  start(src: string) {
     const i = src.indexOf(open);
     return i < 0 ? undefined : i;
   },
-  tokenizer(src) {
+  tokenizer(this: any, src: string) {
     const m = re.exec(src);
     if (!m) return undefined;
     const token = { type: name, raw: m[0], text: m[1], tokens: [] };
     this.lexer.inline(m[1], token.tokens);
     return token;
   },
-  renderer(token) {
+  renderer(this: any, token: any) {
     return `<${tag}>${this.parser.parseInline(token.tokens)}</${tag}>`;
   },
 });
 
 marked.use({
   hooks: {
-    preprocess(md) {
+    preprocess(md: string) {
       footnotes = [];
       return md;
     },
-    postprocess(html) {
+    postprocess(html: string) {
       if (!footnotes.length) return html;
       const items = footnotes
         .map(
@@ -50,11 +55,11 @@ marked.use({
     inlineWrap("subscript", "~", "sub", /^~(?!~)([^\s~]+)~(?!~)/),
     {
       name: "footnoteDef",
-      level: "block",
-      start(src) {
+      level: "block" as const,
+      start(src: string) {
         return src.match(/^\[\^[^\]]+\]:/m)?.index;
       },
-      tokenizer(src) {
+      tokenizer(src: string) {
         const m = /^\[\^([^\]]+)\]:[ \t]*(.*)(?:\n|$)/.exec(src);
         if (!m) return undefined;
         footnotes.push({ id: m[1], text: m[2] });
@@ -66,16 +71,16 @@ marked.use({
     },
     {
       name: "footnoteRef",
-      level: "inline",
-      start(src) {
+      level: "inline" as const,
+      start(src: string) {
         return src.indexOf("[^");
       },
-      tokenizer(src) {
+      tokenizer(src: string) {
         const m = /^\[\^([^\]]+)\]/.exec(src);
         if (!m) return undefined;
         return { type: "footnoteRef", raw: m[0], id: m[1] };
       },
-      renderer(token) {
+      renderer(token: any) {
         return (
           `<sup class="footnote-ref" id="fnref-${token.id}">` +
           `<a href="#fn-${token.id}">${token.id}</a></sup>`
@@ -83,11 +88,11 @@ marked.use({
       },
     },
   ],
-});
+} as any);
 
 // Render markdown to sanitized HTML (strips scripts, inline handlers, js: urls).
-export function renderMarkdown(src) {
-  const html = marked.parse(src || "");
+export function renderMarkdown(src: string): string {
+  const html = marked.parse(src || "") as string;
   const tpl = document.createElement("template");
   tpl.innerHTML = html;
   tpl.content.querySelectorAll("script, style, iframe, object, embed").forEach((n) => n.remove());
@@ -107,7 +112,7 @@ export function renderMarkdown(src) {
 }
 
 // Flip the Nth `- [ ]` / `- [x]` task in the source. Returns new source.
-export function toggleTask(source, taskIndex, checked) {
+export function toggleTask(source: string, taskIndex: number, checked: boolean): string {
   let i = -1;
   return source.replace(/\[( |x|X)\]/g, (m) => {
     i++;
@@ -116,19 +121,28 @@ export function toggleTask(source, taskIndex, checked) {
   });
 }
 
-// Wrap / insert markdown formatting around a textarea selection.
-// Returns { value, selStart, selEnd } for the caller to apply. Every action is
-// selection-aware: it reuses selected text when present, otherwise drops a
-// placeholder and selects it so the next keystroke replaces it.
-export function applyFormat(value, selStart, selEnd, kind) {
+export interface FormatResult {
+  value: string;
+  selStart: number;
+  selEnd: number;
+}
+
+// Wrap / insert markdown formatting around a textarea selection. Returns the new value + selection
+// for the caller to apply. Every action is selection-aware: it reuses selected text when present,
+// otherwise drops a placeholder and selects it so the next keystroke replaces it.
+export function applyFormat(
+  value: string,
+  selStart: number,
+  selEnd: number,
+  kind: string,
+): FormatResult {
   const sel = value.slice(selStart, selEnd);
   const before = value.slice(0, selStart);
   const after = value.slice(selEnd);
 
-  // Inline wrap: `l…r` around the selection. Toggles — if the selection (or the
-  // text just outside it) is already wrapped, the markers are stripped instead.
-  const wrap = (l, r = l, placeholder = "text") => {
-    // Markers inside the selection: `**text**` selected -> unwrap.
+  // Inline wrap: `l…r` around the selection. Toggles — if the selection (or the text just outside
+  // it) is already wrapped, the markers are stripped instead.
+  const wrap = (l: string, r: string = l, placeholder = "text"): FormatResult => {
     if (sel.length >= l.length + r.length && sel.startsWith(l) && sel.endsWith(r)) {
       const inner = sel.slice(l.length, sel.length - r.length);
       return {
@@ -137,7 +151,6 @@ export function applyFormat(value, selStart, selEnd, kind) {
         selEnd: before.length + inner.length,
       };
     }
-    // Markers flanking the selection: **`text`** -> unwrap.
     if (before.endsWith(l) && after.startsWith(r)) {
       const nb = before.slice(0, before.length - l.length);
       const na = after.slice(r.length);
@@ -151,11 +164,14 @@ export function applyFormat(value, selStart, selEnd, kind) {
     };
   };
 
-  // Block prefix applied to each selected line (or to a placeholder line).
-  // Toggles: if every line already has the prefix it's removed; otherwise the
-  // prefix is added (after stripping a conflicting same-family prefix, e.g.
-  // switching heading levels or list styles). Selection lands on the content.
-  const linePrefix = (prefix, placeholder = "", strip = null) => {
+  // Block prefix applied to each selected line (or to a placeholder line). Toggles: if every line
+  // already has the prefix it's removed; otherwise the prefix is added (after stripping a
+  // conflicting same-family prefix). Selection lands on the content.
+  const linePrefix = (
+    prefix: string,
+    placeholder = "",
+    strip: RegExp | null = null,
+  ): FormatResult => {
     const startOfLine = before.lastIndexOf("\n") + 1;
     const head = value.slice(0, startOfLine);
     const raw = value.slice(startOfLine, selEnd);
@@ -178,9 +194,13 @@ export function applyFormat(value, selStart, selEnd, kind) {
   const HEADING = /^#{1,6}\s+/;
   const LISTMARK = /^(\d+\.\s+|[-*+]\s+(\[[ xX]\]\s+)?)/;
 
-  // Wrap the selection, then place the caret-selection on a trailing token
-  // (e.g. the URL of a link) for the user to fill in.
-  const wrapWithTail = (lead, tail, tailPlaceholder, content) => {
+  // Wrap the selection, then place the caret-selection on a trailing token (e.g. a link URL).
+  const wrapWithTail = (
+    lead: string,
+    tail: string,
+    tailPlaceholder: string,
+    content: string,
+  ): FormatResult => {
     const inner = sel || content;
     const md = lead + inner + tail;
     const tailAt =
@@ -249,15 +269,12 @@ export function applyFormat(value, selStart, selEnd, kind) {
       return { value: before + md + after, selStart: at, selEnd: at };
     }
     case "footnote": {
-      // Next number = highest existing definition + 1.
       const nums = [...value.matchAll(/\[\^(\d+)\]:/g)].map((m) => +m[1]);
       const n = (nums.length ? Math.max(...nums) : 0) + 1;
       const noteText = "Footnote text";
-      // Selected text stays put as the anchor; the ref drops in right after it.
       const withRef = before + sel + `[^${n}]` + after;
       const gap = withRef.endsWith("\n\n") ? "" : withRef.endsWith("\n") ? "\n" : "\n\n";
       const full = withRef + gap + `[^${n}]: ${noteText}\n`;
-      // Select the definition placeholder so it's ready to edit.
       const defStart = full.length - 1 - noteText.length;
       return { value: full, selStart: defStart, selEnd: defStart + noteText.length };
     }
@@ -267,7 +284,13 @@ export function applyFormat(value, selStart, selEnd, kind) {
 }
 
 // Replace the whole textarea value as one undoable step, then restore a selection.
-export function replaceTextarea(ta, value, selStart, selEnd, onValue) {
+export function replaceTextarea(
+  ta: HTMLTextAreaElement | null,
+  value: string,
+  selStart: number,
+  selEnd: number,
+  onValue?: (v: string) => void,
+): void {
   if (!ta) return;
   ta.focus();
   ta.select();

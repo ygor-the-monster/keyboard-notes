@@ -12,7 +12,7 @@ import {
   Waveform,
 } from "@phosphor-icons/react";
 import type { Cell, Kind } from "./kinds.ts";
-import NoteCell from "../components/NoteCell/NoteCell.jsx";
+import NoteCell from "../components/NoteCell/NoteCell.tsx";
 import ScoreCell from "../components/ScoreCell/ScoreCell.jsx";
 import CifraCell from "../components/CifraCell/CifraCell.tsx";
 import ImageCell from "../components/ImageCell/ImageCell.jsx";
@@ -32,7 +32,7 @@ export interface CellView {
 // map and cellKinds cannot drift from KINDS or from each other.
 export const cellRegistry: Record<Kind, CellView> = {
   note: {
-    component: NoteCell,
+    component: NoteCell as CellView["component"],
     icon: Article,
     tagLabelKey: "cell.note",
     addLabelKey: "addbar.note",

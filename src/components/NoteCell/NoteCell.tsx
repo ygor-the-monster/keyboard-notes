@@ -16,17 +16,20 @@ import {
   Table,
   Minus,
 } from "@phosphor-icons/react";
+import type { Icon } from "@phosphor-icons/react";
 import { useStore } from "../../providers/StoreProvider/StoreProvider.tsx";
 import { useI18n } from "../../providers/I18nProvider/I18nProvider.tsx";
-import { renderMarkdown, toggleTask, applyFormat, replaceTextarea } from "./NoteCell.utils.js";
+import { renderMarkdown, toggleTask, applyFormat, replaceTextarea } from "./NoteCell.utils.ts";
 import EmptyState from "../EmptyState/EmptyState.tsx";
 import Toolbar from "../Toolbar/Toolbar.tsx";
+import type { Tool } from "../Toolbar/Toolbar.tsx";
+import type { CellOf } from "../../cells/kinds.ts";
 import shared from "../../providers/ThemeProvider/ThemeProvider.module.css";
 
-export default function NoteCell({ cell, editing }) {
+export default function NoteCell({ cell, editing }: { cell: CellOf<"note">; editing: boolean }) {
   const { updateCell } = useStore();
   const { t, localizeTools } = useI18n();
-  const taRef = useRef(null);
+  const taRef = useRef<HTMLTextAreaElement>(null);
 
   // Uncontrolled editor (keeps native undo); sync external source changes back in.
   useEffect(() => {
@@ -46,7 +49,7 @@ export default function NoteCell({ cell, editing }) {
         ref={(node) => {
           if (!node) return;
           let i = 0;
-          node.querySelectorAll('input[type="checkbox"]').forEach((box) => {
+          node.querySelectorAll<HTMLInputElement>('input[type="checkbox"]').forEach((box) => {
             const idx = i++;
             box.disabled = false;
             box.onchange = () =>
@@ -57,7 +60,7 @@ export default function NoteCell({ cell, editing }) {
     );
   }
 
-  function format(kind) {
+  function format(kind: string) {
     const ta = taRef.current;
     if (!ta) return;
     const { value, selStart, selEnd } = applyFormat(
@@ -70,8 +73,14 @@ export default function NoteCell({ cell, editing }) {
     replaceTextarea(ta, value, selStart, selEnd, (v) => updateCell(cell.id, { source: v }));
   }
 
-  const act = (id, icon, label) => ({ kind: "action", id, icon, label, onUse: () => format(id) });
-  const tools = [
+  const act = (id: string, icon: Icon, label: string): Tool => ({
+    kind: "action",
+    id,
+    icon,
+    label,
+    onUse: () => format(id),
+  });
+  const tools: Tool[] = [
     // Inline formatting
     act("bold", TextB, "Bold"),
     act("italic", TextItalic, "Italic"),
