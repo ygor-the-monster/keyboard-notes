@@ -1,7 +1,7 @@
 // ABC header/body handling + textarea insertion for the music editor.
 
 // abcjs is large, so it's loaded lazily (kept out of the initial bundle). Cached after the
-// first load; MusicCell calls getAbcjs() on mount, so by the time the smart-note editor
+// first load; ScoreCell calls getAbcjs() on mount, so by the time the smart-note editor
 // runs, the instance is ready (and degrades to a plain insert if it somehow isn't).
 let _abcjs = null;
 export async function getAbcjs() {
@@ -63,7 +63,7 @@ export function joinAbc(header, body) {
 }
 
 // Distinct voice (staff) ids declared across the header (V: defs) and body ([V:id] lines).
-export function voiceIds(header, body = "") {
+export function staffIds(header, body = "") {
   const ids = [];
   for (const l of (header + "\n" + body).split("\n")) {
     const m = l.match(/^\s*\[?V:\s*([^\s\]]+)/);
@@ -76,7 +76,7 @@ export function voiceIds(header, body = "") {
 // V: definition + %%score entry go there (before K:); the body gets a starter music line.
 // Returns the updated { header, body }.
 export function addStaff(header, body, clef = "treble") {
-  const ids = voiceIds(header, body);
+  const ids = staffIds(header, body);
   let n = 1;
   while (ids.includes("V" + n)) n++;
   const id = "V" + n;
@@ -99,11 +99,11 @@ export function addStaff(header, body, clef = "treble") {
 // Remove a staff (voice) — defaults to the last one, mirroring addStaff's add-at-bottom.
 // Drops its V: definition from the header, its %%score entry, and its [V:id] body lines.
 // Keeps at least one staff. Returns the updated { header, body }.
-export function removeStaff(header, body, voiceId) {
-  const ids = voiceIds(header, body);
+export function removeStaff(header, body, staffId) {
+  const ids = staffIds(header, body);
   if (ids.length <= 1) return { header, body };
-  const target = voiceId && ids.includes(voiceId) ? voiceId : ids[ids.length - 1];
-  const isTargetVoice = (l) => {
+  const target = staffId && ids.includes(staffId) ? staffId : ids[ids.length - 1];
+  const isTargetStaff = (l) => {
     const m = l.match(/^\s*\[?V:\s*([^\s\]]+)/);
     return m && m[1] === target;
   };
@@ -117,12 +117,12 @@ export function removeStaff(header, body, voiceId) {
       : l;
   const newHeader = (header || "")
     .split("\n")
-    .filter((l) => !isTargetVoice(l))
+    .filter((l) => !isTargetStaff(l))
     .map(stripScore)
     .join("\n");
   const newBody = (body || "")
     .split("\n")
-    .filter((l) => !isTargetVoice(l))
+    .filter((l) => !isTargetStaff(l))
     .join("\n");
   return { header: newHeader, body: newBody };
 }

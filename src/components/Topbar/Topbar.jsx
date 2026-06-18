@@ -18,8 +18,8 @@ import {
   Moon,
   Sun,
 } from "@phosphor-icons/react";
-import { useStore } from "../../providers/StoreProvider/StoreProvider.jsx";
-import { storageEstimate } from "../../providers/StoreProvider/StoreProvider.utils.js";
+import { useStore } from "../../providers/StoreProvider/StoreProvider.tsx";
+import { storageEstimate } from "../../providers/StoreProvider/StoreProvider.utils.ts";
 import { usePwa } from "../../providers/PWAProvider/PWAProvider.jsx";
 import { useDialog } from "../../providers/DialogProvider/DialogProvider.jsx";
 import { useI18n } from "../../providers/I18nProvider/I18nProvider.jsx";
@@ -33,12 +33,12 @@ const mb = (bytes) => (bytes ? (bytes / 1e6).toFixed(1) : "0");
 export default function Topbar() {
   const {
     state,
-    activeNotebook,
+    activeLesson,
     setTitle,
-    createNotebook,
-    selectNotebook,
-    deleteNotebook,
-    importNotebook,
+    createLesson,
+    selectLesson,
+    deleteLesson,
+    importLesson,
     importLibrary,
   } = useStore();
   const { canInstall, promptInstall } = usePwa();
@@ -47,17 +47,17 @@ export default function Topbar() {
   const { scheme, toggle: toggleTheme } = useTheme();
   const fileRef = useRef(null);
 
-  const lessons = state.order.filter((id) => state.notebooks[id]);
+  const lessons = state.order.filter((id) => state.lessons[id]);
 
   async function onMenuAction(key) {
     const k = String(key);
-    if (k === "__new") createNotebook();
+    if (k === "__new") createLesson();
     else if (k === "__import") fileRef.current?.click();
     else if (k === "__backup") exportBackup();
     else if (k === "__storage") showStorage();
     else if (k === "__delete") {
       if (
-        activeNotebook &&
+        activeLesson &&
         (await confirm({
           title: t("dialogs.deleteLessonTitle"),
           message: t("dialogs.deleteLessonMsg"),
@@ -65,8 +65,8 @@ export default function Topbar() {
           variant: "destructive",
         }))
       )
-        deleteNotebook(activeNotebook.id);
-    } else selectNotebook(k);
+        deleteLesson(activeLesson.id);
+    } else selectLesson(k);
   }
 
   // One import handles both a single lesson and a full-library backup (auto-detected).
@@ -79,7 +79,7 @@ export default function Topbar() {
       try {
         const parsed = JSON.parse(reader.result);
         if (parsed && parsed.library) importLibrary(parsed);
-        else importNotebook(parsed);
+        else importLesson(parsed);
       } catch (err) {
         alert({ title: t("dialogs.importFailedTitle"), message: err.message });
       }
@@ -90,7 +90,7 @@ export default function Topbar() {
   // Whole-library backup — device-local data has no cloud copy, so this is the safety net.
   function exportBackup() {
     const data = JSON.stringify(
-      { app: "pianoNotes", version: 2, library: { notebooks: state.notebooks, order: state.order } },
+      { app: "pianoNotes", version: 3, library: { lessons: state.lessons, order: state.order } },
       null,
       2,
     );
@@ -113,12 +113,12 @@ export default function Topbar() {
   }
 
   const lessonJson = () =>
-    JSON.stringify({ app: "pianoNotes", version: 2, notebook: activeNotebook }, null, 2);
+    JSON.stringify({ app: "pianoNotes", version: 3, lesson: activeLesson }, null, 2);
   const lessonFilename = () =>
-    (activeNotebook?.title || "lesson").replace(/[^\w-]+/g, "_") + ".pnotes";
+    (activeLesson?.title || "lesson").replace(/[^\w-]+/g, "_") + ".pnotes";
 
   function exportJson() {
-    if (!activeNotebook) return;
+    if (!activeLesson) return;
     const blob = new Blob([lessonJson()], { type: "application/x-piano-notes" });
     const a = document.createElement("a");
     a.href = URL.createObjectURL(blob);
@@ -134,10 +134,10 @@ export default function Topbar() {
     navigator.canShare?.({ files: [new File(["{}"], "l.pnotes", { type: "text/plain" })] });
 
   async function shareLesson() {
-    if (!activeNotebook) return;
+    if (!activeLesson) return;
     const file = new File([lessonJson()], lessonFilename(), { type: "text/plain" });
     try {
-      await navigator.share({ files: [file], title: activeNotebook.title || "Piano Notes lesson" });
+      await navigator.share({ files: [file], title: activeLesson.title || "Piano Notes lesson" });
     } catch (err) {
       if (err.name !== "AbortError")
         alert({ title: t("dialogs.shareFailedTitle"), message: err.message });
@@ -160,7 +160,7 @@ export default function Topbar() {
             <MenuSection>
               {lessons.map((id) => (
                 <MenuItem key={id} id={id}>
-                  {state.notebooks[id].title || t("topbar.untitled")}
+                  {state.lessons[id].title || t("topbar.untitled")}
                 </MenuItem>
               ))}
             </MenuSection>
@@ -179,9 +179,9 @@ export default function Topbar() {
         <TextField
           aria-label={t("topbar.lessonTitle")}
           placeholder={t("topbar.untitled")}
-          value={activeNotebook?.title || ""}
+          value={activeLesson?.title || ""}
           onChange={setTitle}
-          isDisabled={!activeNotebook}
+          isDisabled={!activeLesson}
           styles={titleField}
         />
 

@@ -64,7 +64,7 @@ export default {
   addbar: {
     title: "Add a cell",
     note: "Add note",
-    music: "Add score",
+    score: "Add score",
     image: "Add image",
     pdf: "Add PDF",
     audio: "Add audio",
@@ -72,7 +72,7 @@ export default {
   },
   cell: {
     note: "Note",
-    music: "Score",
+    score: "Score",
     image: "Image",
     pdf: "PDF",
     audio: "Audio",
@@ -88,7 +88,7 @@ export default {
     duplicate: "Duplicate",
     delete: "Delete cell",
     formatTools: "Format",
-    scoreTools: "Music",
+    scoreTools: "Score",
     noteSource: "Markdown source",
     scoreHeader: "ABC header",
     scoreBody: "ABC music",
@@ -230,6 +230,11 @@ export default {
     noMarks: "No markers yet — play, then add one at the cursor or over a selection.",
     untitledMark: "Marker",
   },
+  scroll: {
+    auto: "Auto-scroll",
+    stop: "Stop scrolling",
+    speed: "Scroll speed",
+  },
   cifra: {
     addTitle: "Write a chord chart",
     placeholder:
@@ -239,12 +244,11 @@ export default {
     transposeUp: "Transpose up",
     transpose: "Transpose",
     original: "Original key",
-    autoScroll: "Auto-scroll",
-    stopScroll: "Stop scrolling",
-    scrollSpeed: "Scroll speed",
     monospace: "Monospace alignment",
   },
   annotate: {
+    undo: "Undo",
+    redo: "Redo",
     pen: "Pen",
     eraser: "Eraser",
     color: "Pen colour",

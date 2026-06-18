@@ -1,6 +1,7 @@
 // Audio helpers for the audio cell: file/blob → dataURL, Web Audio decode, waveform peaks,
 // region splicing, and a small mono 16-bit WAV encoder (used after any edit that needs to
 // re-encode — splice / trim / delete — since the browser can't re-encode to opus offline).
+import { output } from "../../audio/engine.ts";
 
 export function fileToDataUrl(file) {
   return new Promise((resolve, reject) => {
@@ -11,9 +12,9 @@ export function fileToDataUrl(file) {
   });
 }
 
-let _ctx;
+// Audio-cell decode + buffer math run on the shared output context from the engine.
 export function audioCtx() {
-  return (_ctx ||= new (window.AudioContext || window.webkitAudioContext)());
+  return output();
 }
 
 export async function decodeDataUrl(dataUrl) {

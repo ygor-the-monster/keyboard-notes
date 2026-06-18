@@ -64,7 +64,7 @@ export default {
   addbar: {
     title: "Aggiungi una cella",
     note: "Aggiungi nota",
-    music: "Aggiungi spartito",
+    score: "Aggiungi spartito",
     image: "Aggiungi immagine",
     pdf: "Aggiungi PDF",
     audio: "Aggiungi audio",
@@ -72,7 +72,7 @@ export default {
   },
   cell: {
     note: "Nota",
-    music: "Spartito",
+    score: "Spartito",
     image: "Immagine",
     pdf: "PDF",
     audio: "Audio",
@@ -88,7 +88,7 @@ export default {
     duplicate: "Duplica",
     delete: "Elimina cella",
     formatTools: "Formato",
-    scoreTools: "Musica",
+    scoreTools: "Spartito",
     noteSource: "Sorgente Markdown",
     scoreHeader: "Intestazione ABC",
     scoreBody: "Musica ABC",
@@ -230,6 +230,11 @@ export default {
     noMarks: "Nessun marcatore — riproduci, poi aggiungine uno al cursore o su una selezione.",
     untitledMark: "Marcatore",
   },
+  scroll: {
+    auto: "Scorrimento automatico",
+    stop: "Ferma scorrimento",
+    speed: "Velocità di scorrimento",
+  },
   cifra: {
     addTitle: "Scrivi una griglia di accordi",
     placeholder:
@@ -239,12 +244,11 @@ export default {
     transposeUp: "Trasporta in alto",
     transpose: "Trasporta",
     original: "Tonalità originale",
-    autoScroll: "Scorrimento automatico",
-    stopScroll: "Ferma scorrimento",
-    scrollSpeed: "Velocità di scorrimento",
     monospace: "Allineamento monospaziato",
   },
   annotate: {
+    undo: "Annulla",
+    redo: "Ripristina",
     pen: "Penna",
     eraser: "Gomma",
     color: "Colore della penna",

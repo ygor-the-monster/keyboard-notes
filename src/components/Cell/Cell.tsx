@@ -1,64 +1,62 @@
-import { useState } from "react";
 import {
-  CaretUp,
-  CaretDown,
-  Copy,
-  Trash,
-  Article,
-  MusicNotes,
-  Image as ImageIcon,
-  FilePdf,
-  Waveform,
-  Guitar,
-  DotsSixVertical,
-} from "@phosphor-icons/react";
-import { useStore } from "../../providers/StoreProvider/StoreProvider.jsx";
+  useState,
+  type ComponentType,
+  type CSSProperties,
+  type PointerEvent as ReactPointerEvent,
+} from "react";
+import { CaretUp, CaretDown, Copy, Trash, DotsSixVertical } from "@phosphor-icons/react";
+import type { Icon } from "@phosphor-icons/react";
+import { useStore } from "../../providers/StoreProvider/StoreProvider.tsx";
 import { useEditing } from "../../providers/EditingProvider/EditingProvider.jsx";
 import { useDialog } from "../../providers/DialogProvider/DialogProvider.jsx";
 import { useI18n } from "../../providers/I18nProvider/I18nProvider.jsx";
-import IconBtn from "../IconBtn/IconBtn.jsx";
-import MarkdownCell from "../MarkdownCell/MarkdownCell.jsx";
-import MusicCell from "../MusicCell/MusicCell.jsx";
-import ImageCell from "../ImageCell/ImageCell.jsx";
-import PdfCell from "../PdfCell/PdfCell.jsx";
-import AudioCell from "../AudioCell/AudioCell.jsx";
-import CifraCell from "../CifraCell/CifraCell.jsx";
+import IconBtnRaw from "../IconBtn/IconBtn.jsx";
+import { cellRegistry } from "../../cells/registry.tsx";
+import type { Cell as CellModel } from "../../cells/kinds.ts";
 import s from "./Cell.module.css";
 
-const META = {
-  md: { icon: Article, labelKey: "cell.note", typeClass: "typeMd" },
-  abc: { icon: MusicNotes, labelKey: "cell.music", typeClass: "typeAbc" },
-  cifra: { icon: Guitar, labelKey: "cell.cifra", typeClass: "typeCifra" },
-  img: { icon: ImageIcon, labelKey: "cell.image", typeClass: "typeImg" },
-  pdf: { icon: FilePdf, labelKey: "cell.pdf", typeClass: "typePdf" },
-  snd: { icon: Waveform, labelKey: "cell.audio", typeClass: "typeSnd" },
-};
+// Loose casts for providers/components still on .jsx — removed when they migrate to TS.
+type Translate = (key: string, vars?: Record<string, unknown>) => string;
+const IconBtn = IconBtnRaw as ComponentType<{
+  icon: Icon;
+  label: string;
+  onPress: () => void | Promise<void>;
+}>;
 
-export default function Cell({ cell, index = 0 }) {
+export default function Cell({ cell, index = 0 }: { cell: CellModel; index?: number }) {
   const { moveCell, moveCellTo, duplicateCell, deleteCell } = useStore();
-  const { editingId } = useEditing();
-  const { confirm } = useDialog();
-  const { t } = useI18n();
+  const { editingId } = useEditing() as unknown as { editingId: string | null };
+  const { confirm } = useDialog() as unknown as {
+    confirm: (o: {
+      title: string;
+      message: string;
+      confirmLabel?: string;
+      variant?: string;
+    }) => Promise<boolean>;
+  };
+  const { t } = useI18n() as unknown as { t: Translate };
   const editing = editingId === cell.id;
-  const meta = META[cell.type] || META.md;
-  const TagIcon = meta.icon;
+  const view = cellRegistry[cell.kind];
+  const TagIcon = view.icon;
+  const Body = view.component;
 
   // Pointer-based drag-to-reorder via the grip handle (touch-friendly). The list reorders
   // live, iOS-style. Move/up are bound to `window` (not the grip) so events keep flowing
   // even as the list re-renders mid-drag, and the target index is computed against the OTHER
   // cells so the dragged cell doesn't oscillate against its own midpoint.
   const [dragging, setDragging] = useState(false);
-  function onGripDown(e) {
+  function onGripDown(e: ReactPointerEvent) {
     e.preventDefault();
     setDragging(true);
-    const scroller = e.currentTarget.closest(".app-scroll") || document.scrollingElement;
+    const scroller = (e.currentTarget.closest(".app-scroll") ||
+      document.scrollingElement) as HTMLElement;
     let lastY = e.clientY;
     let raf = 0;
 
     // Reorder so the dragged cell lands at the slot the pointer is over (target computed
     // against the OTHER cells, so it never oscillates against its own midpoint).
-    const reorder = (clientY) => {
-      const others = [...document.querySelectorAll("[data-cell-id]")].filter(
+    const reorder = (clientY: number) => {
+      const others = [...document.querySelectorAll<HTMLElement>("[data-cell-id]")].filter(
         (el) => el.dataset.cellId !== cell.id,
       );
       let target = others.length;
@@ -90,7 +88,7 @@ export default function Cell({ cell, index = 0 }) {
       raf = requestAnimationFrame(tick);
     };
 
-    const onMove = (ev) => {
+    const onMove = (ev: PointerEvent) => {
       lastY = ev.clientY;
       reorder(ev.clientY);
     };
@@ -107,7 +105,7 @@ export default function Cell({ cell, index = 0 }) {
     raf = requestAnimationFrame(tick);
   }
 
-  const cellClass = [s.cell, s[meta.typeClass], editing && s.editing, dragging && s.dragging]
+  const cellClass = [s.cell, s[view.typeClass], editing && s.editing, dragging && s.dragging]
     .filter(Boolean)
     .join(" ");
 
@@ -115,7 +113,7 @@ export default function Cell({ cell, index = 0 }) {
     <section
       className={cellClass}
       data-cell-id={cell.id}
-      style={{ "--stagger": `${Math.min(index, 8) * 55}ms` }}
+      style={{ "--stagger": `${Math.min(index, 8) * 55}ms` } as CSSProperties}
     >
       <div className={`${s.cellToolbar} no-print`}>
         <span className={s.tagGroup}>
@@ -129,7 +127,7 @@ export default function Cell({ cell, index = 0 }) {
             <DotsSixVertical size={18} weight="bold" />
           </span>
           <span className={s.cellTag}>
-            <TagIcon size={12} aria-hidden /> {t(meta.labelKey)}
+            <TagIcon size={12} aria-hidden /> {t(view.tagLabelKey)}
           </span>
         </span>
         <div className={`${s.actions} no-print`} role="toolbar" aria-label={t("cell.actions")}>
@@ -159,19 +157,7 @@ export default function Cell({ cell, index = 0 }) {
       </div>
 
       <div className="cell-body">
-        {cell.type === "abc" ? (
-          <MusicCell cell={cell} editing={editing} />
-        ) : cell.type === "cifra" ? (
-          <CifraCell cell={cell} editing={editing} />
-        ) : cell.type === "img" ? (
-          <ImageCell cell={cell} editing={editing} />
-        ) : cell.type === "pdf" ? (
-          <PdfCell cell={cell} editing={editing} />
-        ) : cell.type === "snd" ? (
-          <AudioCell cell={cell} editing={editing} />
-        ) : (
-          <MarkdownCell cell={cell} editing={editing} />
-        )}
+        <Body cell={cell} editing={editing} />
       </div>
     </section>
   );

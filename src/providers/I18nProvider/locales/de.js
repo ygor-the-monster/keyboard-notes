@@ -66,7 +66,7 @@ export default {
   addbar: {
     title: "Zelle hinzufügen",
     note: "Notiz hinzufügen",
-    music: "Partitur hinzufügen",
+    score: "Partitur hinzufügen",
     image: "Bild hinzufügen",
     pdf: "PDF hinzufügen",
     audio: "Audio hinzufügen",
@@ -74,7 +74,7 @@ export default {
   },
   cell: {
     note: "Notiz",
-    music: "Partitur",
+    score: "Partitur",
     image: "Bild",
     pdf: "PDF",
     audio: "Audio",
@@ -90,7 +90,7 @@ export default {
     duplicate: "Duplizieren",
     delete: "Zelle löschen",
     formatTools: "Formatieren",
-    scoreTools: "Musik",
+    scoreTools: "Partitur",
     noteSource: "Markdown-Quelltext",
     scoreHeader: "ABC-Kopf",
     scoreBody: "ABC-Musik",
@@ -234,6 +234,11 @@ export default {
       "Noch keine Markierungen — spiele ab und füge dann eine am Cursor oder über einer Auswahl hinzu.",
     untitledMark: "Markierung",
   },
+  scroll: {
+    auto: "Automatisch scrollen",
+    stop: "Scrollen stoppen",
+    speed: "Scrollgeschwindigkeit",
+  },
   cifra: {
     addTitle: "Akkordblatt schreiben",
     placeholder:
@@ -243,12 +248,11 @@ export default {
     transposeUp: "Höher transponieren",
     transpose: "Transponieren",
     original: "Originaltonart",
-    autoScroll: "Automatisch scrollen",
-    stopScroll: "Scrollen stoppen",
-    scrollSpeed: "Scrollgeschwindigkeit",
     monospace: "Festbreiten-Ausrichtung",
   },
   annotate: {
+    undo: "Rückgängig",
+    redo: "Wiederherstellen",
     pen: "Stift",
     eraser: "Radierer",
     color: "Stiftfarbe",

@@ -1,83 +1,25 @@
-import { useEffect, useRef, useState } from "react";
+import { useState } from "react";
 import { Picker, PickerItem, Slider } from "@react-spectrum/s2";
 import { Waveform } from "@phosphor-icons/react";
 import { useI18n } from "../../providers/I18nProvider/I18nProvider.jsx";
-import { usePref } from "../../providers/StoreProvider/StoreProvider.utils.js";
+import { usePref } from "../../providers/StoreProvider/StoreProvider.utils.ts";
+import { useDrone } from "./Drone.hooks.ts";
 import { fullWidth } from "./Drone.styled.jsx";
 import shared from "../../providers/ThemeProvider/ThemeProvider.module.css";
 import s from "./Drone.module.css";
 
-// Sustained reference pitch (drone) for intonation / ear-training. A single oscillator
-// through a gain node; note + octave set the frequency, with click-free gain ramps.
+// Sustained reference pitch (drone) for intonation / ear-training. UI only — the oscillator and
+// its click-free gain ramps live in useDrone + the shared audio engine.
 const NOTES = ["C", "C♯", "D", "D♯", "E", "F", "F♯", "G", "G♯", "A", "A♯", "B"];
 const OCTAVES = [2, 3, 4, 5];
-
-const freqOf = (noteIdx, octave) => 440 * 2 ** (((octave + 1) * 12 + noteIdx - 69) / 12);
 
 export default function Drone() {
   const { t } = useI18n();
   const [open, setOpen] = useState(false);
-  const [playing, setPlaying] = useState(false);
   const [note, setNote] = usePref("drone.note", 9); // A
   const [octave, setOctave] = usePref("drone.octave", 3);
   const [volume, setVolume] = usePref("drone.volume", 0.3);
-
-  const ctxRef = useRef(null);
-  const oscRef = useRef(null);
-  const gainRef = useRef(null);
-
-  function ensureCtx() {
-    if (!ctxRef.current) ctxRef.current = new (window.AudioContext || window.webkitAudioContext)();
-    return ctxRef.current;
-  }
-
-  function start() {
-    const ctx = ensureCtx();
-    ctx.resume?.();
-    const osc = ctx.createOscillator();
-    const gain = ctx.createGain();
-    osc.type = "triangle";
-    osc.frequency.value = freqOf(note, octave);
-    gain.gain.value = 0;
-    osc.connect(gain).connect(ctx.destination);
-    osc.start();
-    gain.gain.linearRampToValueAtTime(volume, ctx.currentTime + 0.05);
-    oscRef.current = osc;
-    gainRef.current = gain;
-    setPlaying(true);
-  }
-  function stop() {
-    const ctx = ctxRef.current;
-    const osc = oscRef.current;
-    const gain = gainRef.current;
-    if (ctx && osc && gain) {
-      gain.gain.cancelScheduledValues(ctx.currentTime);
-      gain.gain.setValueAtTime(gain.gain.value, ctx.currentTime);
-      gain.gain.linearRampToValueAtTime(0, ctx.currentTime + 0.08);
-      osc.stop(ctx.currentTime + 0.1);
-    }
-    oscRef.current = null;
-    gainRef.current = null;
-    setPlaying(false);
-  }
-  const toggle = () => (playing ? stop() : start());
-
-  // Live-update frequency / volume while sounding.
-  useEffect(() => {
-    const ctx = ctxRef.current;
-    if (playing && oscRef.current && ctx) {
-      oscRef.current.frequency.setTargetAtTime(freqOf(note, octave), ctx.currentTime, 0.02);
-    }
-  }, [note, octave, playing]);
-  useEffect(() => {
-    const ctx = ctxRef.current;
-    if (playing && gainRef.current && ctx) {
-      gainRef.current.gain.setTargetAtTime(volume, ctx.currentTime, 0.02);
-    }
-  }, [volume, playing]);
-
-  // Stop the tone on unmount.
-  useEffect(() => () => oscRef.current?.stop?.(), []);
+  const { playing, toggle } = useDrone({ note, octave, volume });
 
   const dockClass = [s.dock, "no-print", open && s.open, playing && s.live]
     .filter(Boolean)

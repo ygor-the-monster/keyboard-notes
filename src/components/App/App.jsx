@@ -1,12 +1,12 @@
 import { useEffect } from "react";
-import { useStore } from "../../providers/StoreProvider/StoreProvider.jsx";
+import { useStore } from "../../providers/StoreProvider/StoreProvider.tsx";
 import { useEditing } from "../../providers/EditingProvider/EditingProvider.jsx";
 import { useDialog } from "../../providers/DialogProvider/DialogProvider.jsx";
 import { useI18n } from "../../providers/I18nProvider/I18nProvider.jsx";
 import Topbar from "../Topbar/Topbar.jsx";
-import Cell from "../Cell/Cell.jsx";
+import Cell from "../Cell/Cell.tsx";
 import EmptyState from "../EmptyState/EmptyState.jsx";
-import AddBar from "../AddBar/AddBar.jsx";
+import AddBar from "../AddBar/AddBar.tsx";
 import Metronome from "../Metronome/Metronome.jsx";
 import Tuner from "../Tuner/Tuner.jsx";
 import Drone from "../Drone/Drone.jsx";
@@ -31,7 +31,7 @@ const undoAccent = (deleted) => {
 };
 
 export default function App() {
-  const { activeNotebook, createNotebook, importNotebook, hydrated, lastDeleted, undoDelete, dismissUndo } =
+  const { activeLesson, createLesson, importLesson, hydrated, lastDeleted, undoDelete, dismissUndo } =
     useStore();
   const { setEditing } = useEditing();
   const { alert } = useDialog();
@@ -51,13 +51,13 @@ export default function App() {
       for (const handle of params.files || []) {
         try {
           const file = await handle.getFile();
-          importNotebook(JSON.parse(await file.text()));
+          importLesson(JSON.parse(await file.text()));
         } catch (err) {
           alert({ title: t("dialogs.openFileFailedTitle"), message: err.message });
         }
       }
     });
-  }, [importNotebook, alert, t]);
+  }, [importLesson, alert, t]);
 
   // Android Web Share Target — the service worker stashes the shared file and redirects here.
   useEffect(() => {
@@ -67,7 +67,7 @@ export default function App() {
         const cache = await caches.open("shared-inbox");
         const res = await cache.match("lesson");
         if (res) {
-          importNotebook(JSON.parse(await res.text()));
+          importLesson(JSON.parse(await res.text()));
           await cache.delete("lesson");
         }
       } catch (err) {
@@ -75,7 +75,7 @@ export default function App() {
       }
       window.history.replaceState(null, "", "./");
     })();
-  }, [importNotebook, alert, t]);
+  }, [importLesson, alert, t]);
 
   // Click-to-edit / click-away-to-render (Jupyter-style active cell).
   useEffect(() => {
@@ -104,9 +104,9 @@ export default function App() {
         <SyntaxRef />
       </div>
       <div className="app-scroll">
-        {!hydrated ? null : activeNotebook ? (
+        {!hydrated ? null : activeLesson ? (
           <div className={s.page}>
-            {activeNotebook.cells.length === 0 ? (
+            {activeLesson.cells.length === 0 ? (
               <div className={s.emptyCells}>
                 <EmptyState
                   kind="general"
@@ -117,7 +117,7 @@ export default function App() {
               </div>
             ) : (
               <div className={s.stack}>
-                {activeNotebook.cells.map((cell, i) => (
+                {activeLesson.cells.map((cell, i) => (
                   <Cell key={cell.id} cell={cell} index={i} />
                 ))}
               </div>
@@ -127,7 +127,7 @@ export default function App() {
         ) : (
           <div className={s.empty}>
             <EmptyState kind="general" neutral title={t("app.noLessonOpen")}>
-              <button type="button" className={shared.btnMagenta} onClick={createNotebook}>
+              <button type="button" className={shared.btnMagenta} onClick={createLesson}>
                 {t("app.createFirst")}
               </button>
             </EmptyState>

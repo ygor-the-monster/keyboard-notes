@@ -2,7 +2,7 @@ import { createContext, useContext, useEffect, useMemo } from "react";
 import { Provider } from "@react-spectrum/s2";
 import "@react-spectrum/s2/page.css";
 import { IconContext } from "@phosphor-icons/react";
-import { usePref } from "../StoreProvider/StoreProvider.utils.js";
+import { usePref } from "../StoreProvider/StoreProvider.utils.ts";
 import "./ThemeProvider.globals.css";
 
 // App theme: Spectrum 2 + thin Phosphor icons + the global design-token layer. The colour

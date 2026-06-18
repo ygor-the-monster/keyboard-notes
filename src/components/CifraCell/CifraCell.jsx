@@ -1,7 +1,8 @@
-import { useEffect, useRef, useState } from "react";
-import { Play, Pause, ArrowUUpLeft } from "@phosphor-icons/react";
-import { useStore } from "../../providers/StoreProvider/StoreProvider.jsx";
+import { useEffect, useRef } from "react";
+import { ArrowUUpLeft } from "@phosphor-icons/react";
+import { useStore } from "../../providers/StoreProvider/StoreProvider.tsx";
 import { useI18n } from "../../providers/I18nProvider/I18nProvider.jsx";
+import { useAutoScroll, buildScrollTools } from "../../hooks/useAutoScroll.ts";
 import { parseCifra, transposeLabel } from "./CifraCell.utils.js";
 import EmptyState from "../EmptyState/EmptyState.jsx";
 import Toolbar from "../Toolbar/Toolbar.jsx";
@@ -53,9 +54,7 @@ export default function CifraCell({ cell, editing }) {
   const { t } = useI18n();
   const taRef = useRef(null);
   const rootRef = useRef(null);
-  const accRef = useRef(0);
-  const [scrolling, setScrolling] = useState(false);
-  const [speed, setSpeed] = useState(2);
+  const { scrolling, speed, toggle, setSpeed } = useAutoScroll(rootRef);
 
   const transpose = cell.transpose || 0;
   const blocks = parseCifra(cell.source, transpose);
@@ -65,39 +64,6 @@ export default function CifraCell({ cell, editing }) {
     const ta = taRef.current;
     if (ta && ta.value !== cell.source) ta.value = cell.source;
   }, [cell.source]);
-
-  // Auto-scroll the lesson's scroll container while playing (Ultimate-Guitar style).
-  useEffect(() => {
-    if (!scrolling) return;
-    const container = rootRef.current?.closest(".app-scroll") || document.scrollingElement;
-    if (!container) return;
-    let raf = 0;
-    let stopped = false;
-    const tick = () => {
-      if (stopped) return;
-      accRef.current += speed * 0.4;
-      const px = Math.floor(accRef.current);
-      if (px >= 1) {
-        container.scrollTop += px;
-        accRef.current -= px;
-      }
-      // Stop once the end of the block reaches the middle of the viewport (or we bottom out).
-      const contRect = container.getBoundingClientRect();
-      const center = contRect.top + container.clientHeight / 2;
-      const blockBottom = rootRef.current?.getBoundingClientRect().bottom ?? Infinity;
-      const atBottom = container.scrollTop + container.clientHeight >= container.scrollHeight - 1;
-      if (blockBottom <= center || atBottom) {
-        setScrolling(false);
-        return;
-      }
-      raf = requestAnimationFrame(tick);
-    };
-    raf = requestAnimationFrame(tick);
-    return () => {
-      stopped = true;
-      cancelAnimationFrame(raf);
-    };
-  }, [scrolling, speed]);
 
   const setTranspose = (n) => updateCell(cell.id, { transpose: clampTranspose(n) });
 
@@ -128,26 +94,7 @@ export default function CifraCell({ cell, editing }) {
         ]
       : []),
     { kind: "sep" },
-    {
-      kind: "toggle",
-      id: "scroll",
-      icon: Play,
-      altIcon: Pause,
-      label: t("cifra.autoScroll"),
-      altLabel: t("cifra.stopScroll"),
-      value: scrolling,
-      onToggle: () => setScrolling((v) => !v),
-    },
-    {
-      kind: "spinner",
-      id: "speed",
-      label: t("cifra.scrollSpeed"),
-      display: `${speed}×`,
-      onPrev: () => setSpeed((s) => Math.max(1, s - 1)),
-      onNext: () => setSpeed((s) => Math.min(5, s + 1)),
-      prevDisabled: speed <= 1,
-      nextDisabled: speed >= 5,
-    },
+    ...buildScrollTools({ t, scrolling, toggle, speed, setSpeed }),
   ];
 
   // ---- compact view ----------------------------------------------------------

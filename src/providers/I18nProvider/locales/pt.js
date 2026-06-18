@@ -66,7 +66,7 @@ export default {
   addbar: {
     title: "Adicionar uma célula",
     note: "Adicionar nota",
-    music: "Adicionar partitura",
+    score: "Adicionar partitura",
     image: "Adicionar imagem",
     pdf: "Adicionar PDF",
     audio: "Adicionar áudio",
@@ -74,7 +74,7 @@ export default {
   },
   cell: {
     note: "Nota",
-    music: "Partitura",
+    score: "Partitura",
     image: "Imagem",
     pdf: "PDF",
     audio: "Áudio",
@@ -90,7 +90,7 @@ export default {
     duplicate: "Duplicar",
     delete: "Excluir célula",
     formatTools: "Formatar",
-    scoreTools: "Música",
+    scoreTools: "Partitura",
     noteSource: "Código Markdown",
     scoreHeader: "Cabeçalho ABC",
     scoreBody: "Música ABC",
@@ -232,6 +232,11 @@ export default {
     noMarks: "Nenhum marcador ainda — reproduza e adicione um no cursor ou sobre uma seleção.",
     untitledMark: "Marcador",
   },
+  scroll: {
+    auto: "Rolagem automática",
+    stop: "Parar rolagem",
+    speed: "Velocidade da rolagem",
+  },
   cifra: {
     addTitle: "Escrever uma cifra",
     placeholder:
@@ -241,12 +246,11 @@ export default {
     transposeUp: "Transpor para cima",
     transpose: "Transpor",
     original: "Tom original",
-    autoScroll: "Rolagem automática",
-    stopScroll: "Parar rolagem",
-    scrollSpeed: "Velocidade da rolagem",
     monospace: "Alinhamento monoespaçado",
   },
   annotate: {
+    undo: "Desfazer",
+    redo: "Refazer",
     pen: "Caneta",
     eraser: "Borracha",
     color: "Cor da caneta",

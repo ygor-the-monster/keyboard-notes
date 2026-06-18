@@ -3,7 +3,7 @@ import { createRoot } from "react-dom/client";
 import ThemeProvider from "./providers/ThemeProvider/ThemeProvider.jsx";
 import { I18nProvider } from "./providers/I18nProvider/I18nProvider.jsx";
 import { DialogProvider } from "./providers/DialogProvider/DialogProvider.jsx";
-import { StoreProvider } from "./providers/StoreProvider/StoreProvider.jsx";
+import { StoreProvider } from "./providers/StoreProvider/StoreProvider.tsx";
 import { PWAProvider } from "./providers/PWAProvider/PWAProvider.jsx";
 import { EditingProvider } from "./providers/EditingProvider/EditingProvider.jsx";
 import App from "./components/App/App.jsx";

@@ -66,7 +66,7 @@ export default {
   addbar: {
     title: "Ajouter une cellule",
     note: "Ajouter une note",
-    music: "Ajouter une partition",
+    score: "Ajouter une partition",
     image: "Ajouter une image",
     pdf: "Ajouter un PDF",
     audio: "Ajouter de l'audio",
@@ -74,7 +74,7 @@ export default {
   },
   cell: {
     note: "Note",
-    music: "Partition",
+    score: "Partition",
     image: "Image",
     pdf: "PDF",
     audio: "Audio",
@@ -90,7 +90,7 @@ export default {
     duplicate: "Dupliquer",
     delete: "Supprimer la cellule",
     formatTools: "Format",
-    scoreTools: "Musique",
+    scoreTools: "Partition",
     noteSource: "Source Markdown",
     scoreHeader: "En-tête ABC",
     scoreBody: "Musique ABC",
@@ -235,6 +235,11 @@ export default {
       "Aucun repère pour l'instant — lisez, puis ajoutez-en un au curseur ou sur une sélection.",
     untitledMark: "Repère",
   },
+  scroll: {
+    auto: "Défilement automatique",
+    stop: "Arrêter le défilement",
+    speed: "Vitesse de défilement",
+  },
   cifra: {
     addTitle: "Écrire une grille d'accords",
     placeholder:
@@ -244,12 +249,11 @@ export default {
     transposeUp: "Transposer vers le haut",
     transpose: "Transposer",
     original: "Tonalité d'origine",
-    autoScroll: "Défilement automatique",
-    stopScroll: "Arrêter le défilement",
-    scrollSpeed: "Vitesse de défilement",
     monospace: "Alignement à chasse fixe",
   },
   annotate: {
+    undo: "Annuler",
+    redo: "Rétablir",
     pen: "Stylo",
     eraser: "Gomme",
     color: "Couleur du stylo",

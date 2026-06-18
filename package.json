@@ -10,6 +10,7 @@
     "preview": "vite preview",
     "lint": "oxlint",
     "lint:fix": "oxlint --fix",
+    "typecheck": "tsgo --noEmit",
     "format": "oxfmt src",
     "format:check": "oxfmt --check src"
   },
@@ -26,6 +27,9 @@
   },
   "devDependencies": {
     "@react-aria/optimize-locales-plugin": "^1.2.1",
+    "@types/react": "^19.2.17",
+    "@types/react-dom": "^19.2.3",
+    "@typescript/native-preview": "^7.0.0-dev.20260618.1",
     "@vite-pwa/assets-generator": "^1.0.2",
     "@vitejs/plugin-react-oxc": "^0.4.3",
     "lightningcss": "^1.32.0",

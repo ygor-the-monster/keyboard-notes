@@ -16,14 +16,14 @@ import {
   UploadSimple,
   PencilSimpleLine,
   Rows,
-  Play,
-  Pause,
 } from "@phosphor-icons/react";
-import { useStore } from "../../providers/StoreProvider/StoreProvider.jsx";
+import { useStore } from "../../providers/StoreProvider/StoreProvider.tsx";
 import { useDialog } from "../../providers/DialogProvider/DialogProvider.jsx";
 import { useI18n } from "../../providers/I18nProvider/I18nProvider.jsx";
 import { getPdfjs, dataUrlToBytes, bytesToDataUrl, fileToDataUrl } from "./PdfCell.utils.js";
 import { ANNOT_COLORS, buildAnnotationTools } from "../AnnotationLayer/AnnotationLayer.utils.js";
+import { useStrokeHistory } from "../AnnotationLayer/AnnotationLayer.hooks.ts";
+import { useAutoScroll, buildScrollTools } from "../../hooks/useAutoScroll.ts";
 import AnnotationLayer from "../AnnotationLayer/AnnotationLayer.jsx";
 import Toolbar from "../Toolbar/Toolbar.jsx";
 import shared from "../../providers/ThemeProvider/ThemeProvider.module.css";
@@ -56,13 +56,10 @@ export default function PdfCell({ cell, editing }) {
   const docRef = useRef(null);
   const fileRef = useRef(null);
   const appendRef = useRef(null);
-  const accRef = useRef(0);
   const [numPages, setNumPages] = useState(0);
   const [page, setPage] = useState(1);
   const [view, setView] = useState("single"); // 'single' | 'double'
   const [flow, setFlow] = useState("paged"); // 'paged' (current page/spread) | 'all' (continuous)
-  const [scrolling, setScrolling] = useState(false);
-  const [scrollSpeed, setScrollSpeed] = useState(2);
   const [renderErr, setRenderErr] = useState("");
 
   // Non-destructive annotation overlay (per page). `annotations` maps page number → strokes.
@@ -74,6 +71,13 @@ export default function PdfCell({ cell, editing }) {
   const [eraser, setEraser] = useState(false);
   const setPageStrokes = (pageNum, next) =>
     updateCell(cell.id, { annotations: { ...annotations, [pageNum]: next } });
+  // Undo/redo history for the current page's annotation (resets when the page changes).
+  const annHistory = useStrokeHistory(
+    annotations[page] || [],
+    (next) => setPageStrokes(page, next),
+    page,
+  );
+  const { scrolling, speed, toggle, setSpeed } = useAutoScroll(rootRef);
 
   // Load the document whenever the source changes (pdf.js is loaded lazily on first use).
   useEffect(() => {
@@ -132,40 +136,6 @@ export default function PdfCell({ cell, editing }) {
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [numPages, page, view, flow, editing, src]);
-
-  // Hands-free auto-scroll of the lesson (Ultimate-Guitar style) — most useful in the
-  // continuous 'all' flow for reading through a multi-page score.
-  useEffect(() => {
-    if (!scrolling) return;
-    const container = rootRef.current?.closest(".app-scroll") || document.scrollingElement;
-    if (!container) return;
-    let raf = 0;
-    let stopped = false;
-    const tick = () => {
-      if (stopped) return;
-      accRef.current += scrollSpeed * 0.4;
-      const px = Math.floor(accRef.current);
-      if (px >= 1) {
-        container.scrollTop += px;
-        accRef.current -= px;
-      }
-      // Stop once the end of the block reaches the middle of the viewport (or we bottom out).
-      const contRect = container.getBoundingClientRect();
-      const center = contRect.top + container.clientHeight / 2;
-      const blockBottom = rootRef.current?.getBoundingClientRect().bottom ?? Infinity;
-      const atBottom = container.scrollTop + container.clientHeight >= container.scrollHeight - 1;
-      if (blockBottom <= center || atBottom) {
-        setScrolling(false);
-        return;
-      }
-      raf = requestAnimationFrame(tick);
-    };
-    raf = requestAnimationFrame(tick);
-    return () => {
-      stopped = true;
-      cancelAnimationFrame(raf);
-    };
-  }, [scrolling, scrollSpeed]);
 
   async function addFile(file) {
     if (!file || file.type !== "application/pdf") return;
@@ -253,7 +223,9 @@ export default function PdfCell({ cell, editing }) {
       />
       <AnnotationLayer
         strokes={annotations[pageNum] || []}
-        onChange={(next) => setPageStrokes(pageNum, next)}
+        onChange={(next) =>
+          pageNum === page ? annHistory.commit(next) : setPageStrokes(pageNum, next)
+        }
         active={editing && annMode}
         color={color}
         thick={thick}
@@ -350,7 +322,6 @@ export default function PdfCell({ cell, editing }) {
           },
         ]
       : [];
-    const pageStrokes = annotations[page] || [];
     const annTools = [
       { kind: "sep" },
       {
@@ -372,10 +343,12 @@ export default function PdfCell({ cell, editing }) {
             setOpacity,
             eraser,
             setEraser,
-            onUndo: () => setPageStrokes(page, pageStrokes.slice(0, -1)),
-            onClear: () => setPageStrokes(page, []),
-            canUndo: pageStrokes.length > 0,
-            canClear: pageStrokes.length > 0,
+            onUndo: annHistory.undo,
+            onRedo: annHistory.redo,
+            onClear: annHistory.clear,
+            canUndo: annHistory.canUndo,
+            canRedo: annHistory.canRedo,
+            canClear: annHistory.canClear,
           })
         : []),
     ];
@@ -418,26 +391,7 @@ export default function PdfCell({ cell, editing }) {
       },
       ...navTools,
       { kind: "sep" },
-      {
-        kind: "toggle",
-        id: "scroll",
-        icon: Play,
-        altIcon: Pause,
-        label: t("cifra.autoScroll"),
-        altLabel: t("cifra.stopScroll"),
-        value: scrolling,
-        onToggle: () => setScrolling((v) => !v),
-      },
-      {
-        kind: "spinner",
-        id: "speed",
-        label: t("cifra.scrollSpeed"),
-        display: `${scrollSpeed}×`,
-        onPrev: () => setScrollSpeed((spd) => Math.max(1, spd - 1)),
-        onNext: () => setScrollSpeed((spd) => Math.min(5, spd + 1)),
-        prevDisabled: scrollSpeed <= 1,
-        nextDisabled: scrollSpeed >= 5,
-      },
+      ...buildScrollTools({ t, scrolling, toggle, speed, setSpeed }),
       ...annTools,
       ...pageTools,
       { kind: "sep" },

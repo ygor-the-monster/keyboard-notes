@@ -1,7 +1,7 @@
 /* Per-block accent colors (Spectrum hues) — set --accent for everything inside the cell.
    Rainbow order across the add-bar — Score · Chords · Audio · Image · PDF · Note
    = magenta → cinnamon → gold → seafoam → blue → purple. */
-.typeAbc {
+.typeScore {
   --accent: var(--s-magenta);
   --accent-strong: var(--s-magenta-strong);
   --accent-tint: var(--s-magenta-tint);
@@ -13,13 +13,13 @@
   --accent-tint: var(--s-cinnamon-tint);
   --accent-ring: var(--s-cinnamon-ring);
 }
-.typeSnd {
+.typeAudio {
   --accent: var(--s-gold);
   --accent-strong: var(--s-gold-strong);
   --accent-tint: var(--s-gold-tint);
   --accent-ring: var(--s-gold-ring);
 }
-.typeImg {
+.typeImage {
   --accent: var(--s-seafoam);
   --accent-strong: var(--s-seafoam-strong);
   --accent-tint: var(--s-seafoam-tint);
@@ -31,7 +31,7 @@
   --accent-tint: var(--s-blue-tint);
   --accent-ring: var(--s-blue-ring);
 }
-.typeMd {
+.typeNote {
   --accent: var(--s-purple);
   --accent-strong: var(--s-purple-strong);
   --accent-tint: var(--s-purple-tint);

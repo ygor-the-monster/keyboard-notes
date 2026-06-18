@@ -31,7 +31,7 @@ import {
   MinusSquare,
   UserSound,
 } from "@phosphor-icons/react";
-import { useStore } from "../../providers/StoreProvider/StoreProvider.jsx";
+import { useStore } from "../../providers/StoreProvider/StoreProvider.tsx";
 import { useI18n } from "../../providers/I18nProvider/I18nProvider.jsx";
 import EmptyState from "../EmptyState/EmptyState.jsx";
 import {
@@ -41,17 +41,17 @@ import {
   cleanAbc,
   addStaff,
   removeStaff,
-  voiceIds,
+  staffIds,
   smartNote,
   wrapNotes,
   insertIntoTextarea,
   parseTempo,
   withTempo,
   SMUFL,
-} from "./MusicCell.utils.js";
+} from "./ScoreCell.utils.js";
 import Toolbar from "../Toolbar/Toolbar.jsx";
 import shared from "../../providers/ThemeProvider/ThemeProvider.module.css";
-import s from "./MusicCell.module.css";
+import s from "./ScoreCell.module.css";
 
 // New cells store header/body separately; legacy cells split `source`.
 function readHB(cell) {
@@ -61,7 +61,7 @@ function readHB(cell) {
   return splitAbc(cell.source || "");
 }
 
-export default function MusicCell({ cell, editing }) {
+export default function ScoreCell({ cell, editing }) {
   const { updateCell } = useStore();
   const { t, localizeTools } = useI18n();
   const renderRef = useRef(null);
@@ -572,7 +572,7 @@ export default function MusicCell({ cell, editing }) {
       id: "removestaff",
       icon: MinusSquare,
       label: "Remove staff",
-      disabled: voiceIds(headerNow(), bodyNow()).length <= 1,
+      disabled: staffIds(headerNow(), bodyNow()).length <= 1,
       onUse: () => applyScore(removeStaff(headerNow(), bodyNow())),
     },
   ];

@@ -9,6 +9,7 @@ import {
   PaintBrush,
   DropHalf,
   ArrowUUpLeft,
+  ArrowUUpRight,
   TrashSimple,
 } from "@phosphor-icons/react";
 
@@ -127,8 +128,10 @@ export function buildAnnotationTools({
   eraser,
   setEraser,
   onUndo,
+  onRedo,
   onClear,
   canUndo,
+  canRedo,
   canClear,
 }) {
   return [
@@ -198,6 +201,14 @@ export function buildAnnotationTools({
       label: t("annotate.undo"),
       onUse: onUndo,
       disabled: !canUndo,
+    },
+    {
+      kind: "action",
+      id: "annRedo",
+      icon: ArrowUUpRight,
+      label: t("annotate.redo"),
+      onUse: onRedo,
+      disabled: !canRedo,
     },
     {
       kind: "action",

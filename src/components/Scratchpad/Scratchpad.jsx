@@ -1,20 +1,20 @@
 import { useEffect, useRef, useState } from "react";
 import { NotePencil } from "@phosphor-icons/react";
-import { useStore } from "../../providers/StoreProvider/StoreProvider.jsx";
+import { useStore } from "../../providers/StoreProvider/StoreProvider.tsx";
 import { useI18n } from "../../providers/I18nProvider/I18nProvider.jsx";
-import { getPref, setPref } from "../../providers/StoreProvider/StoreProvider.utils.js";
+import { getPref, setPref } from "../../providers/StoreProvider/StoreProvider.utils.ts";
 import s from "./Scratchpad.module.css";
 
 // A pull-tab sticky note for the active lesson — quick reminders / homework, kept out of
-// the cell flow. Lightweight, so it lives in localStorage (keyed per notebook) rather than
+// the cell flow. Lightweight, so it lives in localStorage (keyed per lesson) rather than
 // in the IndexedDB lesson record.
 export default function Scratchpad() {
-  const { activeNotebook } = useStore();
+  const { activeLesson } = useStore();
   const { t } = useI18n();
   const [open, setOpen] = useState(false);
   const [count, setCount] = useState(0);
   const taRef = useRef(null);
-  const id = activeNotebook?.id;
+  const id = activeLesson?.id;
   const prefKey = id ? "scratch." + id : null;
 
   // Uncontrolled textarea (keeps native undo); reload it whenever the active lesson changes.
@@ -55,7 +55,7 @@ export default function Scratchpad() {
             if (prefKey) setPref(prefKey, e.target.value);
             setCount(e.target.value.length);
           }}
-          disabled={!activeNotebook}
+          disabled={!activeLesson}
         />
       </div>
     </div>

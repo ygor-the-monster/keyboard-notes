@@ -16,20 +16,21 @@ import {
   ArrowUUpLeft,
   ArrowsOut,
 } from "@phosphor-icons/react";
-import { useStore } from "../../providers/StoreProvider/StoreProvider.jsx";
+import { useStore } from "../../providers/StoreProvider/StoreProvider.tsx";
 import { useDialog } from "../../providers/DialogProvider/DialogProvider.jsx";
 import { useI18n } from "../../providers/I18nProvider/I18nProvider.jsx";
-import { DEFAULT_IMAGE_EDITS } from "../../providers/StoreProvider/StoreProvider.utils.js";
+import { DEFAULT_IMAGE_FILTER } from "../../cells/kinds.ts";
 import {
   loadImage,
   normalizeImage,
   fileToDataUrl,
-  renderEdited,
+  renderFiltered,
   composeCrop,
   rotateCrop,
   flipCrop,
 } from "./ImageCell.utils.js";
 import { ANNOT_COLORS, buildAnnotationTools } from "../AnnotationLayer/AnnotationLayer.utils.js";
+import { useStrokeHistory } from "../AnnotationLayer/AnnotationLayer.hooks.ts";
 import AnnotationLayer from "../AnnotationLayer/AnnotationLayer.jsx";
 import Toolbar from "../Toolbar/Toolbar.jsx";
 import shared from "../../providers/ThemeProvider/ThemeProvider.module.css";
@@ -55,7 +56,7 @@ export default function ImageCell({ cell, editing }) {
   const [eraser, setEraser] = useState(false);
   const [cropRect, setCropRect] = useState(null); // live, normalised over the display
 
-  const edits = cell.edits || DEFAULT_IMAGE_EDITS;
+  const filter = cell.filter || DEFAULT_IMAGE_FILTER;
   const strokes = cell.strokes || [];
 
   // Load the original once per source, then (re)paint the edited result whenever the
@@ -69,45 +70,48 @@ export default function ImageCell({ cell, editing }) {
     loadImage(cell.dataUrl).then((img) => {
       if (cancelled) return;
       imgRef.current = img;
-      if (canvasRef.current) renderEdited(canvasRef.current, img, edits);
+      if (canvasRef.current) renderFiltered(canvasRef.current, img, filter);
     });
     return () => {
       cancelled = true;
     };
-    // Reload only when the source changes; the edits effect below repaints on edit changes.
+    // Reload only when the source changes; the filter effect below repaints on edit changes.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [cell.dataUrl]);
 
   useEffect(() => {
-    if (imgRef.current && canvasRef.current) renderEdited(canvasRef.current, imgRef.current, edits);
+    if (imgRef.current && canvasRef.current)
+      renderFiltered(canvasRef.current, imgRef.current, filter);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [edits, editing]);
+  }, [filter, editing]);
 
   async function addFile(file) {
     if (!file || !file.type.startsWith("image/")) return;
     updateCell(cell.id, {
       dataUrl: await normalizeImage(await fileToDataUrl(file)),
-      edits: { ...DEFAULT_IMAGE_EDITS },
+      filter: { ...DEFAULT_IMAGE_FILTER },
       strokes: [],
     });
   }
 
-  const updateEdits = (patch) => updateCell(cell.id, { edits: { ...edits, ...patch } });
+  const updateFilter = (patch) => updateCell(cell.id, { filter: { ...filter, ...patch } });
   const setStrokes = (next) => updateCell(cell.id, { strokes: next });
+  const history = useStrokeHistory(strokes, setStrokes);
 
   function rotate(dir) {
-    updateEdits({
-      rotate: ((edits.rotate || 0) + dir * 90 + 360) % 360,
-      crop: rotateCrop(edits.crop, dir),
+    updateFilter({
+      rotate: ((filter.rotate || 0) + dir * 90 + 360) % 360,
+      crop: rotateCrop(filter.crop, dir),
     });
   }
   function flip(horizontal) {
-    updateEdits({
-      [horizontal ? "flipH" : "flipV"]: !edits[horizontal ? "flipH" : "flipV"],
-      crop: flipCrop(edits.crop, horizontal),
+    updateFilter({
+      [horizontal ? "flipH" : "flipV"]: !filter[horizontal ? "flipH" : "flipV"],
+      crop: flipCrop(filter.crop, horizontal),
     });
   }
-  const adjust = (field, delta) => updateEdits({ [field]: clampStep((edits[field] || 0) + delta) });
+  const adjust = (field, delta) =>
+    updateFilter({ [field]: clampStep((filter[field] || 0) + delta) });
 
   // Crop point in display-normalised coordinates, read off the visible canvas box.
   function cropPoint(e) {
@@ -138,7 +142,7 @@ export default function ImageCell({ cell, editing }) {
   };
   function applyCrop() {
     if (cropRect && cropRect.w > 0.02 && cropRect.h > 0.02) {
-      updateEdits({ crop: composeCrop(edits.crop, cropRect) });
+      updateFilter({ crop: composeCrop(filter.crop, cropRect) });
     }
     setCropRect(null);
   }
@@ -151,15 +155,13 @@ export default function ImageCell({ cell, editing }) {
       setMode("crop");
     }
   };
-  const undoStroke = () => setStrokes(strokes.slice(0, -1));
-
   async function revert() {
     const ok = await confirm({
       title: t("image.revertTitle"),
       message: t("image.revertMsg"),
       confirmLabel: t("image.revert"),
     });
-    if (ok) updateCell(cell.id, { edits: { ...DEFAULT_IMAGE_EDITS }, strokes: [] });
+    if (ok) updateCell(cell.id, { filter: { ...DEFAULT_IMAGE_FILTER }, strokes: [] });
   }
 
   // ---- empty state -----------------------------------------------------------
@@ -199,7 +201,7 @@ export default function ImageCell({ cell, editing }) {
       <canvas ref={canvasRef} className={css.baseCanvas} />
       <AnnotationLayer
         strokes={strokes}
-        onChange={setStrokes}
+        onChange={history.commit}
         active={editing && mode === "pen"}
         color={color}
         thick={thick}
@@ -243,12 +245,12 @@ export default function ImageCell({ cell, editing }) {
     { id: "mh", icon: FlipHorizontal, label: t("image.mirrorH"), onUse: () => flip(true) },
     { id: "mv", icon: FlipVertical, label: t("image.mirrorV"), onUse: () => flip(false) },
   ];
-  if (edits.crop)
+  if (filter.crop)
     transformOptions.push({
       id: "rc",
       icon: ArrowsOut,
       label: t("image.resetCrop"),
-      onUse: () => updateEdits({ crop: null }),
+      onUse: () => updateFilter({ crop: null }),
     });
 
   const tools = [
@@ -307,10 +309,12 @@ export default function ImageCell({ cell, editing }) {
         setEraser(v);
         if (v && mode === "crop") setMode("pen");
       },
-      onUndo: undoStroke,
-      onClear: () => setStrokes([]),
-      canUndo: strokes.length > 0,
-      canClear: strokes.length > 0,
+      onUndo: history.undo,
+      onRedo: history.redo,
+      onClear: history.clear,
+      canUndo: history.canUndo,
+      canRedo: history.canRedo,
+      canClear: history.canClear,
     }),
     { kind: "sep" },
     {
