@@ -16,7 +16,7 @@ import NoteCell from "../components/NoteCell/NoteCell.tsx";
 import ScoreCell from "../components/ScoreCell/ScoreCell.jsx";
 import CifraCell from "../components/CifraCell/CifraCell.tsx";
 import ImageCell from "../components/ImageCell/ImageCell.tsx";
-import PdfCell from "../components/PdfCell/PdfCell.jsx";
+import PdfCell from "../components/PdfCell/PdfCell.tsx";
 import AudioCell from "../components/AudioCell/AudioCell.tsx";
 
 export interface CellView {
@@ -65,7 +65,7 @@ export const cellRegistry: Record<Kind, CellView> = {
     accent: { c: "--s-seafoam", ct: "--s-seafoam-tint" },
   },
   pdf: {
-    component: PdfCell,
+    component: PdfCell as CellView["component"],
     icon: FilePdf,
     tagLabelKey: "cell.pdf",
     addLabelKey: "addbar.pdf",

@@ -20,18 +20,21 @@ import {
 import { useStore } from "../../providers/StoreProvider/StoreProvider.tsx";
 import { useDialog } from "../../providers/DialogProvider/DialogProvider.tsx";
 import { useI18n } from "../../providers/I18nProvider/I18nProvider.tsx";
-import { getPdfjs, dataUrlToBytes, bytesToDataUrl, fileToDataUrl } from "./PdfCell.utils.js";
+import { getPdfjs, dataUrlToBytes, bytesToDataUrl, fileToDataUrl } from "./PdfCell.utils.ts";
 import { ANNOT_COLORS, buildAnnotationTools } from "../AnnotationLayer/AnnotationLayer.utils.ts";
 import { useStrokeHistory } from "../AnnotationLayer/AnnotationLayer.hooks.ts";
 import { useAutoScroll, buildScrollTools } from "../../hooks/useAutoScroll.ts";
 import AnnotationLayer from "../AnnotationLayer/AnnotationLayer.tsx";
 import Toolbar from "../Toolbar/Toolbar.tsx";
+import type { Tool } from "../Toolbar/Toolbar.tsx";
+import type { AnnotationStroke, CellOf } from "../../cells/kinds.ts";
 import shared from "../../providers/ThemeProvider/ThemeProvider.module.css";
 import { dropFull } from "./PdfCell.styled.jsx";
 import css from "./PdfCell.module.css";
 
-// Render one pdf.js page into a canvas, fit to `cssWidth`.
-async function renderPage(doc, n, canvas, cssWidth) {
+// Render one pdf.js page into a canvas, fit to `cssWidth`. pdf.js objects are typed `any` —
+// the library is the seam here, not our logic.
+async function renderPage(doc: any, n: number, canvas: HTMLCanvasElement, cssWidth: number) {
   const page = await doc.getPage(n);
   const base = page.getViewport({ scale: 1 });
   const dpr = Math.min(window.devicePixelRatio || 1, 2);
@@ -44,22 +47,22 @@ async function renderPage(doc, n, canvas, cssWidth) {
   await page.render({ canvasContext: canvas.getContext("2d"), viewport }).promise;
 }
 
-export default function PdfCell({ cell, editing }) {
+export default function PdfCell({ cell, editing }: { cell: CellOf<"pdf">; editing: boolean }) {
   const { updateCell } = useStore();
   const { confirm } = useDialog();
   const { t } = useI18n();
   const src = cell.dataUrl || cell.url;
 
-  const wrapRef = useRef(null);
-  const rootRef = useRef(null);
-  const canvasRefs = useRef({}); // page number → <canvas>
-  const docRef = useRef(null);
-  const fileRef = useRef(null);
-  const appendRef = useRef(null);
+  const wrapRef = useRef<HTMLDivElement>(null);
+  const rootRef = useRef<HTMLDivElement>(null);
+  const canvasRefs = useRef<Record<number, HTMLCanvasElement>>({}); // page number → <canvas>
+  const docRef = useRef<any>(null);
+  const fileRef = useRef<HTMLInputElement>(null);
+  const appendRef = useRef<HTMLInputElement>(null);
   const [numPages, setNumPages] = useState(0);
   const [page, setPage] = useState(1);
-  const [view, setView] = useState("single"); // 'single' | 'double'
-  const [flow, setFlow] = useState("paged"); // 'paged' (current page/spread) | 'all' (continuous)
+  const [view, setView] = useState<"single" | "double">("single");
+  const [flow, setFlow] = useState<"paged" | "all">("paged");
   const [renderErr, setRenderErr] = useState("");
 
   // Non-destructive annotation overlay (per page). `annotations` maps page number → strokes.
@@ -69,7 +72,7 @@ export default function PdfCell({ cell, editing }) {
   const [thick, setThick] = useState("m");
   const [opacity, setOpacity] = useState(1);
   const [eraser, setEraser] = useState(false);
-  const setPageStrokes = (pageNum, next) =>
+  const setPageStrokes = (pageNum: number, next: AnnotationStroke[]) =>
     updateCell(cell.id, { annotations: { ...annotations, [pageNum]: next } });
   // Undo/redo history for the current page's annotation (resets when the page changes).
   const annHistory = useStrokeHistory(
@@ -83,21 +86,21 @@ export default function PdfCell({ cell, editing }) {
   useEffect(() => {
     if (!src) return;
     let cancelled = false;
-    let task;
+    let task: any;
     setRenderErr("");
     (async () => {
       const pdfjsLib = await getPdfjs();
       if (cancelled) return;
       const params = cell.dataUrl ? { data: dataUrlToBytes(cell.dataUrl) } : { url: cell.url };
-      task = pdfjsLib.getDocument(params);
+      task = pdfjsLib.getDocument(params as any);
       task.promise.then(
-        (doc) => {
+        (doc: any) => {
           if (cancelled) return;
           docRef.current = doc;
           setNumPages(doc.numPages);
           setPage((p) => Math.min(p, doc.numPages));
         },
-        (e) => !cancelled && setRenderErr(t("pdf.openFailed", { msg: e.message })),
+        (e: any) => !cancelled && setRenderErr(t("pdf.openFailed", { msg: e.message })),
       );
     })();
     return () => {
@@ -107,8 +110,7 @@ export default function PdfCell({ cell, editing }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [src, cell.dataUrl, cell.url]);
 
-  // (Re)render the visible page(s) to fit the cell width. In 'all' (continuous) flow every
-  // page is rendered stacked; in 'paged' flow only the current page (and its spread).
+  // (Re)render the visible page(s) to fit the cell width.
   useEffect(() => {
     const doc = docRef.current;
     if (!doc || !wrapRef.current) return;
@@ -128,7 +130,7 @@ export default function PdfCell({ cell, editing }) {
           if (showTwo && refs[page + 1]) await renderPage(doc, page + 1, refs[page + 1], cssW);
         }
       } catch (e) {
-        if (!cancelled) setRenderErr(t("pdf.renderFailed", { msg: e.message }));
+        if (!cancelled) setRenderErr(t("pdf.renderFailed", { msg: (e as Error).message }));
       }
     })();
     return () => {
@@ -137,7 +139,7 @@ export default function PdfCell({ cell, editing }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [numPages, page, view, flow, editing, src]);
 
-  async function addFile(file) {
+  async function addFile(file: File | null) {
     if (!file || file.type !== "application/pdf") return;
     const dataUrl = await fileToDataUrl(file);
     const sizeMB = (dataUrl.length * 0.75) / 1e6;
@@ -153,25 +155,26 @@ export default function PdfCell({ cell, editing }) {
     updateCell(cell.id, { dataUrl, name: file.name, url: "" });
   }
 
-  // --- Page manipulation (pdf-lib) — operates on the currently shown page ------
+  // --- Page manipulation (pdf-lib) — operates on the currently shown page. pdf-lib objects are
+  // typed `any`: the library is the seam.
   async function loadPdf() {
     const { PDFDocument, degrees } = await import("pdf-lib");
     const pdf = await PDFDocument.load(dataUrlToBytes(cell.dataUrl));
     return { PDFDocument, degrees, pdf };
   }
-  async function commitPdf(pdf, nextPage) {
+  async function commitPdf(pdf: any, nextPage?: number) {
     const bytes = await pdf.save();
     if (nextPage != null) setPage(nextPage);
     updateCell(cell.id, { dataUrl: bytesToDataUrl(bytes) });
   }
-  async function rotatePage(dir) {
+  async function rotatePage(dir: number) {
     if (!cell.dataUrl) return;
     const { pdf, degrees } = await loadPdf();
     const p = pdf.getPage(page - 1);
     p.setRotation(degrees((p.getRotation().angle + dir * 90 + 360) % 360));
     await commitPdf(pdf);
   }
-  async function movePage(delta) {
+  async function movePage(delta: number) {
     if (!cell.dataUrl) return;
     const to = page - 1 + delta;
     if (to < 0 || to >= numPages) return;
@@ -179,7 +182,7 @@ export default function PdfCell({ cell, editing }) {
     const order = [...Array(pdf.getPageCount()).keys()];
     order.splice(to, 0, order.splice(page - 1, 1)[0]);
     const out = await PDFDocument.create();
-    (await out.copyPages(pdf, order)).forEach((p) => out.addPage(p));
+    (await out.copyPages(pdf, order)).forEach((p: any) => out.addPage(p));
     await commitPdf(out, to + 1);
   }
   async function duplicatePage() {
@@ -189,7 +192,7 @@ export default function PdfCell({ cell, editing }) {
     pdf.insertPage(page, copy);
     await commitPdf(pdf, page + 1);
   }
-  async function appendPdf(file) {
+  async function appendPdf(file: File | null) {
     if (!file || file.type !== "application/pdf" || !cell.dataUrl) return;
     const { PDFDocument } = await import("pdf-lib");
     const pdf = await PDFDocument.load(dataUrlToBytes(cell.dataUrl));
@@ -212,7 +215,7 @@ export default function PdfCell({ cell, editing }) {
     await commitPdf(pdf, Math.min(page, numPages - 1));
   }
 
-  const pageLayer = (pageNum) => (
+  const pageLayer = (pageNum: number) => (
     <div className={css.pdfPage} key={pageNum}>
       <canvas
         ref={(el) => {
@@ -265,7 +268,7 @@ export default function PdfCell({ cell, editing }) {
   // Editing with a loaded PDF: page navigation + page manipulation.
   if (src) {
     // Page editing rewrites the bytes, so it's only available for embedded (dataUrl) PDFs.
-    const pageTools = cell.dataUrl
+    const pageTools: Tool[] = cell.dataUrl
       ? [
           { kind: "sep" },
           {
@@ -322,7 +325,7 @@ export default function PdfCell({ cell, editing }) {
           },
         ]
       : [];
-    const annTools = [
+    const annTools: Tool[] = [
       { kind: "sep" },
       {
         kind: "toggle",
@@ -353,7 +356,7 @@ export default function PdfCell({ cell, editing }) {
         : []),
     ];
     // Page navigation / spread only apply to the paged flow.
-    const navTools =
+    const navTools: Tool[] =
       flow === "paged"
         ? [
             {
@@ -378,7 +381,7 @@ export default function PdfCell({ cell, editing }) {
             },
           ]
         : [];
-    const tools = [
+    const tools: Tool[] = [
       {
         kind: "toggle",
         id: "flow",
@@ -413,7 +416,7 @@ export default function PdfCell({ cell, editing }) {
           accept="application/pdf,.pdf"
           hidden
           onChange={(e) => {
-            const f = e.target.files[0];
+            const f = e.target.files?.[0];
             e.target.value = "";
             if (f) addFile(f);
           }}
@@ -424,7 +427,7 @@ export default function PdfCell({ cell, editing }) {
           accept="application/pdf,.pdf"
           hidden
           onChange={(e) => {
-            const f = e.target.files[0];
+            const f = e.target.files?.[0];
             e.target.value = "";
             if (f) appendPdf(f);
           }}
@@ -439,7 +442,7 @@ export default function PdfCell({ cell, editing }) {
       <DropZone
         onDrop={async (e) => {
           const f = e.items.find((i) => i.kind === "file");
-          if (f) addFile(await f.getFile());
+          if (f && f.kind === "file") addFile(await f.getFile());
         }}
         styles={dropFull}
       >
