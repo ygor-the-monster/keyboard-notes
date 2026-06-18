@@ -1,7 +1,3 @@
-// Shared, non-destructive vector-annotation model used by the Image and PDF cells.
-// A stroke is stored in NORMALISED coordinates relative to the layer box, so the same
-// data renders correctly at any display size (and survives zoom / fit-width changes):
-//   { color: "rgb(…)"|"#hex", width: <fraction of layer width>, opacity: 0..1, points: [[x,y], …] }
 import {
   PencilSimpleLine,
   Eraser,
@@ -12,9 +8,11 @@ import {
   ArrowUUpRight,
   TrashSimple,
 } from "@phosphor-icons/react";
+import type { AnnotationStroke } from "../../cells/kinds.ts";
+import type { Tool } from "../Toolbar/Toolbar.tsx";
 
 // Pen / highlighter colours — rainbow (Spectrum shades) + pink, black, white.
-export const ANNOT_COLORS = [
+export const ANNOT_COLORS: { c: string; name: string }[] = [
   { c: "rgb(215,50,32)", name: "Red" },
   { c: "rgb(194,78,0)", name: "Orange" },
   { c: "rgb(219,164,0)", name: "Yellow" },
@@ -27,22 +25,22 @@ export const ANNOT_COLORS = [
   { c: "#ffffff", name: "White" },
 ];
 // Stroke size as a fraction of the layer width.
-export const ANNOT_THICKNESS = [
+export const ANNOT_THICKNESS: { key: string; nameKey: string; f: number; dot: number }[] = [
   { key: "s", nameKey: "annotate.fine", f: 1 / 500, dot: 7 },
   { key: "m", nameKey: "annotate.medium", f: 1 / 260, dot: 11 },
   { key: "l", nameKey: "annotate.large", f: 1 / 120, dot: 16 },
 ];
-export const ANNOT_OPACITY = [
+export const ANNOT_OPACITY: { a: number; nameKey: string }[] = [
   { a: 1, nameKey: "annotate.opaque" },
   { a: 0.66, nameKey: "annotate.medium" },
   { a: 0.33, nameKey: "annotate.light" },
 ];
 
-export const thicknessFraction = (key) =>
+export const thicknessFraction = (key: string): number =>
   (ANNOT_THICKNESS.find((tk) => tk.key === key) || ANNOT_THICKNESS[1]).f;
 
 // Apply an alpha to an "rgb(…)" or "#hex" colour, yielding "rgba(…)".
-export function withAlpha(c, a) {
+export function withAlpha(c: string, a: number): string {
   if (c.startsWith("#")) {
     let h = c.slice(1);
     if (h.length === 3)
@@ -56,7 +54,12 @@ export function withAlpha(c, a) {
 }
 
 // Draw one stroke onto a context already scaled to CSS pixels (w × h = display size).
-export function drawStroke(ctx, stroke, w, h) {
+export function drawStroke(
+  ctx: CanvasRenderingContext2D,
+  stroke: AnnotationStroke,
+  w: number,
+  h: number,
+): void {
   const pts = stroke.points;
   if (!pts || !pts.length) return;
   ctx.save();
@@ -80,13 +83,23 @@ export function drawStroke(ctx, stroke, w, h) {
   ctx.restore();
 }
 
-export function drawStrokes(ctx, strokes, w, h) {
+export function drawStrokes(
+  ctx: CanvasRenderingContext2D,
+  strokes: AnnotationStroke[],
+  w: number,
+  h: number,
+): void {
   for (const s of strokes || []) drawStroke(ctx, s, w, h);
 }
 
-// Eraser hit-test: index of the last (topmost) stroke whose path passes within `tol`
-// (normalised) of (nx, ny), or -1. Squared distances avoid sqrt in the hot loop.
-export function hitStrokeIndex(strokes, nx, ny, tol) {
+// Eraser hit-test: index of the last (topmost) stroke whose path passes within `tol` (normalised)
+// of (nx, ny), or -1. Squared distances avoid sqrt in the hot loop.
+export function hitStrokeIndex(
+  strokes: AnnotationStroke[],
+  nx: number,
+  ny: number,
+  tol: number,
+): number {
   for (let i = strokes.length - 1; i >= 0; i--) {
     const pts = strokes[i].points;
     const pad = tol + (strokes[i].width || 0) / 2;
@@ -102,7 +115,7 @@ export function hitStrokeIndex(strokes, nx, ny, tol) {
   return -1;
 }
 
-function segDist2(a, b, px, py) {
+function segDist2(a: [number, number], b: [number, number], px: number, py: number): number {
   const vx = b[0] - a[0];
   const vy = b[1] - a[1];
   const wx = px - a[0];
@@ -115,8 +128,26 @@ function segDist2(a, b, px, py) {
   return dx * dx + dy * dy;
 }
 
-// Build the unified-Toolbar tool descriptors for an annotation control set. Shared by
-// the Image and PDF cells so their pen UI is identical.
+interface AnnotationToolsArgs {
+  t: (key: string, vars?: Record<string, unknown>) => string;
+  color: string;
+  setColor: (c: string) => void;
+  thick: string;
+  setThick: (k: string) => void;
+  opacity: number;
+  setOpacity: (a: number) => void;
+  eraser: boolean;
+  setEraser: (v: boolean) => void;
+  onUndo: () => void;
+  onRedo: () => void;
+  onClear: () => void;
+  canUndo: boolean;
+  canRedo: boolean;
+  canClear: boolean;
+}
+
+// Build the unified-Toolbar tool descriptors for an annotation control set. Shared by the Image
+// and PDF cells so their pen UI is identical.
 export function buildAnnotationTools({
   t,
   color,
@@ -133,7 +164,7 @@ export function buildAnnotationTools({
   canUndo,
   canRedo,
   canClear,
-}) {
+}: AnnotationToolsArgs): Tool[] {
   return [
     {
       kind: "toggle",

@@ -30,7 +30,7 @@ import {
   remapMarksAfterTrim,
   remapMarksAfterCut,
 } from "./AudioCell.utils.js";
-import { ANNOT_COLORS, withAlpha } from "../AnnotationLayer/AnnotationLayer.utils.js";
+import { ANNOT_COLORS, withAlpha } from "../AnnotationLayer/AnnotationLayer.utils.ts";
 import Toolbar from "../Toolbar/Toolbar.tsx";
 import shared from "../../providers/ThemeProvider/ThemeProvider.module.css";
 import { dropFull } from "./AudioCell.styled.jsx";

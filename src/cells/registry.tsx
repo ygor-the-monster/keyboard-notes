@@ -15,7 +15,7 @@ import type { Cell, Kind } from "./kinds.ts";
 import NoteCell from "../components/NoteCell/NoteCell.tsx";
 import ScoreCell from "../components/ScoreCell/ScoreCell.jsx";
 import CifraCell from "../components/CifraCell/CifraCell.tsx";
-import ImageCell from "../components/ImageCell/ImageCell.jsx";
+import ImageCell from "../components/ImageCell/ImageCell.tsx";
 import PdfCell from "../components/PdfCell/PdfCell.jsx";
 import AudioCell from "../components/AudioCell/AudioCell.jsx";
 
@@ -57,7 +57,7 @@ export const cellRegistry: Record<Kind, CellView> = {
     accent: { c: "--s-cinnamon", ct: "--s-cinnamon-tint" },
   },
   image: {
-    component: ImageCell,
+    component: ImageCell as CellView["component"],
     icon: ImageIcon,
     tagLabelKey: "cell.image",
     addLabelKey: "addbar.image",

@@ -1,19 +1,17 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, type PointerEvent as ReactPointerEvent } from "react";
 import {
   drawStrokes,
   drawStroke,
   hitStrokeIndex,
   thicknessFraction,
-} from "./AnnotationLayer.utils.js";
+} from "./AnnotationLayer.utils.ts";
+import type { AnnotationStroke } from "../../cells/kinds.ts";
 import css from "./AnnotationLayer.module.css";
 
-// A transparent canvas that captures freehand strokes and renders them in normalised
-// coordinates over whatever it's laid on top of (an image or a PDF page). Fully
-// non-destructive: it never touches the underlying media — strokes live in `strokes`
-// and flow out through `onChange`. The host must be `position: relative`.
-//
-// Props: strokes, onChange(next), active (capture pointer?), color, thick (key),
-//        opacity, eraser (bool).
+// A transparent canvas that captures freehand strokes and renders them in normalised coordinates
+// over whatever it's laid on top of (an image or a PDF page). Fully non-destructive: it never
+// touches the underlying media — strokes live in `strokes` and flow out through `onChange`. The
+// host must be `position: relative`.
 export default function AnnotationLayer({
   strokes,
   onChange,
@@ -22,11 +20,19 @@ export default function AnnotationLayer({
   thick = "m",
   opacity = 1,
   eraser = false,
+}: {
+  strokes: AnnotationStroke[];
+  onChange: (next: AnnotationStroke[]) => void;
+  active?: boolean;
+  color?: string;
+  thick?: string;
+  opacity?: number;
+  eraser?: boolean;
 }) {
-  const canvasRef = useRef(null);
+  const canvasRef = useRef<HTMLCanvasElement>(null);
   const drawingRef = useRef(false);
-  const liveRef = useRef(null); // in-progress stroke
-  const workingRef = useRef(strokes); // authoritative copy during an erase drag
+  const liveRef = useRef<AnnotationStroke | null>(null); // in-progress stroke
+  const workingRef = useRef<AnnotationStroke[]>(strokes); // authoritative copy during an erase drag
   workingRef.current = strokes;
 
   // Size the backing store to the displayed box (× dpr) and repaint committed strokes.
@@ -39,7 +45,7 @@ export default function AnnotationLayer({
     const dpr = Math.min(window.devicePixelRatio || 1, 2);
     cv.width = Math.round(w * dpr);
     cv.height = Math.round(h * dpr);
-    const ctx = cv.getContext("2d");
+    const ctx = cv.getContext("2d")!;
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     ctx.clearRect(0, 0, w, h);
     drawStrokes(ctx, workingRef.current, w, h);
@@ -56,15 +62,15 @@ export default function AnnotationLayer({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [strokes]);
 
-  function norm(e) {
-    const rect = canvasRef.current.getBoundingClientRect();
+  function norm(e: ReactPointerEvent): [number, number] {
+    const rect = canvasRef.current!.getBoundingClientRect();
     return [
       Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width)),
       Math.max(0, Math.min(1, (e.clientY - rect.top) / rect.height)),
     ];
   }
 
-  function eraseAt(pt) {
+  function eraseAt(pt: [number, number]) {
     const idx = hitStrokeIndex(workingRef.current, pt[0], pt[1], 0.012);
     if (idx >= 0) {
       const next = workingRef.current.slice();
@@ -75,7 +81,7 @@ export default function AnnotationLayer({
     }
   }
 
-  function onDown(e) {
+  function onDown(e: ReactPointerEvent) {
     if (!active) return;
     e.currentTarget.setPointerCapture?.(e.pointerId);
     drawingRef.current = true;
@@ -83,17 +89,12 @@ export default function AnnotationLayer({
     if (eraser) {
       eraseAt(pt);
     } else {
-      liveRef.current = {
-        color,
-        width: thicknessFraction(thick),
-        opacity,
-        points: [pt],
-      };
+      liveRef.current = { color, width: thicknessFraction(thick), opacity, points: [pt] };
       repaint();
     }
   }
 
-  function onMove(e) {
+  function onMove(e: ReactPointerEvent) {
     if (!active || !drawingRef.current) return;
     const pt = norm(e);
     if (eraser) {
