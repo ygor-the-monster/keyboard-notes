@@ -14,9 +14,9 @@ import {
   flushState,
   requestPersistentStorage,
 } from "./StoreProvider.utils.ts";
-import { uid } from "../../cells/id.ts";
-import { cellKinds, defaultLesson } from "../../cells/kinds.ts";
-import type { AppState, Cell, Kind, Lesson } from "../../cells/kinds.ts";
+import { uid } from "../../utils/cellId/cellId.ts";
+import { cellKinds, defaultLesson } from "../../utils/cellKinds/cellKinds.ts";
+import type { AppState, Cell, Kind, Lesson } from "../../utils/cellKinds/cellKinds.ts";
 
 interface LastDeleted {
   lessonId: string;

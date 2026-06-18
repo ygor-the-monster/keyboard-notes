@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { drawStrokes } from "./AnnotationLayer.utils.ts";
-import type { AnnotationStroke } from "../../cells/kinds.ts";
+import type { AnnotationStroke } from "../../utils/cellKinds/cellKinds.ts";
 
 describe("AnnotationLayer drawing (real canvas)", () => {
   it("drawStrokes paints a stroke onto the canvas", () => {

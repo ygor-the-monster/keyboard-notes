@@ -27,7 +27,7 @@ import { useAutoScroll, buildScrollTools } from "../../hooks/useAutoScroll.ts";
 import AnnotationLayer from "../AnnotationLayer/AnnotationLayer.tsx";
 import Toolbar from "../Toolbar/Toolbar.tsx";
 import type { Tool } from "../Toolbar/Toolbar.tsx";
-import type { AnnotationStroke, CellOf } from "../../cells/kinds.ts";
+import type { AnnotationStroke, CellOf } from "../../utils/cellKinds/cellKinds.ts";
 import type { PDFDocumentProxy, PDFDocumentLoadingTask } from "pdfjs-dist";
 import type { PDFDocument, PDFPage } from "pdf-lib";
 import shared from "../../providers/ThemeProvider/ThemeProvider.module.css";

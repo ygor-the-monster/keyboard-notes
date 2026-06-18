@@ -19,8 +19,8 @@ import {
 import { useStore } from "../../providers/StoreProvider/StoreProvider.tsx";
 import { useDialog } from "../../providers/DialogProvider/DialogProvider.tsx";
 import { useI18n } from "../../providers/I18nProvider/I18nProvider.tsx";
-import { DEFAULT_IMAGE_FILTER } from "../../cells/kinds.ts";
-import type { CellOf, Crop as CropRect, ImageFilter } from "../../cells/kinds.ts";
+import { DEFAULT_IMAGE_FILTER } from "../../utils/cellKinds/cellKinds.ts";
+import type { CellOf, Crop as CropRect, ImageFilter } from "../../utils/cellKinds/cellKinds.ts";
 import {
   loadImage,
   normalizeImage,

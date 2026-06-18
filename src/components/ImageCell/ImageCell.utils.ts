@@ -1,10 +1,10 @@
 // Image loading / downscaling helpers for the image editor.
-import type { Crop, ImageFilter } from "../../cells/kinds.ts";
+import type { Crop, ImageFilter } from "../../utils/cellKinds/cellKinds.ts";
 
 const MAX_DIM = 1600;
 const QUALITY = 0.85;
 
-export { fileToDataUrl } from "../../utils/file.ts";
+export { fileToDataUrl } from "../../utils/fileToDataUrl/fileToDataUrl.ts";
 
 export function loadImage(src: string): Promise<HTMLImageElement> {
   return new Promise((resolve, reject) => {

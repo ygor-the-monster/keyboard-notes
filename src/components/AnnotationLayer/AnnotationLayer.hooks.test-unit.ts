@@ -1,7 +1,7 @@
 import { describe, it, expect } from "vitest";
 import { renderHook, act } from "@testing-library/react";
 import { useStrokeHistory } from "./AnnotationLayer.hooks.ts";
-import type { AnnotationStroke } from "../../cells/kinds.ts";
+import type { AnnotationStroke } from "../../utils/cellKinds/cellKinds.ts";
 
 const stroke = (n: number): AnnotationStroke => ({
   color: "#000",

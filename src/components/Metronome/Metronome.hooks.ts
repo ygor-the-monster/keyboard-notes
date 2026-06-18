@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { output, resume, tone } from "../../audio/engine.ts";
+import { output, resume, tone } from "../../utils/audioEngine/audioEngine.ts";
 
 // Sample-accurate metronome using a Web Audio lookahead scheduler (the "Tale of Two Clocks"
 // pattern): a coarse setInterval wakes up often and schedules click voices at exact context

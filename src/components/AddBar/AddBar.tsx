@@ -3,7 +3,7 @@ import { PlusIcon as Plus } from "@phosphor-icons/react";
 import { useStore } from "../../providers/StoreProvider/StoreProvider.tsx";
 import { useEditing } from "../../providers/EditingProvider/EditingProvider.tsx";
 import { useI18n } from "../../providers/I18nProvider/I18nProvider.tsx";
-import { cellRegistry, ADD_BAR_ORDER } from "../../cells/registry.tsx";
+import { cellRegistry, ADD_BAR_ORDER } from "../../utils/cellRegistry/cellRegistry.tsx";
 import s from "./AddBar.module.css";
 
 export default function AddBar() {

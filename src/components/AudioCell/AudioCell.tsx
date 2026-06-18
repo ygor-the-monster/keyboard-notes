@@ -33,7 +33,7 @@ import {
 import { ANNOT_COLORS, withAlpha } from "../AnnotationLayer/AnnotationLayer.utils.ts";
 import Toolbar from "../Toolbar/Toolbar.tsx";
 import type { Tool } from "../Toolbar/Toolbar.tsx";
-import type { CellOf, Mark } from "../../cells/kinds.ts";
+import type { CellOf, Mark } from "../../utils/cellKinds/cellKinds.ts";
 import shared from "../../providers/ThemeProvider/ThemeProvider.module.css";
 import { dropFull } from "./AudioCell.styled.ts";
 import css from "./AudioCell.module.css";

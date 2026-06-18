@@ -6,7 +6,7 @@ import {
   buildAnnotationTools,
   ANNOT_THICKNESS,
 } from "./AnnotationLayer.utils.ts";
-import type { AnnotationStroke } from "../../cells/kinds.ts";
+import type { AnnotationStroke } from "../../utils/cellKinds/cellKinds.ts";
 
 describe("withAlpha", () => {
   it("applies alpha to rgb() and #hex (incl. shorthand)", () => {

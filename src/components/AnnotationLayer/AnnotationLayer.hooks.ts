@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import type { AnnotationStroke } from "../../cells/kinds.ts";
+import type { AnnotationStroke } from "../../utils/cellKinds/cellKinds.ts";
 
 type Strokes = AnnotationStroke[];
 

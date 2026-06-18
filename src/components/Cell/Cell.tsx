@@ -11,8 +11,8 @@ import { useEditing } from "../../providers/EditingProvider/EditingProvider.tsx"
 import { useDialog } from "../../providers/DialogProvider/DialogProvider.tsx";
 import { useI18n } from "../../providers/I18nProvider/I18nProvider.tsx";
 import IconBtn from "../IconBtn/IconBtn.tsx";
-import { cellRegistry } from "../../cells/registry.tsx";
-import type { Cell as CellModel } from "../../cells/kinds.ts";
+import { cellRegistry } from "../../utils/cellRegistry/cellRegistry.tsx";
+import type { Cell as CellModel } from "../../utils/cellKinds/cellKinds.ts";
 import s from "./Cell.module.css";
 
 export default function Cell({ cell, index = 0 }: { cell: CellModel; index?: number }) {

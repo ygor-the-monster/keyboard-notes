@@ -114,9 +114,7 @@
 }
 /* Lifted while being dragged to reorder. */
 .cell.dragging {
-  box-shadow:
-    var(--shadow-card),
-    var(--shadow-pop);
+  box-shadow: var(--shadow-card), var(--shadow-pop);
   opacity: 0.96;
   cursor: grabbing;
   z-index: 5;

@@ -1,9 +1,9 @@
 // Audio helpers for the audio cell: file/blob → dataURL, Web Audio decode, waveform peaks,
 // region splicing, and a small mono 16-bit WAV encoder (used after any edit that needs to
 // re-encode — splice / trim / delete — since the browser can't re-encode to opus offline).
-import { output } from "../../audio/engine.ts";
-import type { Mark } from "../../cells/kinds.ts";
-export { fileToDataUrl } from "../../utils/file.ts";
+import { output } from "../../utils/audioEngine/audioEngine.ts";
+import type { Mark } from "../../utils/cellKinds/cellKinds.ts";
+export { fileToDataUrl } from "../../utils/fileToDataUrl/fileToDataUrl.ts";
 
 // Audio-cell decode + buffer math run on the shared output context from the engine.
 export function audioCtx(): AudioContext {

@@ -7,7 +7,7 @@
    toolbars (accidentals, ornaments, dynamics, barlines) via their SMuFL codepoints. */
 @font-face {
   font-family: "Leland";
-  src: url("../../assets/Leland.otf") format("opentype");
+  src: url("/Leland.otf") format("opentype");
   font-display: swap;
 }
 

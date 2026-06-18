@@ -8,7 +8,7 @@ import {
   ArrowUUpRightIcon as ArrowUUpRight,
   TrashSimpleIcon as TrashSimple,
 } from "@phosphor-icons/react";
-import type { AnnotationStroke } from "../../cells/kinds.ts";
+import type { AnnotationStroke } from "../../utils/cellKinds/cellKinds.ts";
 import type { Tool } from "../Toolbar/Toolbar.tsx";
 
 // Pen / highlighter colours — rainbow (Spectrum shades) + pink, black, white.

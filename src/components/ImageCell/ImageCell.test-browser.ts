@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { loadImage, normalizeImage, renderFiltered } from "./ImageCell.utils.ts";
-import { DEFAULT_IMAGE_FILTER } from "../../cells/kinds.ts";
+import { DEFAULT_IMAGE_FILTER } from "../../utils/cellKinds/cellKinds.ts";
 
 // A solid-red PNG data URL of the given size, built with a real canvas.
 function redDataUrl(size: number) {

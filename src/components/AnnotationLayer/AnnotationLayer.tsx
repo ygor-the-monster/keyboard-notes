@@ -5,7 +5,7 @@ import {
   hitStrokeIndex,
   thicknessFraction,
 } from "./AnnotationLayer.utils.ts";
-import type { AnnotationStroke } from "../../cells/kinds.ts";
+import type { AnnotationStroke } from "../../utils/cellKinds/cellKinds.ts";
 import css from "./AnnotationLayer.module.css";
 
 // A transparent canvas that captures freehand strokes and renders them in normalised coordinates

@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { startTone, type Voice } from "../../audio/engine.ts";
+import { startTone, type Voice } from "../../utils/audioEngine/audioEngine.ts";
 
 // Note index (0 = C) + octave → frequency, via equal temperament around A4 = 440 Hz.
 const freqOf = (noteIdx: number, octave: number): number =>

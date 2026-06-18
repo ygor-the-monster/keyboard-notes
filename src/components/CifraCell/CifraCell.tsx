@@ -8,7 +8,7 @@ import type { CifraBlock } from "./CifraCell.utils.ts";
 import EmptyState from "../EmptyState/EmptyState.tsx";
 import Toolbar from "../Toolbar/Toolbar.tsx";
 import type { Tool } from "../Toolbar/Toolbar.tsx";
-import type { CellOf } from "../../cells/kinds.ts";
+import type { CellOf } from "../../utils/cellKinds/cellKinds.ts";
 import shared from "../../providers/ThemeProvider/ThemeProvider.module.css";
 import css from "./CifraCell.module.css";
 

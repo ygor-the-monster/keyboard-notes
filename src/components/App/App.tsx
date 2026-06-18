@@ -13,7 +13,7 @@ import Drone from "../Drone/Drone.tsx";
 import Scratchpad from "../Scratchpad/Scratchpad.tsx";
 import SyntaxRef from "../SyntaxRef/SyntaxRef.tsx";
 import ChordBuilder from "../ChordBuilder/ChordBuilder.tsx";
-import type { Cell as CellModel } from "../../cells/kinds.ts";
+import type { Cell as CellModel } from "../../utils/cellKinds/cellKinds.ts";
 import shared from "../../providers/ThemeProvider/ThemeProvider.module.css";
 import s from "./App.module.css";
 

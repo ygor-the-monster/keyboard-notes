@@ -1,6 +1,42 @@
+# Dependencies
 node_modules/
+.pnp
+.pnp.js
+
+# Build output
 dist/
-*.local
-.DS_Store
-.vite/
+dist-ssr/
+dev-dist/
+*.tsbuildinfo
+
+# Test / coverage
+coverage/
+.vitest/
+playwright-report/
+test-results/
 .playwright-mcp/
+
+# Vite / tooling caches
+.vite/
+*.local
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Environment
+.env
+.env.*
+!.env.example
+
+# Editor / OS
+.DS_Store
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?

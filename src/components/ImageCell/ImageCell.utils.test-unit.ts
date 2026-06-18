@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { composeCrop, rotateCrop, flipCrop, filterString } from "./ImageCell.utils.ts";
-import type { Crop } from "../../cells/kinds.ts";
+import type { Crop } from "../../utils/cellKinds/cellKinds.ts";
 
 const near = (a: Crop, b: Crop) => {
   expect(a.x).toBeCloseTo(b.x);

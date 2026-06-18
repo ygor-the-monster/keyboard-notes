@@ -51,7 +51,7 @@ import {
 } from "./ScoreCell.utils.ts";
 import Toolbar from "../Toolbar/Toolbar.tsx";
 import type { Tool } from "../Toolbar/Toolbar.tsx";
-import type { CellOf } from "../../cells/kinds.ts";
+import type { CellOf } from "../../utils/cellKinds/cellKinds.ts";
 import type { MidiBuffer } from "abcjs";
 import shared from "../../providers/ThemeProvider/ThemeProvider.module.css";
 import s from "./ScoreCell.module.css";

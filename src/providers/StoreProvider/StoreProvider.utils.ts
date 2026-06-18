@@ -4,7 +4,7 @@
 // Lightweight UI preferences (theme, metronome tempo, …) stay in localStorage via usePref below.
 // Cell/Lesson factories live in src/cells/kinds.ts — this file is persistence only.
 import { useCallback, useState } from "react";
-import type { AppState } from "../../cells/kinds.ts";
+import type { AppState } from "../../utils/cellKinds/cellKinds.ts";
 
 const STORE_KEY = "pianoNotes.v2"; // legacy localStorage key (migrated from, then cleared)
 const DB_NAME = "pianoNotes";

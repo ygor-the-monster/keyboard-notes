@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { fmtTime, remapMarksAfterTrim, remapMarksAfterCut } from "./AudioCell.utils.ts";
-import type { Mark } from "../../cells/kinds.ts";
+import type { Mark } from "../../utils/cellKinds/cellKinds.ts";
 
 const pt = (id: string, time: number): Mark => ({ id, time, kind: "point" });
 

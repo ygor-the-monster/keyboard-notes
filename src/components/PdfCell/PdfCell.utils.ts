@@ -14,7 +14,7 @@ export async function getPdfjs(): Promise<typeof import("pdfjs-dist")> {
   return lib;
 }
 
-export { fileToDataUrl } from "../../utils/file.ts";
+export { fileToDataUrl } from "../../utils/fileToDataUrl/fileToDataUrl.ts";
 
 // Decode a `data:` URL into the raw bytes pdf.js / pdf-lib need.
 export function dataUrlToBytes(dataUrl: string): Uint8Array {

@@ -1,5 +1,6 @@
 import { defineConfig } from "vitest/config";
 import { playwright } from "@vitest/browser-playwright";
+import macros from "unplugin-parcel-macros";
 
 // Three test kinds, split by filename:
 //   *.test-unit.ts     — fast, pure logic in jsdom
@@ -18,10 +19,15 @@ export default defineConfig({
         test: {
           name: "unit",
           environment: "jsdom",
+          setupFiles: ["./test/setup-unit.ts"],
           include: ["src/**/*.test-unit.{ts,tsx}"],
         },
       },
       {
+        // Compiles the S2 `style` macro (used in *.styled.ts) for components imported by browser
+        // tests. Project-level so it actually runs (root plugins don't propagate into projects);
+        // without it the uncompiled macro calls Node's fileURLToPath and crashes in the browser.
+        plugins: [macros.vite()],
         test: {
           name: "browser",
           include: ["src/**/*.test-browser.{ts,tsx}"],
