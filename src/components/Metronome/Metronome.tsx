@@ -18,7 +18,7 @@ export default function Metronome() {
   const { running, toggle } = useMetronome({ bpm, beats });
 
   // Tap tempo — average the intervals of recent taps; a gap > 2s starts a fresh count.
-  const tapsRef = useRef([]);
+  const tapsRef = useRef<number[]>([]);
   function tap() {
     const now = performance.now();
     const taps = tapsRef.current.filter((t0) => now - t0 < 2000);

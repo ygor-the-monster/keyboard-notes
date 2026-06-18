@@ -1,5 +1,5 @@
 import { MusicNoteIcon as MusicNote } from "@phosphor-icons/react";
-import { useTuner } from "./Tuner.hooks.js";
+import { useTuner } from "./Tuner.hooks.ts";
 import { useI18n } from "../../providers/I18nProvider/I18nProvider.tsx";
 import { usePref } from "../../providers/StoreProvider/StoreProvider.utils.ts";
 import shared from "../../providers/ThemeProvider/ThemeProvider.module.css";

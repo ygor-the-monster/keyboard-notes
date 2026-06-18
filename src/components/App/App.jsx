@@ -7,12 +7,12 @@ import Topbar from "../Topbar/Topbar.jsx";
 import Cell from "../Cell/Cell.tsx";
 import EmptyState from "../EmptyState/EmptyState.tsx";
 import AddBar from "../AddBar/AddBar.tsx";
-import Metronome from "../Metronome/Metronome.jsx";
-import Tuner from "../Tuner/Tuner.jsx";
-import Drone from "../Drone/Drone.jsx";
-import Scratchpad from "../Scratchpad/Scratchpad.jsx";
-import SyntaxRef from "../SyntaxRef/SyntaxRef.jsx";
-import ChordBuilder from "../ChordBuilder/ChordBuilder.jsx";
+import Metronome from "../Metronome/Metronome.tsx";
+import Tuner from "../Tuner/Tuner.tsx";
+import Drone from "../Drone/Drone.tsx";
+import Scratchpad from "../Scratchpad/Scratchpad.tsx";
+import SyntaxRef from "../SyntaxRef/SyntaxRef.tsx";
+import ChordBuilder from "../ChordBuilder/ChordBuilder.tsx";
 import shared from "../../providers/ThemeProvider/ThemeProvider.module.css";
 import s from "./App.module.css";
 

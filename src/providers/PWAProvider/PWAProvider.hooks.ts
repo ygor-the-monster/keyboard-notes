@@ -1,14 +1,19 @@
 import { useEffect, useRef, useState } from "react";
 
-// Captures the `beforeinstallprompt` event so we can show our own Install
-// button (Chromium no longer shows an automatic banner). Returns whether the
-// app is installable and a prompt() trigger; hides once installed.
-export function usePwaInstall() {
+export interface PwaInstall {
+  canInstall: boolean;
+  promptInstall: () => Promise<void>;
+}
+
+// Captures the `beforeinstallprompt` event so we can show our own Install button (Chromium no
+// longer shows an automatic banner). Returns whether the app is installable and a prompt()
+// trigger; hides once installed. The event type is non-standard, so it's held as `any`.
+export function usePwaInstall(): PwaInstall {
   const [canInstall, setCanInstall] = useState(false);
-  const deferred = useRef(null);
+  const deferred = useRef<any>(null);
 
   useEffect(() => {
-    function onPrompt(e) {
+    function onPrompt(e: Event) {
       e.preventDefault();
       deferred.current = e;
       setCanInstall(true);

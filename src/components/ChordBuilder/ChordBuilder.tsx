@@ -1,7 +1,7 @@
 import { useRef, useState } from "react";
 import { PianoKeysIcon as PianoKeys, XIcon as X } from "@phosphor-icons/react";
 import { useI18n } from "../../providers/I18nProvider/I18nProvider.tsx";
-import { identifyChord } from "./ChordBuilder.utils.js";
+import { identifyChord } from "./ChordBuilder.utils.ts";
 import s from "./ChordBuilder.module.css";
 
 const NOTES = ["C", "C♯", "D", "D♯", "E", "F", "F♯", "G", "G♯", "A", "A♯", "B"];
@@ -19,18 +19,18 @@ const BLACK = [
 // octave; tapping a key repeatedly in quick succession picks the octave: 1 tap = middle,
 // 2 = an octave up, 3 = an octave down. This lets the bass note set the inversion (slash chord).
 const OCT = { mid: 12, up: 24, down: 0 };
-const octForTap = (n) => (n === 2 ? OCT.up : n >= 3 ? OCT.down : OCT.mid);
+const octForTap = (n: number) => (n === 2 ? OCT.up : n >= 3 ? OCT.down : OCT.mid);
 const TAP_WINDOW = 450; // ms within which repeated taps on the same key count as one gesture
 
 export default function ChordBuilder() {
   const { t } = useI18n();
   const [open, setOpen] = useState(false);
-  const [sel, setSel] = useState(() => new Set());
-  const tapRef = useRef({ pc: -1, t: -Infinity, n: 0 });
+  const [sel, setSel] = useState<Set<number>>(() => new Set());
+  const tapRef = useRef<{ pc: number; t: number; n: number }>({ pc: -1, t: -Infinity, n: 0 });
 
   // Each key holds at most one note; rapid re-taps move it between octaves. A lone tap on a
   // key that's already at the middle octave clears it.
-  const press = (pc, ts) => {
+  const press = (pc: number, ts: number) => {
     const r = tapRef.current;
     const within = pc === r.pc && ts - r.t < TAP_WINDOW;
     const n = within ? r.n + 1 : 1;
@@ -51,7 +51,7 @@ export default function ChordBuilder() {
   };
 
   // Which octave (if any) a key currently sits at — for the highlight + badge.
-  const octOf = (pc) =>
+  const octOf = (pc: number) =>
     sel.has(pc + OCT.up)
       ? OCT.up
       : sel.has(pc + OCT.down)

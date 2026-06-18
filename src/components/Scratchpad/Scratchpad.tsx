@@ -13,7 +13,7 @@ export default function Scratchpad() {
   const { t } = useI18n();
   const [open, setOpen] = useState(false);
   const [count, setCount] = useState(0);
-  const taRef = useRef(null);
+  const taRef = useRef<HTMLTextAreaElement>(null);
   const id = activeLesson?.id;
   const prefKey = id ? "scratch." + id : null;
 

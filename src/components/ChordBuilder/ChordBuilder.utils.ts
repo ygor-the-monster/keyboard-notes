@@ -1,12 +1,11 @@
-// Name a chord from a set of selected notes. Each note is an absolute semitone value
-// (pitch class + 12·octave), so the genuinely lowest note acts as the bass: it drives
-// inversion / slash naming (e.g. C/E vs C). Tries each unique pitch class as the root,
-// matching the interval set against common chord shapes; if the root isn't the bass it's
-// shown as a slash. Unknown sets list their note names.
+// Name a chord from a set of selected notes. Each note is an absolute semitone value (pitch class
+// + 12·octave), so the genuinely lowest note acts as the bass: it drives inversion / slash naming
+// (e.g. C/E vs C). Tries each unique pitch class as the root, matching the interval set against
+// common chord shapes; if the root isn't the bass it's shown as a slash. Unknown sets list names.
 const NOTES = ["C", "C♯", "D", "D♯", "E", "F", "F♯", "G", "G♯", "A", "A♯", "B"];
-const pcOf = (v) => ((v % 12) + 12) % 12;
+const pcOf = (v: number) => ((v % 12) + 12) % 12;
 
-const CHORDS = [
+const CHORDS: [string, number[]][] = [
   ["", [0, 4, 7]],
   ["m", [0, 3, 7]],
   ["dim", [0, 3, 6]],
@@ -24,9 +23,9 @@ const CHORDS = [
   ["7sus4", [0, 5, 7, 10]],
 ];
 
-const eq = (a, b) => a.length === b.length && a.every((v, i) => v === b[i]);
+const eq = (a: number[], b: number[]) => a.length === b.length && a.every((v, i) => v === b[i]);
 
-export function identifyChord(set) {
+export function identifyChord(set: Set<number> | number[]): string {
   const notes = [...set].sort((a, b) => a - b);
   if (!notes.length) return "—";
   const bass = pcOf(notes[0]); // pitch class of the genuinely lowest note

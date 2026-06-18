@@ -20,7 +20,7 @@ const GROUPS = [
     ],
   },
   {
-    titleKey: "cell.music",
+    titleKey: "cell.score",
     rows: [
       ["C D E … B", "Notes (middle-C octave)"],
       ["c · C,", "Octave up · down"],

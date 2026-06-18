@@ -4,8 +4,17 @@ import { useDialog } from "../../providers/DialogProvider/DialogProvider.tsx";
 
 const NOTE_NAMES = ["C", "C♯", "D", "D♯", "E", "F", "F♯", "G", "G♯", "A", "A♯", "B"];
 
+export interface NoteReading {
+  note: string;
+  octave: number;
+  cents: number;
+}
+export interface TunerReading extends NoteReading {
+  hz: number;
+}
+
 // Hz → { note, octave, cents } via the equal-tempered scale, referenced to a tunable A4.
-export function hzToNote(hz, a4 = 440) {
+export function hzToNote(hz: number, a4 = 440): NoteReading {
   const midi = 69 + 12 * Math.log2(hz / a4);
   const nearest = Math.round(midi);
   return {
@@ -15,22 +24,21 @@ export function hzToNote(hz, a4 = 440) {
   };
 }
 
-// Live pitch detection from the microphone (via pitchy). `a4` is the reference pitch
-// (e.g. 440 or 442). Returns { listening, toggle, reading } where reading is
-// { note, octave, cents, hz } | null.
+// Live pitch detection from the microphone (via pitchy). `a4` is the reference pitch (e.g. 440 or
+// 442). The Tuner keeps its own input AudioContext (closed on stop to free the mic).
 export function useTuner(a4 = 440) {
   const { alert } = useDialog();
   const [listening, setListening] = useState(false);
-  const [reading, setReading] = useState(null);
-  const ctxRef = useRef(null);
-  const streamRef = useRef(null);
+  const [reading, setReading] = useState<TunerReading | null>(null);
+  const ctxRef = useRef<AudioContext | null>(null);
+  const streamRef = useRef<MediaStream | null>(null);
   const rafRef = useRef(0);
   const a4Ref = useRef(a4); // so changing the reference updates a live reading
   a4Ref.current = a4;
 
   const stop = () => {
     cancelAnimationFrame(rafRef.current);
-    streamRef.current?.getTracks().forEach((t) => t.stop());
+    streamRef.current?.getTracks().forEach((tr) => tr.stop());
     ctxRef.current?.close().catch(() => {});
     ctxRef.current = null;
     streamRef.current = null;
@@ -43,7 +51,10 @@ export function useTuner(a4 = 440) {
   async function start() {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      const ctx = new (window.AudioContext || window.webkitAudioContext)();
+      const Ctor =
+        window.AudioContext ||
+        (window as Window & { webkitAudioContext?: typeof AudioContext }).webkitAudioContext!;
+      const ctx = new Ctor();
       const source = ctx.createMediaStreamSource(stream);
       const analyser = ctx.createAnalyser();
       analyser.fftSize = 2048;

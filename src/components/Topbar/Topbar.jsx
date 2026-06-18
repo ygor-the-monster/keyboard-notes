@@ -20,10 +20,10 @@ import {
 } from "@phosphor-icons/react";
 import { useStore } from "../../providers/StoreProvider/StoreProvider.tsx";
 import { storageEstimate } from "../../providers/StoreProvider/StoreProvider.utils.ts";
-import { usePwa } from "../../providers/PWAProvider/PWAProvider.jsx";
+import { usePwa } from "../../providers/PWAProvider/PWAProvider.tsx";
 import { useDialog } from "../../providers/DialogProvider/DialogProvider.tsx";
 import { useI18n } from "../../providers/I18nProvider/I18nProvider.tsx";
-import { useTheme } from "../../providers/ThemeProvider/ThemeProvider.jsx";
+import { useTheme } from "../../providers/ThemeProvider/ThemeProvider.tsx";
 import IconBtn from "../IconBtn/IconBtn.tsx";
 import { vdiv, titleField } from "./Topbar.styled.ts";
 import s from "./Topbar.module.css";

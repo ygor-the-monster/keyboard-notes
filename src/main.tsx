@@ -1,10 +1,10 @@
 import React from "react";
 import { createRoot } from "react-dom/client";
-import ThemeProvider from "./providers/ThemeProvider/ThemeProvider.jsx";
+import ThemeProvider from "./providers/ThemeProvider/ThemeProvider.tsx";
 import { I18nProvider } from "./providers/I18nProvider/I18nProvider.tsx";
 import { DialogProvider } from "./providers/DialogProvider/DialogProvider.tsx";
 import { StoreProvider } from "./providers/StoreProvider/StoreProvider.tsx";
-import { PWAProvider } from "./providers/PWAProvider/PWAProvider.jsx";
+import { PWAProvider } from "./providers/PWAProvider/PWAProvider.tsx";
 import { EditingProvider } from "./providers/EditingProvider/EditingProvider.tsx";
 import App from "./components/App/App.jsx";
 
