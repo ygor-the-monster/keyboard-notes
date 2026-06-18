@@ -19,7 +19,7 @@ import {
 import { useStore } from "../../providers/StoreProvider/StoreProvider.tsx";
 import { useI18n } from "../../providers/I18nProvider/I18nProvider.tsx";
 import { renderMarkdown, toggleTask, applyFormat, replaceTextarea } from "./NoteCell.utils.js";
-import EmptyState from "../EmptyState/EmptyState.jsx";
+import EmptyState from "../EmptyState/EmptyState.tsx";
 import Toolbar from "../Toolbar/Toolbar.tsx";
 import shared from "../../providers/ThemeProvider/ThemeProvider.module.css";
 

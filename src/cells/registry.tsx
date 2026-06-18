@@ -14,7 +14,7 @@ import {
 import type { Cell, Kind } from "./kinds.ts";
 import NoteCell from "../components/NoteCell/NoteCell.jsx";
 import ScoreCell from "../components/ScoreCell/ScoreCell.jsx";
-import CifraCell from "../components/CifraCell/CifraCell.jsx";
+import CifraCell from "../components/CifraCell/CifraCell.tsx";
 import ImageCell from "../components/ImageCell/ImageCell.jsx";
 import PdfCell from "../components/PdfCell/PdfCell.jsx";
 import AudioCell from "../components/AudioCell/AudioCell.jsx";
@@ -48,7 +48,8 @@ export const cellRegistry: Record<Kind, CellView> = {
     accent: { c: "--s-magenta", ct: "--s-magenta-tint" },
   },
   cifra: {
-    component: CifraCell,
+    // Cast: each cell narrows its own kind; the registry dispatches by kind, so this is safe.
+    component: CifraCell as CellView["component"],
     icon: Guitar,
     tagLabelKey: "cell.cifra",
     addLabelKey: "addbar.cifra",

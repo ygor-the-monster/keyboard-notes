@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { TextField, Button, DropZone, FileTrigger, Divider } from "@react-spectrum/s2";
-import EmptyState from "../EmptyState/EmptyState.jsx";
+import EmptyState from "../EmptyState/EmptyState.tsx";
 import {
   FilePdf,
   Square,

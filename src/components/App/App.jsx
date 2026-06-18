@@ -5,7 +5,7 @@ import { useDialog } from "../../providers/DialogProvider/DialogProvider.tsx";
 import { useI18n } from "../../providers/I18nProvider/I18nProvider.tsx";
 import Topbar from "../Topbar/Topbar.jsx";
 import Cell from "../Cell/Cell.tsx";
-import EmptyState from "../EmptyState/EmptyState.jsx";
+import EmptyState from "../EmptyState/EmptyState.tsx";
 import AddBar from "../AddBar/AddBar.tsx";
 import Metronome from "../Metronome/Metronome.jsx";
 import Tuner from "../Tuner/Tuner.jsx";

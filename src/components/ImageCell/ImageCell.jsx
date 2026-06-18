@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { Button, DropZone, FileTrigger } from "@react-spectrum/s2";
-import EmptyState from "../EmptyState/EmptyState.jsx";
+import EmptyState from "../EmptyState/EmptyState.tsx";
 import {
   Crop,
   Check,

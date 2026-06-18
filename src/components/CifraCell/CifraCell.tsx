@@ -3,15 +3,18 @@ import { ArrowUUpLeft } from "@phosphor-icons/react";
 import { useStore } from "../../providers/StoreProvider/StoreProvider.tsx";
 import { useI18n } from "../../providers/I18nProvider/I18nProvider.tsx";
 import { useAutoScroll, buildScrollTools } from "../../hooks/useAutoScroll.ts";
-import { parseCifra, transposeLabel } from "./CifraCell.utils.js";
-import EmptyState from "../EmptyState/EmptyState.jsx";
+import { parseCifra, transposeLabel } from "./CifraCell.utils.ts";
+import type { CifraBlock } from "./CifraCell.utils.ts";
+import EmptyState from "../EmptyState/EmptyState.tsx";
 import Toolbar from "../Toolbar/Toolbar.tsx";
+import type { Tool } from "../Toolbar/Toolbar.tsx";
+import type { CellOf } from "../../cells/kinds.ts";
 import shared from "../../providers/ThemeProvider/ThemeProvider.module.css";
 import css from "./CifraCell.module.css";
 
-const clampTranspose = (n) => Math.max(-11, Math.min(11, n));
+const clampTranspose = (n: number) => Math.max(-11, Math.min(11, n));
 
-function Chart({ blocks }) {
+function Chart({ blocks }: { blocks: CifraBlock[] }) {
   return (
     <div className={css.chart}>
       {blocks.map((b, i) => {
@@ -36,10 +39,10 @@ function Chart({ blocks }) {
                 {b.lead}
               </span>
             ) : null}
-            {b.segs.map((s, j) => (
+            {b.segs.map((sg, j) => (
               <span key={j} className={css.seg}>
-                <span className={css.chord}>{s.chord}</span>
-                <span className={css.lyric}>{s.text || " "}</span>
+                <span className={css.chord}>{sg.chord}</span>
+                <span className={css.lyric}>{sg.text || " "}</span>
               </span>
             ))}
           </div>
@@ -49,11 +52,11 @@ function Chart({ blocks }) {
   );
 }
 
-export default function CifraCell({ cell, editing }) {
+export default function CifraCell({ cell, editing }: { cell: CellOf<"cifra">; editing: boolean }) {
   const { updateCell } = useStore();
   const { t } = useI18n();
-  const taRef = useRef(null);
-  const rootRef = useRef(null);
+  const taRef = useRef<HTMLTextAreaElement>(null);
+  const rootRef = useRef<HTMLDivElement>(null);
   const { scrolling, speed, toggle, setSpeed } = useAutoScroll(rootRef);
 
   const transpose = cell.transpose || 0;
@@ -65,27 +68,25 @@ export default function CifraCell({ cell, editing }) {
     if (ta && ta.value !== cell.source) ta.value = cell.source;
   }, [cell.source]);
 
-  const setTranspose = (n) => updateCell(cell.id, { transpose: clampTranspose(n) });
+  const setTranspose = (n: number) => updateCell(cell.id, { transpose: clampTranspose(n) });
 
-  const transposeTool = {
-    kind: "spinner",
-    id: "transpose",
-    label: t("cifra.transpose"),
-    display: transposeLabel(transpose),
-    onPrev: () => setTranspose(transpose - 1),
-    onNext: () => setTranspose(transpose + 1),
-    prevDisabled: transpose <= -11,
-    nextDisabled: transpose >= 11,
-  };
-
-  // Transpose + auto-scroll controls, shared by the performance (rendered) and editor
-  // views — auto-scroll belongs in both, since you may set it up while editing too.
-  const controls = [
-    transposeTool,
+  // Transpose + auto-scroll controls, shared by the performance (rendered) and editor views —
+  // auto-scroll belongs in both, since you may set it up while editing too.
+  const controls: Tool[] = [
+    {
+      kind: "spinner",
+      id: "transpose",
+      label: t("cifra.transpose"),
+      display: transposeLabel(transpose),
+      onPrev: () => setTranspose(transpose - 1),
+      onNext: () => setTranspose(transpose + 1),
+      prevDisabled: transpose <= -11,
+      nextDisabled: transpose >= 11,
+    },
     ...(transpose !== 0
       ? [
           {
-            kind: "action",
+            kind: "action" as const,
             id: "reset",
             icon: ArrowUUpLeft,
             label: t("cifra.original"),
@@ -98,8 +99,7 @@ export default function CifraCell({ cell, editing }) {
   ];
 
   // ---- compact view ----------------------------------------------------------
-  // Pure read-only chart: clicking anywhere expands the cell, where the transpose /
-  // auto-scroll controls live.
+  // Pure read-only chart: clicking anywhere expands the cell, where the controls live.
   if (!editing) {
     if (!hasContent) return <EmptyState kind="chords" title={t("cifra.empty")} compact />;
     return (
