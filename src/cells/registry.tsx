@@ -13,7 +13,7 @@ import {
 } from "@phosphor-icons/react";
 import type { Cell, Kind } from "./kinds.ts";
 import NoteCell from "../components/NoteCell/NoteCell.tsx";
-import ScoreCell from "../components/ScoreCell/ScoreCell.jsx";
+import ScoreCell from "../components/ScoreCell/ScoreCell.tsx";
 import CifraCell from "../components/CifraCell/CifraCell.tsx";
 import ImageCell from "../components/ImageCell/ImageCell.tsx";
 import PdfCell from "../components/PdfCell/PdfCell.tsx";
@@ -40,7 +40,7 @@ export const cellRegistry: Record<Kind, CellView> = {
     accent: { c: "--s-purple", ct: "--s-purple-tint" },
   },
   score: {
-    component: ScoreCell,
+    component: ScoreCell as CellView["component"],
     icon: MusicNotes,
     tagLabelKey: "cell.score",
     addLabelKey: "addbar.score",

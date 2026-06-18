@@ -48,27 +48,29 @@ import {
   parseTempo,
   withTempo,
   SMUFL,
-} from "./ScoreCell.utils.js";
+} from "./ScoreCell.utils.ts";
 import Toolbar from "../Toolbar/Toolbar.tsx";
+import type { Tool } from "../Toolbar/Toolbar.tsx";
+import type { CellOf } from "../../cells/kinds.ts";
 import shared from "../../providers/ThemeProvider/ThemeProvider.module.css";
 import s from "./ScoreCell.module.css";
 
 // New cells store header/body separately; legacy cells split `source`.
-function readHB(cell) {
+function readHB(cell: { header?: string | null; body?: string | null; source?: string }) {
   if (cell.header != null || cell.body != null) {
     return { header: cell.header || "", body: cell.body || "" };
   }
   return splitAbc(cell.source || "");
 }
 
-export default function ScoreCell({ cell, editing }) {
+export default function ScoreCell({ cell, editing }: { cell: CellOf<"score">; editing: boolean }) {
   const { updateCell } = useStore();
   const { t, localizeTools } = useI18n();
-  const renderRef = useRef(null);
-  const errRef = useRef(null);
-  const synthRef = useRef(null);
-  const headRef = useRef(null);
-  const taRef = useRef(null); // music body — also the palette insertion target
+  const renderRef = useRef<HTMLDivElement>(null);
+  const errRef = useRef<HTMLDivElement>(null);
+  const synthRef = useRef<any>(null);
+  const headRef = useRef<HTMLTextAreaElement>(null);
+  const taRef = useRef<HTMLTextAreaElement>(null); // music body — also the palette insertion target
   const [playing, setPlaying] = useState(false);
 
   const { header, body } = readHB(cell);
@@ -87,7 +89,8 @@ export default function ScoreCell({ cell, editing }) {
           add_classes: true,
         });
       } catch (e) {
-        if (errRef.current) errRef.current.textContent = t("cell.errNotation", { msg: e.message });
+        if (errRef.current)
+          errRef.current.textContent = t("cell.errNotation", { msg: (e as Error).message });
       }
     })();
     return () => {
@@ -128,29 +131,31 @@ export default function ScoreCell({ cell, editing }) {
       synth.start();
       setPlaying(true);
     } catch (e) {
-      if (errRef.current) errRef.current.textContent = t("cell.errPlay", { msg: e.message });
+      if (errRef.current)
+        errRef.current.textContent = t("cell.errPlay", { msg: (e as Error).message });
     }
   }
 
   const setHeader = () => updateCell(cell.id, { header: headRef.current?.value ?? "" });
   const setBody = () => updateCell(cell.id, { body: taRef.current?.value ?? "" });
-  const ins = (text, back) => insertIntoTextarea(taRef.current, text, back, setBody);
+  const ins = (text: string, back?: number) =>
+    insertIntoTextarea(taRef.current, text, back, setBody);
   const headerNow = () => headRef.current?.value ?? header;
   const bodyNow = () => taRef.current?.value ?? body;
   // Score-level edits (add / remove staff) rewrite header + body together; the uncontrolled
   // textareas re-sync from props via the effect above.
-  const applyScore = (next) => updateCell(cell.id, next);
+  const applyScore = (next: { header?: string; body?: string }) => updateCell(cell.id, next);
 
   // Smart, caret/selection-aware edits: act on the note at the caret (or selected notes);
   // fall back to a plain insert when the caret isn't on a note.
   const caretRange = () => [taRef.current?.selectionStart ?? 0, taRef.current?.selectionEnd ?? 0];
-  const smart = (kind, arg, fallback, back) => {
+  const smart = (kind: string, arg: any, fallback: string, back?: number) => {
     const [a, b] = caretRange();
     const nb = smartNote(headerNow(), bodyNow(), a, b, kind, arg);
     if (nb == null) ins(fallback, back);
     else updateCell(cell.id, { body: nb });
   };
-  const wrapSel = (kind, fallback, back) => {
+  const wrapSel = (kind: string, fallback: string, back?: number) => {
     const [a, b] = caretRange();
     const nb = wrapNotes(headerNow(), bodyNow(), a, b, kind);
     if (nb == null) ins(fallback, back);
@@ -158,7 +163,7 @@ export default function ScoreCell({ cell, editing }) {
   };
   // Line-level field (e.g. lyrics w:) — drop it on its own new line right after the current
   // line instead of splitting it mid-caret.
-  const insLine = (text) => {
+  const insLine = (text: string) => {
     const ta = taRef.current;
     if (!ta) return;
     const v = ta.value;
@@ -170,8 +175,8 @@ export default function ScoreCell({ cell, editing }) {
 
   const TEMPO_STEP = 2;
   const tempoNow = () => parseTempo(headerNow());
-  const setTempo = (t) =>
-    updateCell(cell.id, { header: withTempo(headerNow(), Math.min(220, Math.max(40, t))) });
+  const setTempo = (bpm: number) =>
+    updateCell(cell.id, { header: withTempo(headerNow(), Math.min(220, Math.max(40, bpm))) });
 
   const staff = <div key="staff" className="abc-render" ref={renderRef} />;
   const err = <div key="err" className="abc-error no-print" ref={errRef} />;
@@ -186,9 +191,14 @@ export default function ScoreCell({ cell, editing }) {
     );
   }
 
-  const note = (n) => ({ id: n, char: n, label: `Note ${n}`, onUse: () => ins(n) });
+  const note = (n: string) => ({ id: n, char: n, label: `Note ${n}`, onUse: () => ins(n) });
   // Decoration option: inserts an ABC !name! bang-decoration before the next note.
-  const deco = (id, name, glyph, label) => ({ id, glyph, label, onUse: () => ins(`!${name}!`) });
+  const deco = (id: string, name: string, glyph: string, label: string) => ({
+    id,
+    glyph,
+    label,
+    onUse: () => ins(`!${name}!`),
+  });
 
   // The shared clef list — reused by the "Clef" group (inline change) and the
   // "Add staff" group (new stave). `act(name)` decides what each pick does.
@@ -204,7 +214,7 @@ export default function ScoreCell({ cell, editing }) {
     { id: "none", name: "none", char: "—", label: "No clef" },
     { id: "perc", name: "perc", char: "x", label: "Percussion" },
   ];
-  const clefOptions = (act, suffix) =>
+  const clefOptions = (act: (name: string) => void, suffix: string) =>
     CLEFS.map((c) => ({
       id: c.id,
       char: c.char,
@@ -212,7 +222,7 @@ export default function ScoreCell({ cell, editing }) {
       onUse: () => act(c.name),
     }));
 
-  const tools = [
+  const tools: Tool[] = [
     {
       kind: "toggle",
       id: "play",
