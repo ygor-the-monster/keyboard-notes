@@ -5,17 +5,23 @@ export interface PwaInstall {
   promptInstall: () => Promise<void>;
 }
 
+// Not in lib.dom (it's a WICG proposal), so we declare the shape we use.
+interface BeforeInstallPromptEvent extends Event {
+  prompt(): Promise<void>;
+  userChoice: Promise<{ outcome: "accepted" | "dismissed" }>;
+}
+
 // Captures the `beforeinstallprompt` event so we can show our own Install button (Chromium no
 // longer shows an automatic banner). Returns whether the app is installable and a prompt()
 // trigger; hides once installed. The event type is non-standard, so it's held as `any`.
 export function usePwaInstall(): PwaInstall {
   const [canInstall, setCanInstall] = useState(false);
-  const deferred = useRef<any>(null);
+  const deferred = useRef<BeforeInstallPromptEvent | null>(null);
 
   useEffect(() => {
     function onPrompt(e: Event) {
       e.preventDefault();
-      deferred.current = e;
+      deferred.current = e as BeforeInstallPromptEvent;
       setCanInstall(true);
     }
     function onInstalled() {

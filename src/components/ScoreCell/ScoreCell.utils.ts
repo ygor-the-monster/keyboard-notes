@@ -3,12 +3,13 @@
 // abcjs is large, so it's loaded lazily (kept out of the initial bundle) and cached after the
 // first load. abcjs ships no usable types, so it's the `any` seam here; ScoreCell calls
 // getAbcjs() on mount, so the instance is ready by the time the smart-note editor runs.
-let _abcjs: any = null;
-export async function getAbcjs(): Promise<any> {
+let _abcjs: typeof import("abcjs") | null = null;
+export async function getAbcjs(): Promise<typeof import("abcjs")> {
   if (_abcjs) return _abcjs;
   const m = await import("abcjs");
-  _abcjs = (m as any).default ?? m;
-  return _abcjs;
+  const lib = ((m as { default?: typeof import("abcjs") }).default ?? m) as typeof import("abcjs");
+  _abcjs = lib;
+  return lib;
 }
 
 // SMuFL codepoints (rendered in the Leland font) for notation glyph faces.
@@ -141,7 +142,7 @@ interface BodyNote {
 function bodyNotes(header: string, body: string): BodyNote[] {
   const hdrLen = header ? header.length + 1 : 0;
   if (!_abcjs) return []; // abcjs not loaded yet → caller falls back to a plain insert
-  let tunes: any;
+  let tunes: ReturnType<typeof import("abcjs").parseOnly> | undefined;
   try {
     tunes = _abcjs.parseOnly(joinAbc(header, body));
   } catch {

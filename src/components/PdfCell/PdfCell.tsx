@@ -28,13 +28,20 @@ import AnnotationLayer from "../AnnotationLayer/AnnotationLayer.tsx";
 import Toolbar from "../Toolbar/Toolbar.tsx";
 import type { Tool } from "../Toolbar/Toolbar.tsx";
 import type { AnnotationStroke, CellOf } from "../../cells/kinds.ts";
+import type { PDFDocumentProxy, PDFDocumentLoadingTask } from "pdfjs-dist";
+import type { PDFDocument, PDFPage } from "pdf-lib";
 import shared from "../../providers/ThemeProvider/ThemeProvider.module.css";
 import { dropFull } from "./PdfCell.styled.ts";
 import css from "./PdfCell.module.css";
 
 // Render one pdf.js page into a canvas, fit to `cssWidth`. pdf.js objects are typed `any` —
 // the library is the seam here, not our logic.
-async function renderPage(doc: any, n: number, canvas: HTMLCanvasElement, cssWidth: number) {
+async function renderPage(
+  doc: PDFDocumentProxy,
+  n: number,
+  canvas: HTMLCanvasElement,
+  cssWidth: number,
+) {
   const page = await doc.getPage(n);
   const base = page.getViewport({ scale: 1 });
   const dpr = Math.min(window.devicePixelRatio || 1, 2);
@@ -44,7 +51,7 @@ async function renderPage(doc: any, n: number, canvas: HTMLCanvasElement, cssWid
   canvas.height = Math.floor(viewport.height);
   canvas.style.width = cssWidth + "px";
   canvas.style.height = Math.floor(viewport.height / dpr) + "px";
-  await page.render({ canvasContext: canvas.getContext("2d"), viewport }).promise;
+  await page.render({ canvas, canvasContext: canvas.getContext("2d")!, viewport }).promise;
 }
 
 export default function PdfCell({ cell, editing }: { cell: CellOf<"pdf">; editing: boolean }) {
@@ -56,7 +63,7 @@ export default function PdfCell({ cell, editing }: { cell: CellOf<"pdf">; editin
   const wrapRef = useRef<HTMLDivElement>(null);
   const rootRef = useRef<HTMLDivElement>(null);
   const canvasRefs = useRef<Record<number, HTMLCanvasElement>>({}); // page number → <canvas>
-  const docRef = useRef<any>(null);
+  const docRef = useRef<PDFDocumentProxy | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
   const appendRef = useRef<HTMLInputElement>(null);
   const [numPages, setNumPages] = useState(0);
@@ -86,21 +93,22 @@ export default function PdfCell({ cell, editing }: { cell: CellOf<"pdf">; editin
   useEffect(() => {
     if (!src) return;
     let cancelled = false;
-    let task: any;
+    let task: PDFDocumentLoadingTask | undefined;
     setRenderErr("");
     (async () => {
       const pdfjsLib = await getPdfjs();
       if (cancelled) return;
       const params = cell.dataUrl ? { data: dataUrlToBytes(cell.dataUrl) } : { url: cell.url };
-      task = pdfjsLib.getDocument(params as any);
+      task = pdfjsLib.getDocument(params);
       task.promise.then(
-        (doc: any) => {
+        (doc: PDFDocumentProxy) => {
           if (cancelled) return;
           docRef.current = doc;
           setNumPages(doc.numPages);
           setPage((p) => Math.min(p, doc.numPages));
         },
-        (e: any) => !cancelled && setRenderErr(t("pdf.openFailed", { msg: e.message })),
+        (e: unknown) =>
+          !cancelled && setRenderErr(t("pdf.openFailed", { msg: (e as Error).message })),
       );
     })();
     return () => {
@@ -162,7 +170,7 @@ export default function PdfCell({ cell, editing }: { cell: CellOf<"pdf">; editin
     const pdf = await PDFDocument.load(dataUrlToBytes(cell.dataUrl));
     return { PDFDocument, degrees, pdf };
   }
-  async function commitPdf(pdf: any, nextPage?: number) {
+  async function commitPdf(pdf: PDFDocument, nextPage?: number) {
     const bytes = await pdf.save();
     if (nextPage != null) setPage(nextPage);
     updateCell(cell.id, { dataUrl: bytesToDataUrl(bytes) });
@@ -182,7 +190,7 @@ export default function PdfCell({ cell, editing }: { cell: CellOf<"pdf">; editin
     const order = [...Array(pdf.getPageCount()).keys()];
     order.splice(to, 0, order.splice(page - 1, 1)[0]);
     const out = await PDFDocument.create();
-    (await out.copyPages(pdf, order)).forEach((p: any) => out.addPage(p));
+    (await out.copyPages(pdf, order)).forEach((p: PDFPage) => out.addPage(p));
     await commitPdf(out, to + 1);
   }
   async function duplicatePage() {

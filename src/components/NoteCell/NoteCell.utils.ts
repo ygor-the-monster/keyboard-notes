@@ -1,11 +1,12 @@
 import { marked } from "marked";
+import type { MarkedExtension, RendererThis, Tokens, TokenizerThis } from "marked";
 
 marked.setOptions({ gfm: true, breaks: true });
 
 // --- Custom inline/block syntax marked doesn't ship with ----------------------
 // Highlight (==x==), superscript (^x^), subscript (~x~, single tilde so it never clashes with
-// ~~strikethrough~~), and footnotes ([^id] refs + [^id]: defs). The marked extension surface is
-// dynamic (its `this` lexer/parser context), so the config below stays loosely typed.
+// ~~strikethrough~~), and footnotes ([^id] refs + [^id]: defs). Typed via marked's own extension
+// types (TokenizerThis / RendererThis / Tokens.Generic).
 interface Footnote {
   id: string;
   text: string;
@@ -19,15 +20,15 @@ const inlineWrap = (name: string, open: string, tag: string, re: RegExp) => ({
     const i = src.indexOf(open);
     return i < 0 ? undefined : i;
   },
-  tokenizer(this: any, src: string) {
+  tokenizer(this: TokenizerThis, src: string) {
     const m = re.exec(src);
     if (!m) return undefined;
     const token = { type: name, raw: m[0], text: m[1], tokens: [] };
     this.lexer.inline(m[1], token.tokens);
     return token;
   },
-  renderer(this: any, token: any) {
-    return `<${tag}>${this.parser.parseInline(token.tokens)}</${tag}>`;
+  renderer(this: RendererThis, token: Tokens.Generic) {
+    return `<${tag}>${this.parser.parseInline(token.tokens ?? [])}</${tag}>`;
   },
 });
 
@@ -80,7 +81,7 @@ marked.use({
         if (!m) return undefined;
         return { type: "footnoteRef", raw: m[0], id: m[1] };
       },
-      renderer(token: any) {
+      renderer(this: RendererThis, token: Tokens.Generic) {
         return (
           `<sup class="footnote-ref" id="fnref-${token.id}">` +
           `<a href="#fn-${token.id}">${token.id}</a></sup>`
@@ -88,7 +89,7 @@ marked.use({
       },
     },
   ],
-} as any);
+} satisfies MarkedExtension);
 
 // Render markdown to sanitized HTML (strips scripts, inline handlers, js: urls).
 export function renderMarkdown(src: string): string {

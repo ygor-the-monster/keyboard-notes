@@ -52,6 +52,7 @@ import {
 import Toolbar from "../Toolbar/Toolbar.tsx";
 import type { Tool } from "../Toolbar/Toolbar.tsx";
 import type { CellOf } from "../../cells/kinds.ts";
+import type { MidiBuffer } from "abcjs";
 import shared from "../../providers/ThemeProvider/ThemeProvider.module.css";
 import s from "./ScoreCell.module.css";
 
@@ -68,7 +69,7 @@ export default function ScoreCell({ cell, editing }: { cell: CellOf<"score">; ed
   const { t, localizeTools } = useI18n();
   const renderRef = useRef<HTMLDivElement>(null);
   const errRef = useRef<HTMLDivElement>(null);
-  const synthRef = useRef<any>(null);
+  const synthRef = useRef<MidiBuffer | null>(null);
   const headRef = useRef<HTMLTextAreaElement>(null);
   const taRef = useRef<HTMLTextAreaElement>(null); // music body — also the palette insertion target
   const [playing, setPlaying] = useState(false);
