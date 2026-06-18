@@ -6,7 +6,7 @@ import { DialogProvider } from "./providers/DialogProvider/DialogProvider.tsx";
 import { StoreProvider } from "./providers/StoreProvider/StoreProvider.tsx";
 import { PWAProvider } from "./providers/PWAProvider/PWAProvider.tsx";
 import { EditingProvider } from "./providers/EditingProvider/EditingProvider.tsx";
-import App from "./components/App/App.jsx";
+import App from "./components/App/App.tsx";
 
 createRoot(document.getElementById("root")!).render(
   <React.StrictMode>

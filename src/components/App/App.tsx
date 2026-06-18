@@ -1,9 +1,9 @@
-import { useEffect } from "react";
+import { useEffect, type CSSProperties } from "react";
 import { useStore } from "../../providers/StoreProvider/StoreProvider.tsx";
 import { useEditing } from "../../providers/EditingProvider/EditingProvider.tsx";
 import { useDialog } from "../../providers/DialogProvider/DialogProvider.tsx";
 import { useI18n } from "../../providers/I18nProvider/I18nProvider.tsx";
-import Topbar from "../Topbar/Topbar.jsx";
+import Topbar from "../Topbar/Topbar.tsx";
 import Cell from "../Cell/Cell.tsx";
 import EmptyState from "../EmptyState/EmptyState.tsx";
 import AddBar from "../AddBar/AddBar.tsx";
@@ -13,26 +13,41 @@ import Drone from "../Drone/Drone.tsx";
 import Scratchpad from "../Scratchpad/Scratchpad.tsx";
 import SyntaxRef from "../SyntaxRef/SyntaxRef.tsx";
 import ChordBuilder from "../ChordBuilder/ChordBuilder.tsx";
+import type { Cell as CellModel } from "../../cells/kinds.ts";
 import shared from "../../providers/ThemeProvider/ThemeProvider.module.css";
 import s from "./App.module.css";
 
 const OVERLAY_SELECTOR =
   "[data-react-aria-top-layer], [role=dialog], [role=listbox], [role=menu], [role=presentation]";
 
-// Each cell type's rainbow hue (mirrors Cell.module.css). Gold is pale, so the undo button
-// uses its -strong variant to stay legible on the dark toast.
-const TYPE_HUE = { abc: "magenta", cifra: "cinnamon", snd: "gold", img: "seafoam", pdf: "blue", md: "purple" };
-const undoAccent = (deleted) => {
-  const hue = TYPE_HUE[deleted?.cell?.type] || "magenta";
+// Each Cell kind's rainbow hue (mirrors Cell.module.css). Gold is pale, so the undo button uses
+// its -strong variant to stay legible on the dark toast.
+const TYPE_HUE: Record<string, string> = {
+  score: "magenta",
+  cifra: "cinnamon",
+  audio: "gold",
+  image: "seafoam",
+  pdf: "blue",
+  note: "purple",
+};
+const undoAccent = (deleted: { cell: CellModel } | null): CSSProperties => {
+  const hue = TYPE_HUE[deleted?.cell?.kind ?? ""] || "magenta";
   return {
     "--accent": `var(--s-${hue === "gold" ? "gold-strong" : hue})`,
     "--accent-strong": `var(--s-${hue}-strong)`,
-  };
+  } as CSSProperties;
 };
 
 export default function App() {
-  const { activeLesson, createLesson, importLesson, hydrated, lastDeleted, undoDelete, dismissUndo } =
-    useStore();
+  const {
+    activeLesson,
+    createLesson,
+    importLesson,
+    hydrated,
+    lastDeleted,
+    undoDelete,
+    dismissUndo,
+  } = useStore();
   const { setEditing } = useEditing();
   const { alert } = useDialog();
   const { t } = useI18n();
@@ -47,13 +62,13 @@ export default function App() {
   // PWA file handling — open .pnotes files launched from the OS (Chromium desktop, installed).
   useEffect(() => {
     if (!("launchQueue" in window)) return;
-    window.launchQueue.setConsumer(async (params) => {
+    (window as any).launchQueue.setConsumer(async (params: any) => {
       for (const handle of params.files || []) {
         try {
           const file = await handle.getFile();
           importLesson(JSON.parse(await file.text()));
         } catch (err) {
-          alert({ title: t("dialogs.openFileFailedTitle"), message: err.message });
+          alert({ title: t("dialogs.openFileFailedTitle"), message: (err as Error).message });
         }
       }
     });
@@ -71,7 +86,7 @@ export default function App() {
           await cache.delete("lesson");
         }
       } catch (err) {
-        alert({ title: t("dialogs.openSharedFailedTitle"), message: err.message });
+        alert({ title: t("dialogs.openSharedFailedTitle"), message: (err as Error).message });
       }
       window.history.replaceState(null, "", "./");
     })();
@@ -79,10 +94,11 @@ export default function App() {
 
   // Click-to-edit / click-away-to-render (Jupyter-style active cell).
   useEffect(() => {
-    function onDown(e) {
-      const cellEl = e.target.closest?.("[data-cell-id]");
-      if (cellEl) setEditing(cellEl.dataset.cellId);
-      else if (!e.target.closest?.(OVERLAY_SELECTOR)) setEditing(null);
+    function onDown(e: MouseEvent) {
+      const target = e.target as Element;
+      const cellEl = target.closest?.("[data-cell-id]");
+      if (cellEl) setEditing((cellEl as HTMLElement).dataset.cellId ?? null);
+      else if (!target.closest?.(OVERLAY_SELECTOR)) setEditing(null);
     }
     document.addEventListener("mousedown", onDown, true);
     return () => document.removeEventListener("mousedown", onDown, true);
@@ -91,10 +107,7 @@ export default function App() {
   return (
     <div className="app-shell">
       <Topbar />
-      {/* Each dock wears the colour of the cell it relates to (a distinct one each), ordered
-          to follow the cell rainbow: Metronome→Score(magenta) · Tuner→Chords(cinnamon) ·
-          Drone→Audio(gold) · Reference→Image(seafoam) · Scratchpad→PDF(blue) ·
-          Syntax→Note(purple). */}
+      {/* Each dock wears the colour of the cell it relates to, ordered to follow the cell rainbow. */}
       <div className={`${s.utilityDock} no-print`}>
         <Metronome />
         <Tuner />

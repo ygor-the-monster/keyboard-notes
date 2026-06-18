@@ -1,4 +1,4 @@
-import { useRef } from "react";
+import { useRef, type ChangeEvent } from "react";
 import {
   MenuTrigger,
   Menu,
@@ -28,7 +28,7 @@ import IconBtn from "../IconBtn/IconBtn.tsx";
 import { vdiv, titleField } from "./Topbar.styled.ts";
 import s from "./Topbar.module.css";
 
-const mb = (bytes) => (bytes ? (bytes / 1e6).toFixed(1) : "0");
+const mb = (bytes?: number) => (bytes ? (bytes / 1e6).toFixed(1) : "0");
 
 export default function Topbar() {
   const {
@@ -45,11 +45,11 @@ export default function Topbar() {
   const { confirm, alert } = useDialog();
   const { t, locale, setLocale, locales } = useI18n();
   const { scheme, toggle: toggleTheme } = useTheme();
-  const fileRef = useRef(null);
+  const fileRef = useRef<HTMLInputElement>(null);
 
   const lessons = state.order.filter((id) => state.lessons[id]);
 
-  async function onMenuAction(key) {
+  async function onMenuAction(key: string | number) {
     const k = String(key);
     if (k === "__new") createLesson();
     else if (k === "__import") fileRef.current?.click();
@@ -70,18 +70,18 @@ export default function Topbar() {
   }
 
   // One import handles both a single lesson and a full-library backup (auto-detected).
-  function onImportFile(e) {
-    const file = e.target.files[0];
+  function onImportFile(e: ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
     e.target.value = "";
     if (!file) return;
     const reader = new FileReader();
     reader.onload = () => {
       try {
-        const parsed = JSON.parse(reader.result);
+        const parsed = JSON.parse(reader.result as string);
         if (parsed && parsed.library) importLibrary(parsed);
         else importLesson(parsed);
       } catch (err) {
-        alert({ title: t("dialogs.importFailedTitle"), message: err.message });
+        alert({ title: t("dialogs.importFailedTitle"), message: (err as Error).message });
       }
     };
     reader.readAsText(file);
@@ -139,8 +139,8 @@ export default function Topbar() {
     try {
       await navigator.share({ files: [file], title: activeLesson.title || "Piano Notes lesson" });
     } catch (err) {
-      if (err.name !== "AbortError")
-        alert({ title: t("dialogs.shareFailedTitle"), message: err.message });
+      if ((err as Error).name !== "AbortError")
+        alert({ title: t("dialogs.shareFailedTitle"), message: (err as Error).message });
     }
   }
 
@@ -151,7 +151,7 @@ export default function Topbar() {
           <img className={s.brandLogo} src={`${import.meta.env.BASE_URL}icon-simple.svg`} alt="" />
           <span className={s.brandWord}>Piano Notes</span>
         </span>
-        <Divider orientation="vertical" styles={vdiv} />
+        <Divider orientation="vertical" styles={vdiv as never} />
         <MenuTrigger>
           <ActionButton aria-label={t("topbar.lessons")} isQuiet size="L">
             <Notebook size={22} aria-hidden />
@@ -185,7 +185,7 @@ export default function Topbar() {
           styles={titleField}
         />
 
-        <Divider orientation="vertical" styles={vdiv} />
+        <Divider orientation="vertical" styles={vdiv as never} />
         <div className={s.tools} role="toolbar" aria-label={t("topbar.lessonTools")}>
           <MenuTrigger>
             <ActionButton aria-label={t("lang.label")} isQuiet size="L">
