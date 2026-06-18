@@ -6,6 +6,7 @@ import {
   flushState,
   requestPersistentStorage,
   storageEstimate,
+  normalizeState,
   getPref,
   setPref,
   usePref,
@@ -66,6 +67,38 @@ describe("StoreProvider persistence", () => {
   it("degrades gracefully when storage APIs are unavailable in jsdom", async () => {
     await expect(requestPersistentStorage()).resolves.toBe(false);
     await expect(storageEstimate()).resolves.toMatchObject({ persisted: false });
+  });
+});
+
+describe("normalizeState (guards against corrupt persisted records)", () => {
+  it("drops an activeId that has no lessons map (the crash case)", () => {
+    // Regression: a record with activeId but lessons===undefined used to throw on first render.
+    expect(normalizeState({ activeId: "ghost" })).toEqual({
+      lessons: {},
+      order: [],
+      activeId: null,
+    });
+  });
+
+  it("prunes order/activeId down to lessons that actually exist", () => {
+    const real = lesson("real", "Real");
+    const s = normalizeState({
+      lessons: { real },
+      order: ["real", "missing"],
+      activeId: "missing",
+    });
+    expect(s.order).toEqual(["real"]);
+    expect(s.activeId).toBe("real"); // fell back to the first surviving lesson
+  });
+
+  it("returns an empty state for null / non-object input", () => {
+    expect(normalizeState(null)).toEqual({ lessons: {}, order: [], activeId: null });
+    expect(normalizeState("nope")).toEqual({ lessons: {}, order: [], activeId: null });
+  });
+
+  it("passes a well-formed state through unchanged", () => {
+    const good = state("ok", "Good");
+    expect(normalizeState(good)).toEqual(good);
   });
 });
 

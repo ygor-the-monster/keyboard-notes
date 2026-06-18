@@ -113,7 +113,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     setLastDeletedState(v);
   }, []);
 
-  const activeLesson = state.activeId ? (state.lessons[state.activeId] ?? null) : null;
+  const activeLesson = state.activeId ? (state.lessons?.[state.activeId] ?? null) : null;
 
   const api = useMemo<StoreApi>(() => {
     const touch = (draft: AppState) => {

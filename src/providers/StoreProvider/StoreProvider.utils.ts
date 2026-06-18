@@ -43,10 +43,24 @@ async function idbSet(key: string, value: unknown): Promise<void> {
   });
 }
 
+// Coerce a persisted (possibly partial or corrupt) record into a valid AppState: a lessons map, an
+// order listing only lessons that still exist, and an activeId pointing at a real lesson (or null).
+// A malformed record — e.g. an activeId with no lessons map — would otherwise crash on first render.
+export function normalizeState(raw: unknown): AppState {
+  const d = (raw && typeof raw === "object" ? raw : {}) as Partial<AppState>;
+  const lessons =
+    d.lessons && typeof d.lessons === "object" ? (d.lessons as AppState["lessons"]) : {};
+  const order = (Array.isArray(d.order) ? d.order : Object.keys(lessons)).filter(
+    (id) => lessons[id],
+  );
+  const activeId = d.activeId && lessons[d.activeId] ? d.activeId : (order[0] ?? null);
+  return { lessons, order, activeId };
+}
+
 export async function loadState(): Promise<AppState> {
   try {
     const fromIdb = await idbGet(STATE_KEY);
-    if (fromIdb) return fromIdb as AppState;
+    if (fromIdb) return normalizeState(fromIdb);
   } catch (e) {
     console.warn("IndexedDB read failed:", e);
   }
@@ -54,7 +68,7 @@ export async function loadState(): Promise<AppState> {
   try {
     const raw = localStorage.getItem(STORE_KEY);
     if (raw) {
-      const parsed = JSON.parse(raw) as AppState;
+      const parsed = normalizeState(JSON.parse(raw));
       try {
         await idbSet(STATE_KEY, parsed);
         localStorage.removeItem(STORE_KEY); // free the localStorage quota once migrated
