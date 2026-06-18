@@ -2,7 +2,7 @@ import { useRef, useState } from "react";
 import { Slider, Picker, PickerItem } from "@react-spectrum/s2";
 import { Metronome as MetronomeIcon, HandTap } from "@phosphor-icons/react";
 import { useMetronome } from "./Metronome.hooks.ts";
-import { useI18n } from "../../providers/I18nProvider/I18nProvider.jsx";
+import { useI18n } from "../../providers/I18nProvider/I18nProvider.tsx";
 import { usePref } from "../../providers/StoreProvider/StoreProvider.utils.ts";
 import { fullWidth } from "./Metronome.styled.jsx";
 import shared from "../../providers/ThemeProvider/ThemeProvider.module.css";

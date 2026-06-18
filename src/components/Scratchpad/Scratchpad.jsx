@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { NotePencil } from "@phosphor-icons/react";
 import { useStore } from "../../providers/StoreProvider/StoreProvider.tsx";
-import { useI18n } from "../../providers/I18nProvider/I18nProvider.jsx";
+import { useI18n } from "../../providers/I18nProvider/I18nProvider.tsx";
 import { getPref, setPref } from "../../providers/StoreProvider/StoreProvider.utils.ts";
 import s from "./Scratchpad.module.css";
 

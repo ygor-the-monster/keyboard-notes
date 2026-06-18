@@ -2,14 +2,7 @@
 const MAX_DIM = 1600;
 const QUALITY = 0.85;
 
-export function fileToDataUrl(file) {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = () => resolve(reader.result);
-    reader.onerror = reject;
-    reader.readAsDataURL(file);
-  });
-}
+export { fileToDataUrl } from "../../utils/file.ts";
 
 export function loadImage(src) {
   return new Promise((resolve, reject) => {

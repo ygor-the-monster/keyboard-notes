@@ -17,8 +17,8 @@ import {
   ArrowsOut,
 } from "@phosphor-icons/react";
 import { useStore } from "../../providers/StoreProvider/StoreProvider.tsx";
-import { useDialog } from "../../providers/DialogProvider/DialogProvider.jsx";
-import { useI18n } from "../../providers/I18nProvider/I18nProvider.jsx";
+import { useDialog } from "../../providers/DialogProvider/DialogProvider.tsx";
+import { useI18n } from "../../providers/I18nProvider/I18nProvider.tsx";
 import { DEFAULT_IMAGE_FILTER } from "../../cells/kinds.ts";
 import {
   loadImage,

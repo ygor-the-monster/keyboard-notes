@@ -21,8 +21,8 @@ import {
 import { useStore } from "../../providers/StoreProvider/StoreProvider.tsx";
 import { storageEstimate } from "../../providers/StoreProvider/StoreProvider.utils.ts";
 import { usePwa } from "../../providers/PWAProvider/PWAProvider.jsx";
-import { useDialog } from "../../providers/DialogProvider/DialogProvider.jsx";
-import { useI18n } from "../../providers/I18nProvider/I18nProvider.jsx";
+import { useDialog } from "../../providers/DialogProvider/DialogProvider.tsx";
+import { useI18n } from "../../providers/I18nProvider/I18nProvider.tsx";
 import { useTheme } from "../../providers/ThemeProvider/ThemeProvider.jsx";
 import IconBtn from "../IconBtn/IconBtn.jsx";
 import { vdiv, titleField } from "./Topbar.styled.jsx";

@@ -2,15 +2,7 @@
 // region splicing, and a small mono 16-bit WAV encoder (used after any edit that needs to
 // re-encode — splice / trim / delete — since the browser can't re-encode to opus offline).
 import { output } from "../../audio/engine.ts";
-
-export function fileToDataUrl(file) {
-  return new Promise((resolve, reject) => {
-    const r = new FileReader();
-    r.onload = () => resolve(r.result);
-    r.onerror = reject;
-    r.readAsDataURL(file);
-  });
-}
+export { fileToDataUrl } from "../../utils/file.ts";
 
 // Audio-cell decode + buffer math run on the shared output context from the engine.
 export function audioCtx() {

@@ -1,16 +1,15 @@
 import { type CSSProperties } from "react";
 import { Plus } from "@phosphor-icons/react";
 import { useStore } from "../../providers/StoreProvider/StoreProvider.tsx";
-import { useEditing } from "../../providers/EditingProvider/EditingProvider.jsx";
-import { useI18n } from "../../providers/I18nProvider/I18nProvider.jsx";
+import { useEditing } from "../../providers/EditingProvider/EditingProvider.tsx";
+import { useI18n } from "../../providers/I18nProvider/I18nProvider.tsx";
 import { cellRegistry, ADD_BAR_ORDER } from "../../cells/registry.tsx";
 import s from "./AddBar.module.css";
 
 export default function AddBar() {
   const { addCell } = useStore();
-  // Loose casts for providers still on .jsx — removed when they migrate to TS.
-  const { setEditing } = useEditing() as unknown as { setEditing: (id: string) => void };
-  const { t } = useI18n() as unknown as { t: (key: string) => string };
+  const { setEditing } = useEditing();
+  const { t } = useI18n();
   return (
     <div className={`${s.wrap} no-print`}>
       <div className={s.label}>

@@ -7,16 +7,15 @@ import {
 import { CaretUp, CaretDown, Copy, Trash, DotsSixVertical } from "@phosphor-icons/react";
 import type { Icon } from "@phosphor-icons/react";
 import { useStore } from "../../providers/StoreProvider/StoreProvider.tsx";
-import { useEditing } from "../../providers/EditingProvider/EditingProvider.jsx";
-import { useDialog } from "../../providers/DialogProvider/DialogProvider.jsx";
-import { useI18n } from "../../providers/I18nProvider/I18nProvider.jsx";
+import { useEditing } from "../../providers/EditingProvider/EditingProvider.tsx";
+import { useDialog } from "../../providers/DialogProvider/DialogProvider.tsx";
+import { useI18n } from "../../providers/I18nProvider/I18nProvider.tsx";
 import IconBtnRaw from "../IconBtn/IconBtn.jsx";
 import { cellRegistry } from "../../cells/registry.tsx";
 import type { Cell as CellModel } from "../../cells/kinds.ts";
 import s from "./Cell.module.css";
 
-// Loose casts for providers/components still on .jsx — removed when they migrate to TS.
-type Translate = (key: string, vars?: Record<string, unknown>) => string;
+// IconBtn is still .jsx; type it as a component until it migrates to TS.
 const IconBtn = IconBtnRaw as ComponentType<{
   icon: Icon;
   label: string;
@@ -25,16 +24,9 @@ const IconBtn = IconBtnRaw as ComponentType<{
 
 export default function Cell({ cell, index = 0 }: { cell: CellModel; index?: number }) {
   const { moveCell, moveCellTo, duplicateCell, deleteCell } = useStore();
-  const { editingId } = useEditing() as unknown as { editingId: string | null };
-  const { confirm } = useDialog() as unknown as {
-    confirm: (o: {
-      title: string;
-      message: string;
-      confirmLabel?: string;
-      variant?: string;
-    }) => Promise<boolean>;
-  };
-  const { t } = useI18n() as unknown as { t: Translate };
+  const { editingId } = useEditing();
+  const { confirm } = useDialog();
+  const { t } = useI18n();
   const editing = editingId === cell.id;
   const view = cellRegistry[cell.kind];
   const TagIcon = view.icon;

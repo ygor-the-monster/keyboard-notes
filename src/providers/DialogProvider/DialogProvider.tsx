@@ -1,19 +1,45 @@
-import { createContext, useCallback, useContext, useMemo, useRef, useState } from "react";
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useMemo,
+  useRef,
+  useState,
+  type ReactNode,
+} from "react";
 import { AlertDialog, DialogContainer } from "@react-spectrum/s2";
-import { useI18n } from "../I18nProvider/I18nProvider.jsx";
+import { useI18n } from "../I18nProvider/I18nProvider.tsx";
 
-const DialogContext = createContext(null);
+export type DialogVariant = "confirmation" | "information" | "destructive" | "warning" | "error";
 
-// App-wide, promise-based replacement for window.confirm / window.alert using the S2
-// AlertDialog. useDialog() → { confirm(opts) => Promise<boolean>, alert(opts) => Promise<void> }.
+export interface DialogOptions {
+  title?: string;
+  message?: string;
+  confirmLabel?: string;
+  cancelLabel?: string;
+  variant?: DialogVariant;
+}
+type DialogArg = string | DialogOptions;
+interface DialogConfig extends DialogOptions {
+  alert?: boolean;
+}
+
+export interface DialogValue {
+  confirm: (o: DialogArg) => Promise<boolean>;
+  alert: (o: DialogArg) => Promise<void>;
+}
+
+const DialogContext = createContext<DialogValue | null>(null);
+
+// App-wide, promise-based replacement for window.confirm / window.alert using the S2 AlertDialog.
 // `opts` is a string (used as the title) or { title, message, confirmLabel, cancelLabel, variant }.
-export function DialogProvider({ children }) {
+export function DialogProvider({ children }: { children: ReactNode }) {
   const { t } = useI18n();
-  const [opts, setOpts] = useState(null);
-  const resolveRef = useRef(null);
+  const [opts, setOpts] = useState<DialogConfig | null>(null);
+  const resolveRef = useRef<((result: boolean) => void) | null>(null);
 
-  const ask = useCallback((o, alertMode) => {
-    const cfg = typeof o === "string" ? { title: o } : { ...o };
+  const ask = useCallback((o: DialogArg, alertMode: boolean): Promise<boolean> => {
+    const cfg: DialogConfig = typeof o === "string" ? { title: o } : { ...o };
     cfg.alert = alertMode;
     return new Promise((resolve) => {
       resolveRef.current = resolve;
@@ -25,7 +51,7 @@ export function DialogProvider({ children }) {
   // onDismiss in the same click; the buttons resolve *synchronously* so they always win, while
   // onDismiss resolves false only on a microtask — after every sync handler has run — covering
   // Esc / outside-click without overriding a button choice, regardless of firing order.
-  const settle = useCallback((result) => {
+  const settle = useCallback((result: boolean) => {
     const r = resolveRef.current;
     if (!r) return;
     resolveRef.current = null;
@@ -33,7 +59,13 @@ export function DialogProvider({ children }) {
     r(result);
   }, []);
 
-  const api = useMemo(() => ({ confirm: (o) => ask(o, false), alert: (o) => ask(o, true) }), [ask]);
+  const api = useMemo<DialogValue>(
+    () => ({
+      confirm: (o) => ask(o, false),
+      alert: (o) => ask(o, true).then(() => undefined),
+    }),
+    [ask],
+  );
 
   return (
     <DialogContext.Provider value={api}>
@@ -59,7 +91,7 @@ export function DialogProvider({ children }) {
   );
 }
 
-export function useDialog() {
+export function useDialog(): DialogValue {
   const ctx = useContext(DialogContext);
   if (!ctx) throw new Error("useDialog must be used within DialogProvider");
   return ctx;

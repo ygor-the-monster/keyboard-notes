@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { PitchDetector } from "pitchy";
-import { useDialog } from "../../providers/DialogProvider/DialogProvider.jsx";
+import { useDialog } from "../../providers/DialogProvider/DialogProvider.tsx";
 
 const NOTE_NAMES = ["C", "C♯", "D", "D♯", "E", "F", "F♯", "G", "G♯", "A", "A♯", "B"];
 

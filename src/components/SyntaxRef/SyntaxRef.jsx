@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Code } from "@phosphor-icons/react";
-import { useI18n } from "../../providers/I18nProvider/I18nProvider.jsx";
+import { useI18n } from "../../providers/I18nProvider/I18nProvider.tsx";
 import s from "./SyntaxRef.module.css";
 
 // Pull-tab cheat sheet for the editable cells' syntaxes. The tokens are literal; the short

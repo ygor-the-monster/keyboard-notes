@@ -15,14 +15,7 @@ export async function getPdfjs() {
   return lib;
 }
 
-export function fileToDataUrl(file) {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = () => resolve(reader.result);
-    reader.onerror = reject;
-    reader.readAsDataURL(file);
-  });
-}
+export { fileToDataUrl } from "../../utils/file.ts";
 
 // Decode a `data:` URL into the raw bytes pdf.js / pdf-lib need.
 export function dataUrlToBytes(dataUrl) {

@@ -1,8 +1,8 @@
 import { useEffect } from "react";
 import { useStore } from "../../providers/StoreProvider/StoreProvider.tsx";
-import { useEditing } from "../../providers/EditingProvider/EditingProvider.jsx";
-import { useDialog } from "../../providers/DialogProvider/DialogProvider.jsx";
-import { useI18n } from "../../providers/I18nProvider/I18nProvider.jsx";
+import { useEditing } from "../../providers/EditingProvider/EditingProvider.tsx";
+import { useDialog } from "../../providers/DialogProvider/DialogProvider.tsx";
+import { useI18n } from "../../providers/I18nProvider/I18nProvider.tsx";
 import Topbar from "../Topbar/Topbar.jsx";
 import Cell from "../Cell/Cell.tsx";
 import EmptyState from "../EmptyState/EmptyState.jsx";

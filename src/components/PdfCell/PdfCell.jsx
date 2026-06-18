@@ -18,8 +18,8 @@ import {
   Rows,
 } from "@phosphor-icons/react";
 import { useStore } from "../../providers/StoreProvider/StoreProvider.tsx";
-import { useDialog } from "../../providers/DialogProvider/DialogProvider.jsx";
-import { useI18n } from "../../providers/I18nProvider/I18nProvider.jsx";
+import { useDialog } from "../../providers/DialogProvider/DialogProvider.tsx";
+import { useI18n } from "../../providers/I18nProvider/I18nProvider.tsx";
 import { getPdfjs, dataUrlToBytes, bytesToDataUrl, fileToDataUrl } from "./PdfCell.utils.js";
 import { ANNOT_COLORS, buildAnnotationTools } from "../AnnotationLayer/AnnotationLayer.utils.js";
 import { useStrokeHistory } from "../AnnotationLayer/AnnotationLayer.hooks.ts";

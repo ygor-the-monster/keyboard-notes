@@ -32,7 +32,7 @@ import {
   UserSound,
 } from "@phosphor-icons/react";
 import { useStore } from "../../providers/StoreProvider/StoreProvider.tsx";
-import { useI18n } from "../../providers/I18nProvider/I18nProvider.jsx";
+import { useI18n } from "../../providers/I18nProvider/I18nProvider.tsx";
 import EmptyState from "../EmptyState/EmptyState.jsx";
 import {
   getAbcjs,
