@@ -25,7 +25,7 @@ import { ANNOT_COLORS, buildAnnotationTools } from "../AnnotationLayer/Annotatio
 import { useStrokeHistory } from "../AnnotationLayer/AnnotationLayer.hooks.ts";
 import { useAutoScroll, buildScrollTools } from "../../hooks/useAutoScroll.ts";
 import AnnotationLayer from "../AnnotationLayer/AnnotationLayer.jsx";
-import Toolbar from "../Toolbar/Toolbar.jsx";
+import Toolbar from "../Toolbar/Toolbar.tsx";
 import shared from "../../providers/ThemeProvider/ThemeProvider.module.css";
 import { dropFull } from "./PdfCell.styled.jsx";
 import css from "./PdfCell.module.css";

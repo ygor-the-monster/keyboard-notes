@@ -1,23 +1,96 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import { ActionButton, ToggleButton, Text, TooltipTrigger, Tooltip } from "@react-spectrum/s2";
 import { CaretLeft, CaretRight } from "@phosphor-icons/react";
+import type { Icon } from "@phosphor-icons/react";
 import shared from "../../providers/ThemeProvider/ThemeProvider.module.css";
 import s from "./Toolbar.module.css";
 
-// Unified, declarative cell toolbar. One strip per cell; tools are one of five kinds:
-//   action  — { kind:"action", id, icon?|char?, label, onUse, disabled? }
-//   toggle  — { kind:"toggle", id, icon?|char?, altIcon?|altChar?, label, altLabel?, value, onToggle }
-//   group   — { kind:"group", id, icon?|char?, label, options:[{id, icon?|char?|swatch?|dot?, label, onUse, selected?}] }
-//   input   — { kind:"input", id, icon?|char?, label, render:({close}) => node }
-//   spinner — { kind:"spinner", id, label, display, onPrev, onNext, prevDisabled?, nextDisabled? }
-//   sep     — { kind:"sep" }
-// Every face is a single icon or char. Group/input options slide out inline (pushing siblings).
+// Unified, declarative cell toolbar. One strip per cell; every tool is one of six kinds, modelled
+// as a discriminated union on `kind` so each kind's required fields are enforced at compile time.
+// A "face" is the shared visual: a single icon, char, SMuFL glyph, colour swatch, or dot.
 
-function Face({ icon: Icon, char, glyph, dim, dy, swatch, dot, size = 20 }) {
+interface Face {
+  icon?: Icon;
+  char?: string;
+  glyph?: string;
+  dim?: boolean;
+  dy?: number;
+  swatch?: string;
+  dot?: number;
+}
+
+export interface ActionTool extends Face {
+  kind: "action";
+  id: string;
+  label: string;
+  onUse: () => void;
+  disabled?: boolean;
+}
+
+export interface ToggleTool extends Face {
+  kind: "toggle";
+  id: string;
+  label: string;
+  altLabel?: string;
+  altIcon?: Icon;
+  altChar?: string;
+  value: boolean;
+  onToggle: () => void;
+}
+
+export interface GroupOption extends Face {
+  id: string;
+  label: string;
+  onUse?: () => void;
+  selected?: boolean;
+}
+
+export interface GroupTool extends Face {
+  kind: "group";
+  id: string;
+  label: string;
+  options: GroupOption[];
+}
+
+export interface InputTool extends Face {
+  kind: "input";
+  id: string;
+  label: string;
+  render: (ctx: { close: () => void }) => ReactNode;
+}
+
+export interface SpinnerTool {
+  kind: "spinner";
+  id: string;
+  label: string;
+  display?: ReactNode;
+  icon?: Icon;
+  onPrev: () => void;
+  onNext: () => void;
+  prevDisabled?: boolean;
+  nextDisabled?: boolean;
+}
+
+export interface SepTool {
+  kind: "sep";
+}
+
+export type Tool = ActionTool | ToggleTool | GroupTool | InputTool | SpinnerTool | SepTool;
+
+function Face({
+  icon: IconCmp,
+  char,
+  glyph,
+  dim,
+  dy,
+  swatch,
+  dot,
+  size = 20,
+}: Face & { size?: number }) {
   if (swatch) return <span className={s.swatch} style={{ background: swatch }} />;
   if (dot) return <span className={s.dot} style={{ width: dot, height: dot }} />;
   if (glyph) {
-    const style = {};
+    const style: { opacity?: number; transform?: string } = {};
     if (dim) style.opacity = 0.4;
     if (dy) style.transform = `translateY(${dy}em)`; // per-glyph vertical centering nudge
     return (
@@ -26,24 +99,26 @@ function Face({ icon: Icon, char, glyph, dim, dy, swatch, dot, size = 20 }) {
       </span>
     );
   }
-  return Icon ? <Icon size={size} aria-hidden /> : <Text>{char}</Text>;
+  return IconCmp ? <IconCmp size={size} aria-hidden /> : <Text>{char}</Text>;
 }
 
-function faceClass(tool) {
+function faceClass(tool: Face): string {
   return tool.icon || tool.glyph || tool.swatch || tool.dot ? shared.btnIcononly : s.charBtn;
 }
 
-function OptionButton({ opt, onPick }) {
-  let face;
-  if (opt.swatch) face = <span className={s.swatch} style={{ background: opt.swatch }} />;
-  else if (opt.dot) face = <span className={s.dot} style={{ width: opt.dot, height: opt.dot }} />;
-  else face = <Face icon={opt.icon} char={opt.char} glyph={opt.glyph} dim={opt.dim} dy={opt.dy} />;
-  const cls = [
-    opt.icon || opt.glyph || opt.swatch || opt.dot ? shared.btnIcononly : s.charBtn,
-    opt.selected && s.selected,
-  ]
-    .filter(Boolean)
-    .join(" ");
+function OptionButton({ opt, onPick }: { opt: GroupOption; onPick: () => void }) {
+  const face = (
+    <Face
+      icon={opt.icon}
+      char={opt.char}
+      glyph={opt.glyph}
+      dim={opt.dim}
+      dy={opt.dy}
+      swatch={opt.swatch}
+      dot={opt.dot}
+    />
+  );
+  const cls = [faceClass(opt), opt.selected && s.selected].filter(Boolean).join(" ");
   return (
     <TooltipTrigger delay={450}>
       <ActionButton isQuiet size="L" aria-label={opt.label} UNSAFE_className={cls} onPress={onPick}>
@@ -54,7 +129,17 @@ function OptionButton({ opt, onPick }) {
   );
 }
 
-function ToolView({ tool, open, onToggle, close }) {
+function ToolView({
+  tool,
+  open,
+  onToggle,
+  close,
+}: {
+  tool: Tool;
+  open: boolean;
+  onToggle: () => void;
+  close: () => void;
+}) {
   switch (tool.kind) {
     case "sep":
       return <span className={shared.toolbarSep} aria-hidden />;
@@ -209,15 +294,15 @@ function ToolView({ tool, open, onToggle, close }) {
   }
 }
 
-export default function Toolbar({ label, tools }) {
-  const [openId, setOpenId] = useState(null);
-  const ref = useRef(null);
+export default function Toolbar({ label, tools }: { label: string; tools: Tool[] }) {
+  const [openId, setOpenId] = useState<string | null>(null);
+  const ref = useRef<HTMLDivElement>(null);
 
   // Collapse the open group/input on any click outside the strip.
   useEffect(() => {
     if (openId == null) return;
-    function onDown(e) {
-      if (ref.current && !ref.current.contains(e.target)) setOpenId(null);
+    function onDown(e: MouseEvent) {
+      if (ref.current && !ref.current.contains(e.target as Node)) setOpenId(null);
     }
     document.addEventListener("mousedown", onDown, true);
     return () => document.removeEventListener("mousedown", onDown, true);
@@ -225,15 +310,20 @@ export default function Toolbar({ label, tools }) {
 
   return (
     <div ref={ref} className={`${shared.toolStrip} no-print`} role="toolbar" aria-label={label}>
-      {tools.filter(Boolean).map((t, i) => (
-        <ToolView
-          key={t.id || i}
-          tool={t}
-          open={openId === t.id}
-          onToggle={() => setOpenId((o) => (o === t.id ? null : t.id))}
-          close={() => setOpenId(null)}
-        />
-      ))}
+      {tools.filter(Boolean).map((tool, i) => {
+        const id = "id" in tool ? tool.id : i;
+        return (
+          <ToolView
+            key={id}
+            tool={tool}
+            open={"id" in tool && openId === tool.id}
+            onToggle={() =>
+              "id" in tool ? setOpenId((o) => (o === tool.id ? null : tool.id)) : undefined
+            }
+            close={() => setOpenId(null)}
+          />
+        );
+      })}
     </div>
   );
 }

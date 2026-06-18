@@ -49,7 +49,7 @@ import {
   withTempo,
   SMUFL,
 } from "./ScoreCell.utils.js";
-import Toolbar from "../Toolbar/Toolbar.jsx";
+import Toolbar from "../Toolbar/Toolbar.tsx";
 import shared from "../../providers/ThemeProvider/ThemeProvider.module.css";
 import s from "./ScoreCell.module.css";
 

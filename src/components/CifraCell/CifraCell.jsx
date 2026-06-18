@@ -5,7 +5,7 @@ import { useI18n } from "../../providers/I18nProvider/I18nProvider.tsx";
 import { useAutoScroll, buildScrollTools } from "../../hooks/useAutoScroll.ts";
 import { parseCifra, transposeLabel } from "./CifraCell.utils.js";
 import EmptyState from "../EmptyState/EmptyState.jsx";
-import Toolbar from "../Toolbar/Toolbar.jsx";
+import Toolbar from "../Toolbar/Toolbar.tsx";
 import shared from "../../providers/ThemeProvider/ThemeProvider.module.css";
 import css from "./CifraCell.module.css";
 

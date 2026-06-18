@@ -7,6 +7,7 @@ import {
   type SetStateAction,
 } from "react";
 import { Play, Pause } from "@phosphor-icons/react";
+import type { Tool } from "../components/Toolbar/Toolbar.tsx";
 
 const STEP = 0.4; // px per frame per speed unit
 
@@ -65,7 +66,13 @@ interface ScrollToolsArgs {
 }
 
 // The shared Toolbar descriptors (play/pause toggle + 1–5× speed spinner) for auto-scroll.
-export function buildScrollTools({ t, scrolling, toggle, speed, setSpeed }: ScrollToolsArgs) {
+export function buildScrollTools({
+  t,
+  scrolling,
+  toggle,
+  speed,
+  setSpeed,
+}: ScrollToolsArgs): Tool[] {
   return [
     {
       kind: "toggle",
