@@ -108,7 +108,7 @@ export default function Topbar() {
     const blob = new Blob([data], { type: "application/x-piano-notes" });
     const a = document.createElement("a");
     a.href = URL.createObjectURL(blob);
-    a.download = "piano-notes-backup.pnotes";
+    a.download = "keyboard-notes-backup.pnotes";
     a.click();
     setTimeout(() => URL.revokeObjectURL(a.href), 1000);
     toast.positive(t("toast.backedUp"));
@@ -150,7 +150,7 @@ export default function Topbar() {
     if (!activeLesson) return;
     const file = new File([lessonJson()], lessonFilename(), { type: "text/plain" });
     try {
-      await navigator.share({ files: [file], title: activeLesson.title || "Piano Notes lesson" });
+      await navigator.share({ files: [file], title: activeLesson.title || "Keyboard Notes lesson" });
       toast.positive(t("toast.shared"));
     } catch (err) {
       if ((err as Error).name !== "AbortError") toast.negative(t("dialogs.shareFailedTitle"));
@@ -162,7 +162,7 @@ export default function Topbar() {
       <div className={s.bar}>
         <span className={s.brandMark} aria-hidden>
           <img className={s.brandLogo} src={`${import.meta.env.BASE_URL}icons/icon-simple.svg`} alt="" />
-          <span className={s.brandWord}>Piano Notes</span>
+          <span className={s.brandWord}>Keyboard Notes</span>
         </span>
         <Separator orientation="vertical" className={s.vDivider} />
         <MenuTrigger>

@@ -121,10 +121,10 @@ export default {
     saveFailed: "Couldn’t save — storage may be full",
     lessonDeleted: "Lesson deleted",
     installPrompt:
-      "Install Piano Notes to keep your lessons safe — once installed, the browser won’t clear them.",
+      "Install Keyboard Notes to keep your lessons safe — once installed, the browser won’t clear them.",
     installAction: "Install",
     installIos:
-      "Add Piano Notes to your Home Screen (Share → Add to Home Screen) so your lessons aren’t cleared.",
+      "Add Keyboard Notes to your Home Screen (Share → Add to Home Screen) so your lessons aren’t cleared.",
   },
   metronome: {
     name: "Metronome",

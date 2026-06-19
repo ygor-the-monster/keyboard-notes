@@ -1,18 +1,14 @@
 import { marked } from "marked";
 import type { MarkedExtension, RendererThis, Tokens, TokenizerThis } from "marked";
+import markedFootnote from "marked-footnote";
+import { markedSmartypants } from "marked-smartypants";
 
 marked.setOptions({ gfm: true, breaks: true });
 
-// --- Custom inline/block syntax marked doesn't ship with ----------------------
-// Highlight (==x==), superscript (^x^), subscript (~x~, single tilde so it never clashes with
-// ~~strikethrough~~), and footnotes ([^id] refs + [^id]: defs). Typed via marked's own extension
-// types (TokenizerThis / RendererThis / Tokens.Generic).
-interface Footnote {
-  id: string;
-  text: string;
-}
-let footnotes: Footnote[] = [];
-
+// --- Custom inline syntax marked doesn't ship with ----------------------------
+// Highlight (==x==), superscript (^x^), and subscript (~x~, single tilde so it never clashes
+// with ~~strikethrough~~). Typed via marked's own extension types (TokenizerThis /
+// RendererThis / Tokens.Generic).
 const inlineWrap = (name: string, open: string, tag: string, re: RegExp) => ({
   name,
   level: "inline" as const,
@@ -33,70 +29,31 @@ const inlineWrap = (name: string, open: string, tag: string, re: RegExp) => ({
 });
 
 marked.use({
-  hooks: {
-    preprocess(md: string) {
-      footnotes = [];
-      return md;
-    },
-    postprocess(html: string) {
-      if (!footnotes.length) return html;
-      const items = footnotes
-        .map(
-          (f) =>
-            `<li id="fn-${f.id}">${marked.parseInline(f.text)} ` +
-            `<a href="#fnref-${f.id}" class="footnote-back">↩</a></li>`,
-        )
-        .join("");
-      return `${html}<hr class="footnotes-sep"><ol class="footnotes">${items}</ol>`;
-    },
-  },
   extensions: [
     inlineWrap("highlight", "==", "mark", /^==(?=\S)([\s\S]*?\S)==/),
     inlineWrap("superscript", "^", "sup", /^\^([^\s^]+)\^/),
     inlineWrap("subscript", "~", "sub", /^~(?!~)([^\s~]+)~(?!~)/),
-    {
-      name: "footnoteDef",
-      level: "block" as const,
-      start(src: string) {
-        return src.match(/^\[\^[^\]]+\]:/m)?.index;
-      },
-      tokenizer(src: string) {
-        const m = /^\[\^([^\]]+)\]:[ \t]*(.*)(?:\n|$)/.exec(src);
-        if (!m) return undefined;
-        footnotes.push({ id: m[1], text: m[2] });
-        return { type: "footnoteDef", raw: m[0], id: m[1], text: m[2] };
-      },
-      renderer() {
-        return ""; // definitions are rendered together at the bottom
-      },
-    },
-    {
-      name: "footnoteRef",
-      level: "inline" as const,
-      start(src: string) {
-        return src.indexOf("[^");
-      },
-      tokenizer(src: string) {
-        const m = /^\[\^([^\]]+)\]/.exec(src);
-        if (!m) return undefined;
-        return { type: "footnoteRef", raw: m[0], id: m[1] };
-      },
-      renderer(this: RendererThis, token: Tokens.Generic) {
-        return (
-          `<sup class="footnote-ref" id="fnref-${token.id}">` +
-          `<a href="#fn-${token.id}">${token.id}</a></sup>`
-        );
-      },
-    },
   ],
 } satisfies MarkedExtension);
 
-// Render markdown to sanitized HTML (strips scripts, inline handlers, js: urls).
-export function renderMarkdown(src: string): string {
+// GFM footnotes ([^id] refs + [^id]: defs) rendered with accessible markup — each ref carries
+// aria-describedby, each definition gets a back-reference link, and the section is introduced by
+// an sr-only "Footnotes" heading (styled in ThemeProvider.globals.css). Multi-paragraph footnote
+// bodies are supported. Plus marked-smartypants for smart typographic punctuation (curly quotes,
+// en/em dashes, ellipses) in prose.
+marked.use(markedFootnote());
+marked.use(markedSmartypants());
+
+// Render markdown to sanitized HTML (strips scripts, inline handlers, js: urls). Pass `idScope`
+// (e.g. the cell id) to namespace footnote ids/links so several rendered Notes can coexist on the
+// page without colliding ids — `footnote-1` becomes `footnote-1-<idScope>` on both the definition
+// and the refs/back-links that point at it.
+export function renderMarkdown(src: string, idScope?: string): string {
   const html = marked.parse(src || "") as string;
   const tpl = document.createElement("template");
   tpl.innerHTML = html;
   tpl.content.querySelectorAll("script, style, iframe, object, embed").forEach((n) => n.remove());
+  const scope = idScope ? `-${idScope}` : "";
   tpl.content.querySelectorAll("*").forEach((node) => {
     [...node.attributes].forEach((attr) => {
       const name = attr.name.toLowerCase();
@@ -104,6 +61,13 @@ export function renderMarkdown(src: string): string {
       if (name.startsWith("on")) node.removeAttribute(attr.name);
       if ((name === "href" || name === "src") && val.startsWith("javascript:"))
         node.removeAttribute(attr.name);
+      // Suffix the footnote anchors so refs ↔ defs stay matched within the cell but unique across cells.
+      if (scope && name === "id" && attr.value.startsWith("footnote"))
+        node.setAttribute("id", attr.value + scope);
+      else if (scope && name === "aria-describedby" && attr.value.startsWith("footnote"))
+        node.setAttribute("aria-describedby", attr.value + scope);
+      else if (scope && name === "href" && attr.value.startsWith("#footnote"))
+        node.setAttribute("href", attr.value + scope);
     });
   });
   tpl.content.querySelectorAll("li > input[type=checkbox]").forEach((cb) => {

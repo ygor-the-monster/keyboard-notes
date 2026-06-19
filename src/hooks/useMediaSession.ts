@@ -20,7 +20,7 @@ export function useMediaSession({
 
     ms.metadata = new MediaMetadata({
       title,
-      artist: "Piano Notes",
+      artist: "Keyboard Notes",
       // BASE_URL-prefixed so it resolves under the GitHub Pages subpath (a bare
       // "/pwa-192x192.png" would 404 there). The raster is generated to the dist root.
       artwork: [

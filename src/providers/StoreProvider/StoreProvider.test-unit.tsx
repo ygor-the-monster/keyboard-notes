@@ -160,7 +160,7 @@ describe("StoreProvider / useStore", () => {
   it("importLesson rejects a file with no cells", async () => {
     const { result } = await mountStore();
     expect(() => act(() => result.current.importLesson({ nope: true }))).toThrow(
-      /Piano Notes file/,
+      /Keyboard Notes file/,
     );
   });
 });

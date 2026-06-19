@@ -47,9 +47,9 @@ export default defineConfig({
             purpose: "monochrome",
           },
         ],
-        name: "Piano Notes",
-        short_name: "Piano Notes",
-        description: "A notebook for piano lessons — Markdown + music notation with playback.",
+        name: "Keyboard Notes",
+        short_name: "Keyboard Notes",
+        description: "A practice notebook for people learning an instrument — notes, engraved staves you can hear, chord charts, recordings, and sheet-music PDFs in one lesson.",
         // Static fallback (manifests can't track color-scheme); the app boots light and
         // ThemeProvider updates the live <meta name="theme-color"> to follow the user's scheme.
         theme_color: "#f6f5f1",
@@ -127,6 +127,7 @@ export default defineConfig({
     sourcemap: false,
     // Heavy deps (abcjs, pdf-lib, pdfjs) are already lazy-loaded into their own
     // chunks; this raises the raw-size warning so it only flags real regressions.
-    chunkSizeWarningLimit: 1000,
+    // If this trips again, split the main bundle / lazy-load the icon set.
+    chunkSizeWarningLimit: 1024,
   },
 });

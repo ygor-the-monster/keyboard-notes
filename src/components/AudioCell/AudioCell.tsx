@@ -63,7 +63,7 @@ export default function AudioCell({ cell, editing }: { cell: CellOf<"audio">; ed
   const [sel, setSel] = useState<Sel | null>(null); // in seconds
 
   // Expose playback to the OS media controls while this cell is the one playing.
-  useMediaSession({ audioRef, active: playing, title: activeLesson?.title?.trim() || "Piano Notes" });
+  useMediaSession({ audioRef, active: playing, title: activeLesson?.title?.trim() || "Keyboard Notes" });
 
   // Decode + compute waveform peaks whenever the audio changes.
   useEffect(() => {

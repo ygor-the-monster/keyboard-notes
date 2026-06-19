@@ -122,10 +122,10 @@ export default {
     saveFailed: "Salvataggio non riuscito — memoria forse piena",
     lessonDeleted: "Lezione eliminata",
     installPrompt:
-      "Installa Piano Notes per proteggere le tue lezioni — una volta installato, il browser non le cancellerà.",
+      "Installa Keyboard Notes per proteggere le tue lezioni — una volta installato, il browser non le cancellerà.",
     installAction: "Installa",
     installIos:
-      "Aggiungi Piano Notes alla schermata Home (Condividi → Aggiungi a Home) per non perdere le tue lezioni.",
+      "Aggiungi Keyboard Notes alla schermata Home (Condividi → Aggiungi a Home) per non perdere le tue lezioni.",
   },
   metronome: {
     name: "Metronomo",

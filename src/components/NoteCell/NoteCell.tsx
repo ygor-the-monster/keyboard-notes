@@ -22,7 +22,7 @@ export default function NoteCell({ cell, editing }: { cell: CellOf<"note">; edit
 
   if (!editing) {
     if (!cell.source.trim()) return <EmptyState kind="note" title={t("cell.emptyNote")} compact />;
-    const html = renderMarkdown(cell.source);
+    const html = renderMarkdown(cell.source, cell.id);
     return (
       <div
         className="md-preview"
@@ -76,7 +76,7 @@ export default function NoteCell({ cell, editing }: { cell: CellOf<"note">; edit
           <span className={shared.previewLabel}>{t("cell.preview")}</span>
           <div
             className="md-preview"
-            dangerouslySetInnerHTML={{ __html: renderMarkdown(cell.source) }}
+            dangerouslySetInnerHTML={{ __html: renderMarkdown(cell.source, cell.id) }}
           />
         </div>
       )}

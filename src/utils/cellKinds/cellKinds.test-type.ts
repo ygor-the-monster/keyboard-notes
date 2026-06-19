@@ -23,6 +23,6 @@ describe("Cell discriminated union", () => {
   it("image-only fields aren't visible on a bare Cell", () => {
     const cell = {} as Cell;
     // @ts-expect-error `filter` only exists after narrowing on cell.kind === "image"
-    cell.filter;
+    void cell.filter;
   });
 });

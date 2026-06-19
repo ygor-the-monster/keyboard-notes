@@ -267,7 +267,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
         commit((d) => {
           const p = parsed as { lesson?: Lesson } & Partial<Lesson>;
           const lesson = (p.lesson || p) as Lesson;
-          if (!lesson || !lesson.cells) throw new Error("Not a Piano Notes file");
+          if (!lesson || !lesson.cells) throw new Error("Not a Keyboard Notes file");
           lesson.id = uid();
           lesson.updated = Date.now();
           if (!lesson.created) lesson.created = Date.now();
@@ -288,7 +288,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
           };
           const lib = p.library || p;
           const lessons = lib.lessons;
-          if (!lessons || typeof lessons !== "object") throw new Error("Not a Piano Notes backup");
+          if (!lessons || typeof lessons !== "object") throw new Error("Not a Keyboard Notes backup");
           const order =
             Array.isArray(lib.order) && lib.order.length
               ? lib.order.filter((id) => lessons[id])

@@ -121,10 +121,10 @@ export default {
     saveFailed: "Falha ao salvar — armazenamento pode estar cheio",
     lessonDeleted: "Aula excluída",
     installPrompt:
-      "Instale o Piano Notes para manter suas aulas seguras — depois de instalado, o navegador não as apaga.",
+      "Instale o Keyboard Notes para manter suas aulas seguras — depois de instalado, o navegador não as apaga.",
     installAction: "Instalar",
     installIos:
-      "Adicione o Piano Notes à Tela de Início (Compartilhar → Adicionar à Tela de Início) para não perder suas aulas.",
+      "Adicione o Keyboard Notes à Tela de Início (Compartilhar → Adicionar à Tela de Início) para não perder suas aulas.",
   },
   metronome: {
     name: "Metrônomo",
