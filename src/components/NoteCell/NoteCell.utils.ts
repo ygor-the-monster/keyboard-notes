@@ -283,22 +283,3 @@ export function applyFormat(
       return { value, selStart, selEnd };
   }
 }
-
-// Replace the whole textarea value as one undoable step, then restore a selection.
-export function replaceTextarea(
-  ta: HTMLTextAreaElement | null,
-  value: string,
-  selStart: number,
-  selEnd: number,
-  onValue?: (v: string) => void,
-): void {
-  if (!ta) return;
-  ta.focus();
-  ta.select();
-  const ok = document.execCommand && document.execCommand("insertText", false, value);
-  if (!ok) {
-    ta.value = value;
-    onValue?.(value);
-  }
-  ta.setSelectionRange(selStart, selEnd);
-}

@@ -7,6 +7,8 @@
 //     lyric line still works in the monospace layout — it just isn't transposed).
 // Only bracketed chords are parsed into chord/lyric columns and transposed.
 
+import { pitchClass } from "../../utils/pitch/pitch.ts";
+
 export interface CifraSeg {
   chord: string;
   text: string;
@@ -24,9 +26,8 @@ const NOTE_IDX: Record<string, number> = { C: 0, D: 2, E: 4, F: 5, G: 7, A: 9, B
 function shiftNote(note: string, semis: number, preferFlat: boolean): string {
   const m = /^([A-G])([#b]?)/.exec(note);
   if (!m) return note;
-  let idx = NOTE_IDX[m[1]] + (m[2] === "#" ? 1 : m[2] === "b" ? -1 : 0);
-  idx = (((idx + semis) % 12) + 12) % 12;
-  return (preferFlat ? FLAT : SHARP)[idx];
+  const idx = NOTE_IDX[m[1]] + (m[2] === "#" ? 1 : m[2] === "b" ? -1 : 0);
+  return (preferFlat ? FLAT : SHARP)[pitchClass(idx + semis)];
 }
 
 // Transpose a single chord symbol (e.g. "Bbm7", "F#", "C/G") by `semis` semitones, preserving

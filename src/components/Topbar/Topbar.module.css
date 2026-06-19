@@ -9,6 +9,44 @@
   align-items: center;
   column-gap: 4px;
 }
+.vDivider {
+  width: 1px;
+  height: 28px;
+  flex: none;
+  align-self: center;
+  border: none;
+  background: var(--s-line);
+}
+.titleField {
+  flex: 1 1 auto;
+  min-width: 0;
+  display: flex;
+}
+.titleInput {
+  width: 100%;
+  font-family: var(--font-content);
+  font-size: 1rem;
+  color: var(--s-ink);
+  background: var(--canvas);
+  border: 1px solid var(--s-line);
+  border-radius: var(--radius-sm);
+  padding: 8px 14px;
+  outline: none;
+  transition:
+    border-color 0.15s ease,
+    box-shadow 0.15s ease;
+}
+.titleInput[data-hovered] {
+  border-color: var(--s-line-strong);
+}
+.titleInput[data-focused] {
+  border-color: var(--s-magenta);
+  box-shadow: 0 0 0 3px var(--s-magenta-ring);
+}
+.titleInput[data-disabled] {
+  opacity: 0.5;
+  cursor: default;
+}
 .topbar {
   position: sticky;
   top: 0;

@@ -1,0 +1,117 @@
+/* Right-edge cell navigator — sits by the scrollbar, vertically centered. A column of dots (one per
+   cell) in each cell's accent hue: small/faint off-screen, bigger/lit on-screen, and ringed (an
+   offset outline) when selected. Dots grow in / collapse out as cells are added/removed, so the
+   column reflows smoothly. Deliberately not icon tiles, so it doesn't read as the Add bar. */
+.rail {
+  position: fixed;
+  right: 24px;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 30;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  max-height: 84dvh;
+  overflow-y: auto;
+  padding: 6px 4px;
+  scrollbar-width: none;
+}
+.rail::-webkit-scrollbar {
+  display: none;
+}
+
+/* Tap target — generous (tablet-friendly) and transparent; the visible mark is the inner dot.
+   Margin (not flex gap) so enter/exit can collapse the space and neighbours slide. */
+.seg {
+  flex: none;
+  width: 28px;
+  height: 26px;
+  margin: 3.5px 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  background: none;
+  padding: 0;
+  cursor: pointer;
+  animation: seg-in 0.24s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+.seg.exiting {
+  pointer-events: none;
+  animation: seg-out 0.2s ease forwards;
+}
+.dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--seg, var(--s-ink-muted));
+  opacity: 0.35;
+  animation: dot-pop 0.24s cubic-bezier(0.2, 0.8, 0.2, 1);
+  transition:
+    width 0.16s cubic-bezier(0.2, 0.8, 0.2, 1),
+    height 0.16s cubic-bezier(0.2, 0.8, 0.2, 1),
+    opacity 0.16s ease;
+}
+.seg:hover .dot {
+  opacity: 0.7;
+}
+
+/* On-screen: bigger + lit. */
+.seg.onScreen .dot {
+  width: 10px;
+  height: 10px;
+  opacity: 0.85;
+}
+
+/* Selected (focused/editing card): keeps its visibility size; adds a ring offset from the dot.
+   Independent of on/off-screen, so a selected-but-scrolled-away cell still stands out. */
+.seg.selected .dot {
+  opacity: 1;
+  outline: 2px solid var(--seg, var(--s-magenta));
+  outline-offset: 3px;
+}
+
+.seg:focus-visible {
+  outline: none;
+}
+.seg:focus-visible .dot {
+  outline: 2px solid var(--seg, var(--s-magenta));
+  outline-offset: 3px;
+}
+
+@keyframes seg-in {
+  from {
+    height: 0;
+    margin-block: 0;
+    opacity: 0;
+  }
+}
+@keyframes seg-out {
+  to {
+    height: 0;
+    margin-block: 0;
+    opacity: 0;
+  }
+}
+@keyframes dot-pop {
+  from {
+    transform: scale(0);
+  }
+}
+
+/* Too tight beside the page on phones / small tablets. */
+@media (max-width: 760px) {
+  .rail {
+    display: none;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .seg,
+  .seg.exiting,
+  .dot {
+    animation: none;
+  }
+  .dot {
+    transition: none;
+  }
+}

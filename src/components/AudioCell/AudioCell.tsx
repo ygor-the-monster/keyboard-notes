@@ -1,24 +1,15 @@
 import { useEffect, useRef, useState, type PointerEvent as ReactPointerEvent } from "react";
-import { Button, DropZone, FileTrigger } from "@react-spectrum/s2";
+import { Button, DropZone, FileTrigger } from "react-aria-components";
+import { toast } from "../Toasts/toasts.ts";
 import EmptyState from "../EmptyState/EmptyState.tsx";
-import {
-  PlayIcon as Play,
-  PauseIcon as Pause,
-  MicrophoneIcon as Microphone,
-  StopIcon as Stop,
-  UploadSimpleIcon as UploadSimple,
-  ScissorsIcon as Scissors,
-  TrashSimpleIcon as TrashSimple,
-  ArrowUUpLeftIcon as ArrowUUpLeft,
-  WaveformIcon as Waveform,
-  MapPinIcon as MapPin,
-  XIcon as X,
-} from "@phosphor-icons/react";
+import { WaveformIcon as Waveform, XIcon as X } from "@phosphor-icons/react";
 import { useStore } from "../../providers/StoreProvider/StoreProvider.tsx";
 import { useDialog } from "../../providers/DialogProvider/DialogProvider.tsx";
 import { useI18n } from "../../providers/I18nProvider/I18nProvider.tsx";
+import { useMediaSession } from "../../hooks/useMediaSession.ts";
 import {
   fileToDataUrl,
+  dataUrlSizeMB,
   audioCtx,
   decodeDataUrl,
   decodeBlob,
@@ -31,11 +22,13 @@ import {
   remapMarksAfterCut,
 } from "./AudioCell.utils.ts";
 import { ANNOT_COLORS, withAlpha } from "../AnnotationLayer/AnnotationLayer.utils.ts";
+import { setupCanvas } from "../../utils/canvas/canvas.ts";
+import { normalizePointer } from "../../utils/pointer/pointer.ts";
+import { clamp } from "../../utils/numeric/numeric.ts";
 import Toolbar from "../Toolbar/Toolbar.tsx";
-import type { Tool } from "../Toolbar/Toolbar.tsx";
+import { buildAudioTools } from "./AudioCell.tools.ts";
 import type { CellOf, Mark } from "../../utils/cellKinds/cellKinds.ts";
 import shared from "../../providers/ThemeProvider/ThemeProvider.module.css";
-import { dropFull } from "./AudioCell.styled.ts";
 import css from "./AudioCell.module.css";
 
 const BUCKETS = 600;
@@ -45,8 +38,8 @@ const uid = () => "m-" + Math.random().toString(36).slice(2, 9);
 type Sel = { start: number; end: number };
 
 export default function AudioCell({ cell, editing }: { cell: CellOf<"audio">; editing: boolean }) {
-  const { updateCell } = useStore();
-  const { confirm, alert } = useDialog();
+  const { updateCell, activeLesson } = useStore();
+  const { confirm } = useDialog();
   const { t } = useI18n();
   const src = cell.dataUrl;
   const marks = cell.marks || EMPTY_MARKS;
@@ -68,6 +61,9 @@ export default function AudioCell({ cell, editing }: { cell: CellOf<"audio">; ed
   const [rate, setRate] = useState(1);
   const [peaks, setPeaks] = useState<Float32Array | null>(null);
   const [sel, setSel] = useState<Sel | null>(null); // in seconds
+
+  // Expose playback to the OS media controls while this cell is the one playing.
+  useMediaSession({ audioRef, active: playing, title: activeLesson?.title?.trim() || "Piano Notes" });
 
   // Decode + compute waveform peaks whenever the audio changes.
   useEffect(() => {
@@ -101,19 +97,14 @@ export default function AudioCell({ cell, editing }: { cell: CellOf<"audio">; ed
     if (!cv || !peaks) return;
     const w = cv.clientWidth || 600;
     const h = cv.clientHeight || 72;
-    const dpr = Math.min(window.devicePixelRatio || 1, 2);
-    cv.width = w * dpr;
-    cv.height = h * dpr;
-    const ctx = cv.getContext("2d")!;
-    ctx.scale(dpr, dpr);
-    ctx.clearRect(0, 0, w, h);
+    const ctx = setupCanvas(cv, w, h);
     const accent = getComputedStyle(cv).getPropertyValue("--accent").trim() || "rgb(154,71,226)";
     const mid = h / 2;
     const n = peaks.length;
     const bw = w / n;
     const progX = dur ? (cur / dur) * w : 0;
     if (sel && dur) {
-      ctx.fillStyle = "rgba(154,71,226,0.13)";
+      ctx.fillStyle = withAlpha(accent, 0.13);
       ctx.fillRect((sel.start / dur) * w, 0, ((sel.end - sel.start) / dur) * w, h);
     }
     for (let i = 0; i < n; i++) {
@@ -163,13 +154,13 @@ export default function AudioCell({ cell, editing }: { cell: CellOf<"audio">; ed
     else a.pause();
   }
   function changeRate(d: number) {
-    setRate((r) => Math.min(1.5, Math.max(0.5, +(r + d).toFixed(2))));
+    setRate((r) => clamp(+(r + d).toFixed(2), 0.5, 1.5));
   }
 
   // ---- editing (commit + history) -------------------------------------------
   // Snapshots both audio bytes and marks so undo restores them together.
   async function commitAudio(dataUrl: string, nextMarks?: Mark[]) {
-    const sizeMB = (dataUrl.length * 0.75) / 1e6;
+    const sizeMB = dataUrlSizeMB(dataUrl);
     if (sizeMB > 6) {
       const ok = await confirm({
         title: t("audio.largeTitle"),
@@ -211,7 +202,7 @@ export default function AudioCell({ cell, editing }: { cell: CellOf<"audio">; ed
       rec.start();
       setRecording(true);
     } catch {
-      alert({ title: t("audio.micUnavailableTitle"), message: t("audio.micUnavailableMsg") });
+      toast.negative(t("audio.micUnavailableMsg"));
     }
   }
   async function finishRec() {
@@ -231,8 +222,8 @@ export default function AudioCell({ cell, editing }: { cell: CellOf<"audio">; ed
       const out = spliceBuffer(ctx, base, ins, r.start, r.end);
       commitAudio(await fileToDataUrl(encodeWav(out)));
       setSel(null);
-    } catch (e) {
-      alert({ title: t("audio.recordingFailedTitle"), message: (e as Error).message });
+    } catch {
+      toast.negative(t("audio.recordingFailedTitle"));
     }
   }
 
@@ -285,8 +276,7 @@ export default function AudioCell({ cell, editing }: { cell: CellOf<"audio">; ed
 
   // ---- waveform pointer (seek / select region) -------------------------------
   function xToTime(e: ReactPointerEvent): number {
-    const r = wfRef.current!.getBoundingClientRect();
-    return Math.max(0, Math.min(dur, ((e.clientX - r.left) / r.width) * dur));
+    return normalizePointer(e, wfRef.current!)[0] * dur;
   }
   function onDown(e: ReactPointerEvent) {
     if (!dur) return;
@@ -334,24 +324,24 @@ export default function AudioCell({ cell, editing }: { cell: CellOf<"audio">; ed
       <div className={css.col}>
         {audioEl}
         <DropZone
+          className={shared.dropZone}
           onDrop={async (e) => {
             const f = e.items.find((i) => i.kind === "file");
             if (f && f.kind === "file") upload(await f.getFile());
           }}
-          styles={dropFull}
         >
           <div className={shared.mediaEmpty}>
             <Waveform size={40} aria-hidden />
             <span className={shared.mediaEmptyTitle}>{t("audio.addTitle")}</span>
             <div className={css.emptyActions}>
-              <Button variant="primary" onPress={toggleRec}>
+              <Button className={shared.btnMagenta} onPress={toggleRec}>
                 {recording ? t("audio.stopRecording") : t("audio.record")}
               </Button>
               <FileTrigger
                 acceptedFileTypes={["audio/*"]}
                 onSelect={(files) => files && upload(files[0])}
               >
-                <Button>{t("common.browse")}</Button>
+                <Button className={shared.btnSecondary}>{t("common.browse")}</Button>
               </FileTrigger>
             </div>
           </div>
@@ -360,66 +350,21 @@ export default function AudioCell({ cell, editing }: { cell: CellOf<"audio">; ed
     );
   }
 
-  const tools: Tool[] = [
-    {
-      kind: "toggle",
-      id: "play",
-      icon: Play,
-      altIcon: Pause,
-      label: t("audio.play"),
-      altLabel: t("audio.pause"),
-      value: playing,
-      onToggle: togglePlay,
-    },
-    {
-      kind: "spinner",
-      id: "speed",
-      label: t("audio.speed"),
-      display: `${rate}×`,
-      onPrev: () => changeRate(-0.25),
-      onNext: () => changeRate(0.25),
-      prevDisabled: rate <= 0.5,
-      nextDisabled: rate >= 1.5,
-    },
-    { kind: "sep" },
-    { kind: "action", id: "mark", icon: MapPin, label: t("audio.addMark"), onUse: addMark },
-    {
-      kind: "toggle",
-      id: "rec",
-      icon: Microphone,
-      altIcon: Stop,
-      label: sel ? t("audio.recordSelection") : t("audio.recordCursor"),
-      altLabel: t("audio.stopRecording"),
-      value: recording,
-      onToggle: toggleRec,
-    },
-    { kind: "sep" },
-    {
-      kind: "action",
-      id: "trim",
-      icon: Scissors,
-      label: t("audio.trim"),
-      onUse: trimToSel,
-      disabled: !sel,
-    },
-    {
-      kind: "action",
-      id: "delsel",
-      icon: TrashSimple,
-      label: t("audio.deleteSelection"),
-      onUse: deleteSel,
-      disabled: !sel,
-    },
-    { kind: "sep" },
-    {
-      kind: "action",
-      id: "replace",
-      icon: UploadSimple,
-      label: t("audio.replace"),
-      onUse: () => fileRef.current?.click(),
-    },
-    { kind: "action", id: "undo", icon: ArrowUUpLeft, label: t("common.undo"), onUse: undo },
-  ];
+  const tools = buildAudioTools({
+    t,
+    playing,
+    togglePlay,
+    rate,
+    changeRate,
+    sel,
+    addMark,
+    recording,
+    toggleRec,
+    trimToSel,
+    deleteSel,
+    openReplace: () => fileRef.current?.click(),
+    undo,
+  });
 
   const waveform = (
     <canvas

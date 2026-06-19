@@ -4,10 +4,13 @@ import {
   Menu,
   MenuItem,
   MenuSection,
-  ActionButton,
+  Popover,
+  Button,
+  Separator,
   TextField,
-  Divider,
-} from "@react-spectrum/s2";
+  Input,
+} from "react-aria-components";
+import { toast } from "../Toasts/toasts.ts";
 import {
   NotebookIcon as Notebook,
   DownloadSimpleIcon as DownloadSimple,
@@ -25,8 +28,11 @@ import { useDialog } from "../../providers/DialogProvider/DialogProvider.tsx";
 import { useI18n } from "../../providers/I18nProvider/I18nProvider.tsx";
 import { useTheme } from "../../providers/ThemeProvider/ThemeProvider.tsx";
 import IconBtn from "../IconBtn/IconBtn.tsx";
-import { vdiv, titleField } from "./Topbar.styled.ts";
+import ic from "../IconBtn/IconBtn.module.css";
+import f from "../fields/fields.module.css";
 import s from "./Topbar.module.css";
+
+const menuBtn = `${ic.btn} ${ic.sizeL}`;
 
 const mb = (bytes?: number) => (bytes ? (bytes / 1e6).toFixed(1) : "0");
 
@@ -38,34 +44,33 @@ export default function Topbar() {
     createLesson,
     selectLesson,
     deleteLesson,
+    restoreLesson,
     importLesson,
     importLibrary,
   } = useStore();
   const { canInstall, promptInstall } = usePwa();
-  const { confirm, alert } = useDialog();
+  const { alert } = useDialog();
   const { t, locale, setLocale, locales } = useI18n();
   const { scheme, toggle: toggleTheme } = useTheme();
   const fileRef = useRef<HTMLInputElement>(null);
 
   const lessons = state.order.filter((id) => state.lessons[id]);
 
-  async function onMenuAction(key: string | number) {
+  function onMenuAction(key: string | number) {
     const k = String(key);
     if (k === "__new") createLesson();
     else if (k === "__import") fileRef.current?.click();
     else if (k === "__backup") exportBackup();
     else if (k === "__storage") showStorage();
     else if (k === "__delete") {
-      if (
-        activeLesson &&
-        (await confirm({
-          title: t("dialogs.deleteLessonTitle"),
-          message: t("dialogs.deleteLessonMsg"),
-          confirmLabel: t("common.delete"),
-          variant: "destructive",
-        }))
-      )
-        deleteLesson(activeLesson.id);
+      // No confirm dialog — deletion is recoverable via the undo toast.
+      const removed = activeLesson && deleteLesson(activeLesson.id);
+      if (removed)
+        toast.neutral(t("toast.lessonDeleted"), {
+          actionLabel: t("undo.action"),
+          onAction: () => restoreLesson(removed),
+          timeout: 7000,
+        });
     } else selectLesson(k);
   }
 
@@ -78,10 +83,16 @@ export default function Topbar() {
     reader.onload = () => {
       try {
         const parsed = JSON.parse(reader.result as string);
-        if (parsed && parsed.library) importLibrary(parsed);
-        else importLesson(parsed);
-      } catch (err) {
-        alert({ title: t("dialogs.importFailedTitle"), message: (err as Error).message });
+        if (parsed && parsed.library) {
+          importLibrary(parsed);
+          const n = Object.keys(parsed.library.lessons ?? {}).length;
+          toast.positive(t("toast.restored", { count: n }));
+        } else {
+          importLesson(parsed);
+          toast.positive(t("toast.imported"));
+        }
+      } catch {
+        toast.negative(t("dialogs.importFailedTitle"));
       }
     };
     reader.readAsText(file);
@@ -100,6 +111,7 @@ export default function Topbar() {
     a.download = "piano-notes-backup.pnotes";
     a.click();
     setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+    toast.positive(t("toast.backedUp"));
   }
 
   async function showStorage() {
@@ -125,6 +137,7 @@ export default function Topbar() {
     a.download = lessonFilename();
     a.click();
     setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+    toast.positive(t("toast.exported"));
   }
 
   // Outgoing Web Share (Android-friendly) — hand the lesson file to the OS share sheet.
@@ -138,9 +151,9 @@ export default function Topbar() {
     const file = new File([lessonJson()], lessonFilename(), { type: "text/plain" });
     try {
       await navigator.share({ files: [file], title: activeLesson.title || "Piano Notes lesson" });
+      toast.positive(t("toast.shared"));
     } catch (err) {
-      if ((err as Error).name !== "AbortError")
-        alert({ title: t("dialogs.shareFailedTitle"), message: (err as Error).message });
+      if ((err as Error).name !== "AbortError") toast.negative(t("dialogs.shareFailedTitle"));
     }
   }
 
@@ -148,60 +161,80 @@ export default function Topbar() {
     <header className={`${s.topbar} no-print`}>
       <div className={s.bar}>
         <span className={s.brandMark} aria-hidden>
-          <img className={s.brandLogo} src={`${import.meta.env.BASE_URL}icon-simple.svg`} alt="" />
+          <img className={s.brandLogo} src={`${import.meta.env.BASE_URL}icons/icon-simple.svg`} alt="" />
           <span className={s.brandWord}>Piano Notes</span>
         </span>
-        <Divider orientation="vertical" styles={vdiv as never} />
+        <Separator orientation="vertical" className={s.vDivider} />
         <MenuTrigger>
-          <ActionButton aria-label={t("topbar.lessons")} isQuiet size="L">
+          <Button aria-label={t("topbar.lessons")} className={menuBtn}>
             <Notebook size={22} aria-hidden />
-          </ActionButton>
-          <Menu onAction={onMenuAction}>
-            <MenuSection>
-              {lessons.map((id) => (
-                <MenuItem key={id} id={id}>
-                  {state.lessons[id].title || t("topbar.untitled")}
+          </Button>
+          <Popover className={f.menuPopover}>
+            <Menu className={f.menu} onAction={onMenuAction}>
+              {lessons.length > 0 && (
+                <MenuSection>
+                  {lessons.map((id) => (
+                    <MenuItem key={id} id={id} className={f.menuItem}>
+                      {state.lessons[id].title || t("topbar.untitled")}
+                    </MenuItem>
+                  ))}
+                </MenuSection>
+              )}
+              {lessons.length > 0 && <Separator className={f.menuSeparator} />}
+              <MenuSection>
+                <MenuItem id="__new" className={f.menuItem}>
+                  {t("topbar.newLesson")}
                 </MenuItem>
-              ))}
-            </MenuSection>
-            <MenuSection>
-              <MenuItem id="__new">{t("topbar.newLesson")}</MenuItem>
-              <MenuItem id="__import">{t("topbar.importLesson")}</MenuItem>
-              <MenuItem id="__delete">{t("topbar.deleteLesson")}</MenuItem>
-            </MenuSection>
-            <MenuSection>
-              <MenuItem id="__backup">{t("topbar.exportBackup")}</MenuItem>
-              <MenuItem id="__storage">{t("topbar.storage")}</MenuItem>
-            </MenuSection>
-          </Menu>
+                <MenuItem id="__import" className={f.menuItem}>
+                  {t("topbar.importLesson")}
+                </MenuItem>
+                <MenuItem id="__delete" className={f.menuItem}>
+                  {t("topbar.deleteLesson")}
+                </MenuItem>
+              </MenuSection>
+              <Separator className={f.menuSeparator} />
+              <MenuSection>
+                <MenuItem id="__backup" className={f.menuItem}>
+                  {t("topbar.exportBackup")}
+                </MenuItem>
+                <MenuItem id="__storage" className={f.menuItem}>
+                  {t("topbar.storage")}
+                </MenuItem>
+              </MenuSection>
+            </Menu>
+          </Popover>
         </MenuTrigger>
 
         <TextField
           aria-label={t("topbar.lessonTitle")}
-          placeholder={t("topbar.untitled")}
           value={activeLesson?.title || ""}
           onChange={setTitle}
           isDisabled={!activeLesson}
-          styles={titleField}
-        />
+          className={s.titleField}
+        >
+          <Input className={s.titleInput} placeholder={t("topbar.untitled")} />
+        </TextField>
 
-        <Divider orientation="vertical" styles={vdiv as never} />
+        <Separator orientation="vertical" className={s.vDivider} />
         <div className={s.tools} role="toolbar" aria-label={t("topbar.lessonTools")}>
           <MenuTrigger>
-            <ActionButton aria-label={t("lang.label")} isQuiet size="L">
+            <Button aria-label={t("lang.label")} className={menuBtn}>
               <Translate size={22} aria-hidden />
-            </ActionButton>
-            <Menu
-              selectionMode="single"
-              selectedKeys={[locale]}
-              onAction={(k) => setLocale(String(k))}
-            >
-              {locales.map((l) => (
-                <MenuItem key={l} id={l}>
-                  {t(`lang.${l}`)}
-                </MenuItem>
-              ))}
-            </Menu>
+            </Button>
+            <Popover className={f.menuPopover}>
+              <Menu
+                className={f.menu}
+                selectionMode="single"
+                selectedKeys={[locale]}
+                onAction={(k) => setLocale(String(k))}
+              >
+                {locales.map((l) => (
+                  <MenuItem key={l} id={l} className={f.menuItem}>
+                    {t(`lang.${l}`)}
+                  </MenuItem>
+                ))}
+              </Menu>
+            </Popover>
           </MenuTrigger>
           <IconBtn
             icon={scheme === "dark" ? Sun : Moon}

@@ -46,8 +46,28 @@ jobs:
       - name: Test
         run: npm run test
 
+      # Recompose the maskable PWA icon from its source layers so the deployed
+      # icon always matches public/icons/icon-fg.png + public/icons/icon-bg.png.
+      - name: Generate maskable icon
+        run: npm run icons:maskable
+
+      # Re-subset the self-hosted fonts from the originals in fonts/ into public/fonts/,
+      # then fail if the committed output drifted (originals changed without rebuilding).
+      - name: Build fonts
+        run: |
+          npm run fonts:build
+          git diff --exit-code public/fonts \
+            || { echo "::error::public/fonts is stale — run 'npm run fonts:build' and commit."; exit 1; }
+
       - name: Build
         run: npm run build
+
+      # Lighthouse CI — report-only baseline (assertions are warn-level, never fail the
+      # build) so we can watch the trend before tightening into hard gates. continue-on-error
+      # keeps a flaky run from blocking the deploy; the report URL is printed in the logs.
+      - name: Lighthouse CI
+        continue-on-error: true
+        run: npx lhci autorun
 
       - uses: actions/configure-pages@v5
 

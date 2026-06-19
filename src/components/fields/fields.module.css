@@ -1,0 +1,246 @@
+/* Shared styling for the React Aria field wrappers (Select, Slider). Full-width, manuscript tokens. */
+.field {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+.label {
+  font-family: var(--font-ui);
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--s-ink-muted);
+}
+
+/* ----- Text input ----- */
+.textInput {
+  width: 100%;
+  font-family: var(--font-ui);
+  font-size: 0.95rem;
+  color: var(--s-ink);
+  background: var(--canvas);
+  border: 1px solid var(--s-line);
+  border-radius: var(--radius-sm);
+  padding: 8px 12px;
+  outline: none;
+  transition:
+    border-color 0.15s ease,
+    box-shadow 0.15s ease;
+}
+.textInput[data-hovered] {
+  border-color: var(--s-line-strong);
+}
+.textInput[data-focused] {
+  border-color: var(--accent, var(--s-magenta));
+  box-shadow: 0 0 0 3px var(--accent-ring, var(--s-magenta-ring));
+}
+.textInput[data-disabled] {
+  opacity: 0.5;
+  cursor: default;
+}
+
+/* Horizontal rule (shared). */
+.divider {
+  height: 1px;
+  width: 100%;
+  border: none;
+  background: var(--s-line);
+  margin: 6px 0;
+}
+
+/* ----- Select ----- */
+.selectBtn {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  width: 100%;
+  min-height: 38px;
+  padding: 7px 12px;
+  background: var(--canvas);
+  color: var(--s-ink);
+  border: 1px solid var(--s-line);
+  border-radius: var(--radius-sm);
+  font-family: var(--font-ui);
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition:
+    border-color 0.15s ease,
+    box-shadow 0.15s ease;
+}
+.selectBtn[data-hovered] {
+  border-color: var(--s-line-strong);
+}
+.selectBtn[data-focus-visible],
+.selectBtn[data-open] {
+  outline: none;
+  border-color: var(--accent, var(--s-magenta));
+  box-shadow: 0 0 0 3px var(--accent-ring, var(--s-magenta-ring));
+}
+.selectValue {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.selectValue[data-placeholder] {
+  color: var(--s-ink-muted);
+}
+
+.popover {
+  width: var(--trigger-width);
+  background: var(--surface);
+  border: 1px solid var(--s-line);
+  border-radius: var(--radius-sm);
+  box-shadow: var(--shadow-pop);
+  overflow: hidden;
+}
+.popover[data-entering] {
+  animation: pop-in 0.14s ease;
+}
+.popover[data-exiting] {
+  animation: pop-in 0.1s ease reverse;
+}
+.listbox {
+  max-height: 40vh;
+  overflow: auto;
+  padding: 4px;
+  outline: none;
+}
+.option {
+  padding: 8px 12px;
+  border-radius: 6px;
+  font-family: var(--font-ui);
+  font-size: 0.95rem;
+  color: var(--s-ink);
+  cursor: pointer;
+  outline: none;
+}
+.option[data-focused],
+.option[data-hovered] {
+  background: var(--s-neutral-tint);
+}
+.option[data-selected] {
+  background: var(--accent-tint);
+  color: var(--accent-strong);
+  font-weight: 600;
+}
+
+/* ----- Slider ----- */
+.sliderTop {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+}
+.output {
+  font-family: var(--font-ui);
+  font-size: 0.82rem;
+  font-variant-numeric: tabular-nums;
+  color: var(--s-ink);
+}
+.track {
+  position: relative;
+  height: 22px;
+  width: 100%;
+}
+.track::before {
+  content: "";
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  height: 5px;
+  width: 100%;
+  border-radius: 999px;
+  background: var(--s-neutral-tint);
+}
+.fill {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  height: 5px;
+  border-radius: 999px;
+  background: var(--accent, var(--s-magenta));
+}
+.thumb {
+  /* RAC sets position:absolute + left:X% + translate(-50%,-50%) inline; we supply the vertical center. */
+  top: 50%;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: var(--surface);
+  border: 2px solid var(--accent, var(--s-magenta));
+  box-shadow: var(--shadow-card);
+  transition: box-shadow 0.15s ease;
+}
+.thumb[data-dragging] {
+  box-shadow: 0 0 0 6px var(--accent-ring, var(--s-magenta-ring));
+}
+.thumb[data-focus-visible] {
+  outline: 2px solid var(--accent, var(--s-magenta));
+  outline-offset: 2px;
+}
+
+/* ----- Menu (shared by Topbar, Toolbar) ----- */
+.menuPopover {
+  min-width: 200px;
+  max-width: 300px;
+  background: var(--surface);
+  border: 1px solid var(--s-line);
+  border-radius: var(--radius-sm);
+  box-shadow: var(--shadow-pop);
+  overflow: hidden;
+}
+.menuPopover[data-entering] {
+  animation: pop-in 0.14s ease;
+}
+.menuPopover[data-exiting] {
+  animation: pop-in 0.1s ease reverse;
+}
+.menu {
+  max-height: 60vh;
+  overflow: auto;
+  padding: 4px;
+  outline: none;
+}
+.menuItem {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  border-radius: 6px;
+  font-family: var(--font-ui);
+  font-size: 0.95rem;
+  color: var(--s-ink);
+  cursor: pointer;
+  outline: none;
+}
+.menuItem[data-focused],
+.menuItem[data-hovered] {
+  background: var(--s-neutral-tint);
+}
+.menuItem[data-selected] {
+  color: var(--accent-strong, var(--s-magenta));
+  font-weight: 600;
+}
+.menuItem[data-disabled] {
+  opacity: 0.4;
+  cursor: default;
+}
+.menuSeparator {
+  height: 1px;
+  border: none;
+  background: var(--s-line);
+  margin: 4px 6px;
+}
+
+@keyframes pop-in {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .popover[data-entering],
+  .popover[data-exiting] {
+    animation: none;
+  }
+}

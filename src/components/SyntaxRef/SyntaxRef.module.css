@@ -3,8 +3,9 @@
   --card-w: 300px;
   position: relative;
   display: flex;
+  flex-direction: row-reverse; /* card left, tab right — dock anchors to the left screen edge */
   align-items: flex-start;
-  transform: translateX(var(--card-w));
+  transform: translateX(calc(-1 * var(--card-w)));
   transition: transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
 }
 .dock.open {
@@ -23,7 +24,7 @@
   cursor: pointer;
   color: #fff;
   background: var(--s-purple);
-  border-radius: var(--radius) 0 0 var(--radius);
+  border-radius: 0 var(--radius) var(--radius) 0;
   box-shadow: var(--shadow-pop);
 }
 .tabLabel {
@@ -43,9 +44,9 @@
   --accent-ring: var(--s-purple-ring);
   background: var(--surface);
   border: 1px solid var(--s-line);
-  border-right: none;
+  border-left: none;
   box-shadow: var(--shadow-pop);
-  border-radius: 0 0 0 var(--radius);
+  border-radius: 0 0 var(--radius) 0;
   padding: 18px 18px 14px;
   display: flex;
   flex-direction: column;

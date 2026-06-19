@@ -16,6 +16,17 @@ playwright-report/
 test-results/
 .playwright-mcp/
 
+# Lighthouse CI output. CI uploads to temporary-public-storage; a local
+# `--upload.target=filesystem` run drops these in the repo root.
+.lighthouseci/
+*.report.html
+*.report.json
+/manifest.json
+
+# Vitest browser-mode failure screenshots (ephemeral; regenerated each run).
+# Visual-regression baselines live in __screenshots__/ and stay tracked.
+.vitest-attachments/
+
 # Vite / tooling caches
 .vite/
 *.local

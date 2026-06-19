@@ -84,7 +84,7 @@ describe("StoreProvider / useStore", () => {
     expect(result.current.activeLesson!.cells.map((c) => c.id)).toEqual(ids);
   });
 
-  it("deleteCell removes the cell and undoDelete restores it at its index", async () => {
+  it("deleteCell returns the removed cell and restoreCell puts it back at its index", async () => {
     const { result } = await mountStore();
     let keep = "";
     let gone = "";
@@ -97,16 +97,19 @@ describe("StoreProvider / useStore", () => {
     const len = result.current.activeLesson!.cells.length;
     const idx = result.current.activeLesson!.cells.findIndex((c) => c.id === gone);
 
-    act(() => result.current.deleteCell(gone));
+    let deleted: ReturnType<typeof result.current.deleteCell> = null;
+    act(() => {
+      deleted = result.current.deleteCell(gone);
+    });
     expect(result.current.activeLesson!.cells.find((c) => c.id === gone)).toBeUndefined();
-    expect(result.current.lastDeleted?.cell.id).toBe(gone);
+    expect(deleted!.cell.id).toBe(gone);
+    expect(deleted!.index).toBe(idx);
 
-    act(() => result.current.undoDelete());
+    act(() => result.current.restoreCell(deleted!));
     const cells = result.current.activeLesson!.cells;
     expect(cells).toHaveLength(len);
     expect(cells[idx].id).toBe(gone);
     expect(cells.some((c) => c.id === keep)).toBe(true);
-    expect(result.current.lastDeleted).toBeNull();
   });
 
   it("createLesson adds a new active Lesson at the front of the order", async () => {
@@ -116,6 +119,28 @@ describe("StoreProvider / useStore", () => {
     expect(result.current.state.order).toHaveLength(orderLen + 1);
     expect(result.current.state.activeId).toBe(result.current.state.order[0]);
     expect(result.current.activeLesson?.cells).toHaveLength(0);
+  });
+
+  it("deleteLesson returns the removed lesson and restoreLesson puts it back active at its slot", async () => {
+    const { result } = await mountStore();
+    act(() => result.current.createLesson()); // a second lesson, now active at order[0]
+    const removedId = result.current.activeLesson!.id;
+    const orderBefore = [...result.current.state.order];
+
+    let deleted: ReturnType<typeof result.current.deleteLesson> = null;
+    act(() => {
+      deleted = result.current.deleteLesson(removedId);
+    });
+    expect(result.current.state.lessons[removedId]).toBeUndefined();
+    expect(result.current.state.order).not.toContain(removedId);
+    expect(deleted!.lesson.id).toBe(removedId);
+    expect(deleted!.wasActive).toBe(true);
+    expect(deleted!.index).toBe(orderBefore.indexOf(removedId));
+
+    act(() => result.current.restoreLesson(deleted!));
+    expect(result.current.state.lessons[removedId]).toBeDefined();
+    expect(result.current.state.order).toEqual(orderBefore); // restored at its original slot
+    expect(result.current.state.activeId).toBe(removedId); // and re-activated
   });
 
   it("importLesson adds the parsed Lesson with a fresh id and makes it active", async () => {

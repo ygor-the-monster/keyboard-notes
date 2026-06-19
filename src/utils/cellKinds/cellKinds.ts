@@ -5,7 +5,7 @@ import { uid } from "../cellId/cellId.ts";
 
 // Single source of truth for the closed set of kinds. `as const` makes it erasable and lets
 // `Kind` be derived from it — never a TS enum (forbidden under erasableSyntaxOnly).
-export const KINDS = ["note", "score", "cifra", "image", "pdf", "audio"] as const;
+export const KINDS = ["note", "score", "cifra", "image", "pdf", "audio", "external"] as const;
 export type Kind = (typeof KINDS)[number];
 
 // ---- Shared value shapes ----------------------------------------------------------------
@@ -88,8 +88,24 @@ export interface AudioCell {
   dataUrl: string;
   marks: Mark[];
 }
+// External points *outside* the notebook (a video or web page) rather than holding bytes — the one
+// kind that isn't offline-self-contained, so it carries an offline fallback in its view. `title` is
+// a maker-supplied label shown in the offline placeholder and link card; `url` is the source.
+export interface ExternalCell {
+  id: string;
+  kind: "external";
+  url: string;
+  title: string;
+}
 
-export type Cell = NoteCell | ScoreCell | CifraCell | ImageCell | PdfCell | AudioCell;
+export type Cell =
+  | NoteCell
+  | ScoreCell
+  | CifraCell
+  | ImageCell
+  | PdfCell
+  | AudioCell
+  | ExternalCell;
 export type CellOf<K extends Kind> = Extract<Cell, { kind: K }>;
 
 // ---- Lesson / app state -----------------------------------------------------------------
@@ -160,6 +176,13 @@ export const newPdfCell = (): PdfCell => ({
 
 export const newAudioCell = (): AudioCell => ({ id: uid(), kind: "audio", dataUrl: "", marks: [] });
 
+export const newExternalCell = (): ExternalCell => ({
+  id: uid(),
+  kind: "external",
+  url: "",
+  title: "",
+});
+
 // kind -> factory. Typed `Record<Kind, …>`, so adding a Kind to KINDS without an entry here is
 // a compile error under tsgo — the maps cannot drift.
 export const cellKinds: Record<Kind, { factory: () => Cell }> = {
@@ -169,6 +192,7 @@ export const cellKinds: Record<Kind, { factory: () => Cell }> = {
   image: { factory: newImageCell },
   pdf: { factory: newPdfCell },
   audio: { factory: newAudioCell },
+  external: { factory: newExternalCell },
 };
 
 // A fresh Lesson is empty — the general empty state prompts the first Cell.

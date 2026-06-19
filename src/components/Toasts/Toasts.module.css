@@ -1,0 +1,190 @@
+/* Toast region — fixed, bottom-centre. */
+.region {
+  position: fixed;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 1000;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  outline: none;
+}
+.list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* "+N more" chip for toasts still queued beyond the visible cap. */
+.more {
+  margin-bottom: 8px;
+  padding: 3px 12px;
+  border-radius: var(--radius-pill);
+  background: var(--s-ink);
+  color: var(--canvas);
+  opacity: 0.72;
+  font-family: var(--font-ui);
+  font-size: 0.78rem;
+  font-weight: 600;
+}
+
+/* One toast: dark pill, fixed at 80% of the cell column (880px) so they're uniform; roomy padding +
+   large tap targets for tablet. A leading accent bar carries the variant colour or a cell hue.
+   Spacing is margin (not gap) so the exit can collapse it smoothly. */
+.toast {
+  --toast-accent: var(--s-ink-muted);
+  box-sizing: border-box;
+  width: min(704px, 92vw);
+  margin-bottom: 10px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 14px 14px 20px;
+  border-left: 4px solid var(--toast-accent);
+  border-radius: var(--radius);
+  background: var(--s-ink);
+  color: var(--canvas);
+  box-shadow: var(--shadow-pop);
+  font-family: var(--font-ui);
+  font-size: 0.98rem;
+  animation: toast-in 0.24s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+}
+.toast[data-variant="positive"] {
+  --toast-accent: var(--s-green);
+}
+.toast[data-variant="negative"] {
+  --toast-accent: var(--s-red);
+}
+
+/* Exit: fade + sink, and collapse height/padding/margin so toasts above slide down (no jump). */
+.toast.exiting {
+  overflow: hidden;
+  animation: toast-out 0.22s ease forwards;
+}
+
+@keyframes toast-in {
+  from {
+    opacity: 0;
+    transform: translateY(16px) scale(0.98);
+  }
+}
+@keyframes toast-out {
+  from {
+    max-height: 160px;
+    opacity: 1;
+  }
+  to {
+    max-height: 0;
+    margin-bottom: 0;
+    padding-top: 0;
+    padding-bottom: 0;
+    opacity: 0;
+    transform: translateY(8px);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .toast,
+  .toast.exiting {
+    animation: none;
+  }
+}
+
+.content {
+  flex: 1;
+  min-width: 0;
+}
+.msg {
+  display: block;
+}
+
+/* Action (e.g. Undo) — accent-tinted, tablet-sized tap target. */
+.action {
+  flex: none;
+  min-height: 40px;
+  border: none;
+  background: none;
+  color: var(--toast-accent);
+  filter: brightness(1.6);
+  font-family: var(--font-ui);
+  font-weight: 700;
+  font-size: 0.95rem;
+  padding: 8px 14px;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+}
+.action[data-hovered] {
+  background: rgba(255, 255, 255, 0.12);
+}
+.action[data-focus-visible] {
+  outline: 2px solid var(--toast-accent);
+  outline-offset: 1px;
+}
+
+/* Close button wrapped by a depleting ring that shows (and drives) the auto-dismiss countdown. */
+.closeWrap {
+  position: relative;
+  flex: none;
+  width: 40px;
+  height: 40px;
+}
+.ring {
+  position: absolute;
+  inset: 0;
+  transform: rotate(-90deg);
+  pointer-events: none;
+}
+.ringTrack {
+  fill: none;
+  stroke: rgba(255, 255, 255, 0.16);
+  stroke-width: 2.5;
+}
+.ringFill {
+  fill: none;
+  stroke: var(--toast-accent);
+  filter: brightness(1.7);
+  stroke-width: 2.5;
+  stroke-linecap: round;
+  stroke-dashoffset: 0;
+  animation: toast-deplete linear forwards;
+}
+@keyframes toast-deplete {
+  to {
+    stroke-dashoffset: 106.8;
+  }
+}
+.toast[data-hovered] .ringFill,
+.toast:hover .ringFill,
+.toast:focus-within .ringFill {
+  animation-play-state: paused;
+}
+@media (prefers-reduced-motion: reduce) {
+  .ringFill {
+    animation-duration: 0.01ms;
+  }
+}
+
+.close {
+  position: absolute;
+  inset: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  background: none;
+  color: var(--canvas);
+  opacity: 0.7;
+  border-radius: 999px;
+  cursor: pointer;
+}
+.close[data-hovered] {
+  opacity: 1;
+  background: rgba(255, 255, 255, 0.12);
+}
+.close[data-focus-visible] {
+  outline: 2px solid var(--canvas);
+  outline-offset: 1px;
+}

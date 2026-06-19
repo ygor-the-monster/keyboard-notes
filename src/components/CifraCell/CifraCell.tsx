@@ -1,18 +1,19 @@
 import { useEffect, useRef } from "react";
-import { ArrowUUpLeftIcon as ArrowUUpLeft } from "@phosphor-icons/react";
 import { useStore } from "../../providers/StoreProvider/StoreProvider.tsx";
 import { useI18n } from "../../providers/I18nProvider/I18nProvider.tsx";
 import { useAutoScroll, buildScrollTools } from "../../hooks/useAutoScroll.ts";
-import { parseCifra, transposeLabel } from "./CifraCell.utils.ts";
+import { parseCifra } from "./CifraCell.utils.ts";
 import type { CifraBlock } from "./CifraCell.utils.ts";
+import { buildCifraTools } from "./CifraCell.tools.ts";
 import EmptyState from "../EmptyState/EmptyState.tsx";
 import Toolbar from "../Toolbar/Toolbar.tsx";
 import type { Tool } from "../Toolbar/Toolbar.tsx";
 import type { CellOf } from "../../utils/cellKinds/cellKinds.ts";
+import { clamp } from "../../utils/numeric/numeric.ts";
 import shared from "../../providers/ThemeProvider/ThemeProvider.module.css";
 import css from "./CifraCell.module.css";
 
-const clampTranspose = (n: number) => Math.max(-11, Math.min(11, n));
+const clampTranspose = (n: number) => clamp(n, -11, 11);
 
 function Chart({ blocks }: { blocks: CifraBlock[] }) {
   return (
@@ -70,38 +71,17 @@ export default function CifraCell({ cell, editing }: { cell: CellOf<"cifra">; ed
 
   const setTranspose = (n: number) => updateCell(cell.id, { transpose: clampTranspose(n) });
 
-  // Transpose + auto-scroll controls, shared by the performance (rendered) and editor views —
-  // auto-scroll belongs in both, since you may set it up while editing too.
-  const controls: Tool[] = [
-    {
-      kind: "spinner",
-      id: "transpose",
-      label: t("cifra.transpose"),
-      display: transposeLabel(transpose),
-      onPrev: () => setTranspose(transpose - 1),
-      onNext: () => setTranspose(transpose + 1),
-      prevDisabled: transpose <= -11,
-      nextDisabled: transpose >= 11,
-    },
-    ...(transpose !== 0
-      ? [
-          {
-            kind: "action" as const,
-            id: "reset",
-            icon: ArrowUUpLeft,
-            label: t("cifra.original"),
-            onUse: () => setTranspose(0),
-          },
-        ]
-      : []),
-    { kind: "sep" },
-    ...buildScrollTools({ t, scrolling, toggle, speed, setSpeed }),
-  ];
+  const controls: Tool[] = buildCifraTools({
+    t,
+    transpose,
+    setTranspose,
+    scrollTools: buildScrollTools({ t, scrolling, toggle, speed, setSpeed }),
+  });
 
   // ---- compact view ----------------------------------------------------------
   // Pure read-only chart: clicking anywhere expands the cell, where the controls live.
   if (!editing) {
-    if (!hasContent) return <EmptyState kind="chords" title={t("cifra.empty")} compact />;
+    if (!hasContent) return <EmptyState kind="cifra" title={t("cifra.empty")} compact />;
     return (
       <div ref={rootRef} className={css.col}>
         <Chart blocks={blocks} />

@@ -1,19 +1,14 @@
 import { describe, it, expect, afterEach, vi } from "vitest";
 import { render, cleanup, screen, fireEvent } from "@testing-library/react";
-import { Provider } from "@react-spectrum/s2";
 import Toolbar from "./Toolbar.tsx";
 import type { Tool } from "./Toolbar.tsx";
 
 afterEach(cleanup);
 
 const renderToolbar = (tools: Tool[]) =>
-  render(
-    <Provider background="base" colorScheme="light">
-      <Toolbar label="Test tools" tools={tools} />
-    </Provider>,
-  );
+  render(<Toolbar label="Test tools" tools={tools} />);
 
-describe("Toolbar (real S2 buttons)", () => {
+describe("Toolbar (React Aria buttons)", () => {
   it("renders a labelled toolbar and fires an action tool's onUse", () => {
     const onUse = vi.fn();
     renderToolbar([{ kind: "action", id: "bold", char: "B", label: "Bold", onUse }]);

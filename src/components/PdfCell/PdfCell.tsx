@@ -1,37 +1,30 @@
 import { useEffect, useRef, useState } from "react";
-import { TextField, Button, DropZone, FileTrigger, Divider } from "@react-spectrum/s2";
+import { TextField, Input, Label, Button, DropZone, FileTrigger, Separator } from "react-aria-components";
 import EmptyState from "../EmptyState/EmptyState.tsx";
-import {
-  FilePdfIcon as FilePdf,
-  SquareIcon as Square,
-  ColumnsIcon as Columns,
-  ArrowCounterClockwiseIcon as ArrowCounterClockwise,
-  ArrowClockwiseIcon as ArrowClockwise,
-  ArrowsDownUpIcon as ArrowsDownUp,
-  ArrowUpIcon as ArrowUp,
-  ArrowDownIcon as ArrowDown,
-  CopySimpleIcon as CopySimple,
-  FilePlusIcon as FilePlus,
-  TrashIcon as Trash,
-  UploadSimpleIcon as UploadSimple,
-  PencilSimpleLineIcon as PencilSimpleLine,
-  RowsIcon as Rows,
-} from "@phosphor-icons/react";
+import { FilePdfIcon as FilePdf } from "@phosphor-icons/react";
 import { useStore } from "../../providers/StoreProvider/StoreProvider.tsx";
 import { useDialog } from "../../providers/DialogProvider/DialogProvider.tsx";
 import { useI18n } from "../../providers/I18nProvider/I18nProvider.tsx";
-import { getPdfjs, dataUrlToBytes, bytesToDataUrl, fileToDataUrl } from "./PdfCell.utils.ts";
+import {
+  getPdfjs,
+  dataUrlToBytes,
+  bytesToDataUrl,
+  fileToDataUrl,
+  dataUrlSizeMB,
+} from "./PdfCell.utils.ts";
 import { ANNOT_COLORS, buildAnnotationTools } from "../AnnotationLayer/AnnotationLayer.utils.ts";
 import { useStrokeHistory } from "../AnnotationLayer/AnnotationLayer.hooks.ts";
 import { useAutoScroll, buildScrollTools } from "../../hooks/useAutoScroll.ts";
 import AnnotationLayer from "../AnnotationLayer/AnnotationLayer.tsx";
 import Toolbar from "../Toolbar/Toolbar.tsx";
 import type { Tool } from "../Toolbar/Toolbar.tsx";
+import { buildPdfTools } from "./PdfCell.tools.ts";
+import { displayScale } from "../../utils/canvas/canvas.ts";
 import type { AnnotationStroke, CellOf } from "../../utils/cellKinds/cellKinds.ts";
 import type { PDFDocumentProxy, PDFDocumentLoadingTask } from "pdfjs-dist";
 import type { PDFDocument, PDFPage } from "pdf-lib";
 import shared from "../../providers/ThemeProvider/ThemeProvider.module.css";
-import { dropFull } from "./PdfCell.styled.ts";
+import f from "../fields/fields.module.css";
 import css from "./PdfCell.module.css";
 
 // Render one pdf.js page into a canvas, fit to `cssWidth`. pdf.js objects are typed `any` —
@@ -44,7 +37,7 @@ async function renderPage(
 ) {
   const page = await doc.getPage(n);
   const base = page.getViewport({ scale: 1 });
-  const dpr = Math.min(window.devicePixelRatio || 1, 2);
+  const dpr = displayScale();
   const scale = (cssWidth / base.width) * dpr;
   const viewport = page.getViewport({ scale });
   canvas.width = Math.floor(viewport.width);
@@ -150,7 +143,7 @@ export default function PdfCell({ cell, editing }: { cell: CellOf<"pdf">; editin
   async function addFile(file: File | null) {
     if (!file || file.type !== "application/pdf") return;
     const dataUrl = await fileToDataUrl(file);
-    const sizeMB = (dataUrl.length * 0.75) / 1e6;
+    const sizeMB = dataUrlSizeMB(dataUrl);
     if (sizeMB > 8) {
       const ok = await confirm({
         title: t("pdf.largeTitle"),
@@ -275,75 +268,26 @@ export default function PdfCell({ cell, editing }: { cell: CellOf<"pdf">; editin
 
   // Editing with a loaded PDF: page navigation + page manipulation.
   if (src) {
-    // Page editing rewrites the bytes, so it's only available for embedded (dataUrl) PDFs.
-    const pageTools: Tool[] = cell.dataUrl
-      ? [
-          { kind: "sep" },
-          {
-            kind: "group",
-            id: "rotate",
-            icon: ArrowClockwise,
-            label: t("pdf.rotatePage"),
-            options: [
-              {
-                id: "rl",
-                icon: ArrowCounterClockwise,
-                label: t("image.rotateLeft"),
-                onUse: () => rotatePage(-1),
-              },
-              {
-                id: "rr",
-                icon: ArrowClockwise,
-                label: t("image.rotateRight"),
-                onUse: () => rotatePage(1),
-              },
-            ],
-          },
-          {
-            kind: "group",
-            id: "move",
-            icon: ArrowsDownUp,
-            label: t("pdf.movePage"),
-            options: [
-              { id: "up", icon: ArrowUp, label: t("pdf.moveEarlier"), onUse: () => movePage(-1) },
-              { id: "down", icon: ArrowDown, label: t("pdf.moveLater"), onUse: () => movePage(1) },
-            ],
-          },
-          {
-            kind: "action",
-            id: "dup",
-            icon: CopySimple,
-            label: t("pdf.duplicatePage"),
-            onUse: duplicatePage,
-          },
-          {
-            kind: "action",
-            id: "append",
-            icon: FilePlus,
-            label: t("pdf.appendPdf"),
-            onUse: () => appendRef.current?.click(),
-          },
-          {
-            kind: "action",
-            id: "del",
-            icon: Trash,
-            label: t("pdf.deletePage"),
-            onUse: removeCurrentPage,
-            disabled: numPages <= 1,
-          },
-        ]
-      : [];
-    const annTools: Tool[] = [
-      { kind: "sep" },
-      {
-        kind: "toggle",
-        id: "annotate",
-        icon: PencilSimpleLine,
-        label: t("annotate.pen"),
-        value: annMode,
-        onToggle: () => setAnnMode((v) => !v),
-      },
-      ...(annMode
+    const tools: Tool[] = buildPdfTools({
+      t,
+      hasDoc: !!cell.dataUrl,
+      flow,
+      setFlow,
+      view,
+      setView,
+      page,
+      numPages,
+      setPage,
+      annMode,
+      setAnnMode,
+      rotatePage,
+      movePage,
+      duplicatePage,
+      removeCurrentPage,
+      openAppend: () => appendRef.current?.click(),
+      openReplace: () => fileRef.current?.click(),
+      scrollTools: buildScrollTools({ t, scrolling, toggle, speed, setSpeed }),
+      annotationTools: annMode
         ? buildAnnotationTools({
             t,
             color,
@@ -361,59 +305,8 @@ export default function PdfCell({ cell, editing }: { cell: CellOf<"pdf">; editin
             canRedo: annHistory.canRedo,
             canClear: annHistory.canClear,
           })
-        : []),
-    ];
-    // Page navigation / spread only apply to the paged flow.
-    const navTools: Tool[] =
-      flow === "paged"
-        ? [
-            {
-              kind: "spinner",
-              id: "page",
-              label: t("pdf.page"),
-              display: `${page} / ${numPages || "…"}`,
-              onPrev: () => setPage((p) => Math.max(1, p - 1)),
-              onNext: () => setPage((p) => Math.min(numPages, p + 1)),
-              prevDisabled: page <= 1,
-              nextDisabled: page >= numPages,
-            },
-            {
-              kind: "toggle",
-              id: "view",
-              icon: Square,
-              altIcon: Columns,
-              label: t("pdf.viewOne"),
-              altLabel: t("pdf.viewTwo"),
-              value: view === "double",
-              onToggle: () => setView((v) => (v === "single" ? "double" : "single")),
-            },
-          ]
-        : [];
-    const tools: Tool[] = [
-      {
-        kind: "toggle",
-        id: "flow",
-        icon: Square,
-        altIcon: Rows,
-        label: t("pdf.viewPaged"),
-        altLabel: t("pdf.viewAll"),
-        value: flow === "all",
-        onToggle: () => setFlow((f) => (f === "paged" ? "all" : "paged")),
-      },
-      ...navTools,
-      { kind: "sep" },
-      ...buildScrollTools({ t, scrolling, toggle, speed, setSpeed }),
-      ...annTools,
-      ...pageTools,
-      { kind: "sep" },
-      {
-        kind: "action",
-        id: "replace",
-        icon: UploadSimple,
-        label: t("pdf.replace"),
-        onUse: () => fileRef.current?.click(),
-      },
-    ];
+        : [],
+    });
     return (
       <div ref={rootRef} className={css.col}>
         <Toolbar label={t("cell.pdf")} tools={tools} />
@@ -448,11 +341,11 @@ export default function PdfCell({ cell, editing }: { cell: CellOf<"pdf">; editin
   return (
     <div className={css.col}>
       <DropZone
+        className={shared.dropZone}
         onDrop={async (e) => {
-          const f = e.items.find((i) => i.kind === "file");
-          if (f && f.kind === "file") addFile(await f.getFile());
+          const item = e.items.find((i) => i.kind === "file");
+          if (item && item.kind === "file") addFile(await item.getFile());
         }}
-        styles={dropFull}
       >
         <div className={shared.mediaEmpty}>
           <FilePdf size={40} aria-hidden />
@@ -463,18 +356,19 @@ export default function PdfCell({ cell, editing }: { cell: CellOf<"pdf">; editin
             acceptedFileTypes={["application/pdf"]}
             onSelect={(files) => files && addFile(files[0])}
           >
-            <Button variant="primary">{t("common.browse")}</Button>
+            <Button className={shared.btnMagenta}>{t("common.browse")}</Button>
           </FileTrigger>
         </div>
       </DropZone>
-      <Divider />
+      <Separator className={f.divider} />
       <TextField
-        label={t("pdf.byUrl")}
+        className={f.field}
         value={cell.url || ""}
         onChange={(url) => updateCell(cell.id, { url, dataUrl: "", name: "" })}
-        placeholder={t("pdf.urlPlaceholder")}
-        styles={dropFull}
-      />
+      >
+        <Label className={f.label}>{t("pdf.byUrl")}</Label>
+        <Input className={f.textInput} placeholder={t("pdf.urlPlaceholder")} />
+      </TextField>
     </div>
   );
 }

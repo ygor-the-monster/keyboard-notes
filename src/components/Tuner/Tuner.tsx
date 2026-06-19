@@ -3,18 +3,29 @@ import { useTuner } from "./Tuner.hooks.ts";
 import { useI18n } from "../../providers/I18nProvider/I18nProvider.tsx";
 import { usePref } from "../../providers/StoreProvider/StoreProvider.utils.ts";
 import shared from "../../providers/ThemeProvider/ThemeProvider.module.css";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import t from "./Tuner.module.css";
 
 const A4_OPTIONS = [440, 442];
 
 // A floating utility dock (mirrors the Metronome): an agenda tab that slides a live
 // note-identifier card in/out. Detects pitch from the mic and names the note + cents.
-export default function Tuner() {
+export default function Tuner({ autostart = false }: { autostart?: boolean }) {
   const { t: tr } = useI18n();
   const [open, setOpen] = useState(false);
   const [a4, setA4] = usePref("tuner.a4", 440);
   const { listening, reading, toggle } = useTuner(a4);
+
+  // Launched via the "Tuner" app shortcut (?tool=tuner): open the panel and start listening once
+  // (toggle would otherwise stop it on a re-run, so guard with a ref). This prompts for the mic.
+  const startedRef = useRef(false);
+  useEffect(() => {
+    if (autostart && !startedRef.current) {
+      startedRef.current = true;
+      setOpen(true);
+      toggle();
+    }
+  }, [autostart, toggle]);
 
   const dockClass = [t.dock, "no-print", open && t.open, listening && t.live]
     .filter(Boolean)
@@ -86,7 +97,7 @@ export default function Tuner() {
           type="button"
           className={`${shared.btnMagenta} ${t.start}`}
           onClick={toggle}
-          style={listening ? { background: "var(--s-gold-strong)" } : undefined}
+          style={listening ? { background: "var(--accent-strong)" } : undefined}
         >
           {listening ? tr("tuner.stop") : tr("tuner.startListening")}
         </button>

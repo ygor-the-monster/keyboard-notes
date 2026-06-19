@@ -1,0 +1,121 @@
+/* Backdrop — covers the viewport, centers the modal. */
+.overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 2000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  background: rgb(0 0 0 / 0.36);
+}
+.overlay[data-entering] {
+  animation: dlg-overlay-in 0.18s ease;
+}
+.overlay[data-exiting] {
+  animation: dlg-overlay-in 0.15s ease reverse;
+}
+
+.modal {
+  width: min(440px, 100%);
+}
+.modal[data-entering] {
+  animation: dlg-modal-in 0.22s cubic-bezier(0.2, 0.7, 0.2, 1);
+}
+.modal[data-exiting] {
+  animation: dlg-modal-in 0.15s ease reverse;
+}
+
+.dialog {
+  outline: none;
+  background: var(--surface);
+  color: var(--s-ink);
+  border: 1px solid var(--s-line);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-pop);
+  padding: 22px 24px 18px;
+  font-family: var(--font-ui);
+}
+
+.title {
+  margin: 0 0 8px;
+  font-family: var(--font-content);
+  font-size: 1.25rem;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+.message {
+  margin: 0;
+  color: var(--s-ink-muted);
+  font-size: 0.95rem;
+  line-height: 1.5;
+  white-space: pre-line;
+}
+
+.buttons {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 20px;
+}
+
+/* Buttons share a base; cancel is quiet, confirm carries the accent (red when destructive). */
+.cancel,
+.confirm {
+  min-height: 40px;
+  padding: 8px 18px;
+  border-radius: var(--radius-sm);
+  font-family: var(--font-ui);
+  font-weight: 600;
+  font-size: 0.95rem;
+  cursor: pointer;
+  border: 1px solid transparent;
+}
+.cancel {
+  background: none;
+  border-color: var(--s-line-strong);
+  color: var(--s-ink);
+}
+.cancel[data-hovered] {
+  background: var(--s-neutral-tint);
+}
+.confirm {
+  background: var(--s-magenta);
+  color: #fff;
+}
+.confirm[data-hovered] {
+  background: var(--s-magenta-strong);
+}
+.confirm[data-variant="destructive"],
+.confirm[data-variant="error"] {
+  background: var(--s-red);
+}
+.confirm[data-variant="destructive"][data-hovered],
+.confirm[data-variant="error"][data-hovered] {
+  filter: brightness(0.92);
+}
+.cancel[data-focus-visible],
+.confirm[data-focus-visible] {
+  outline: 2px solid var(--accent-ring, var(--s-magenta-ring));
+  outline-offset: 2px;
+}
+
+@keyframes dlg-overlay-in {
+  from {
+    opacity: 0;
+  }
+}
+@keyframes dlg-modal-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px) scale(0.97);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .overlay[data-entering],
+  .overlay[data-exiting],
+  .modal[data-entering],
+  .modal[data-exiting] {
+    animation: none;
+  }
+}

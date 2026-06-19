@@ -1,0 +1,77 @@
+/* Quiet icon-only button: transparent, tinted on hover/press, square hit area. */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  aspect-ratio: 1 / 1;
+  border: none;
+  background: none;
+  color: var(--s-ink-muted);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition:
+    background 0.15s ease,
+    color 0.15s ease;
+}
+.btn[data-hovered],
+.btn[data-pressed] {
+  background: var(--s-neutral-tint);
+  color: var(--s-ink);
+}
+.btn[data-focus-visible] {
+  outline: 2px solid var(--accent-ring, var(--s-magenta-ring));
+  outline-offset: 1px;
+}
+.btn[data-disabled] {
+  opacity: 0.38;
+  cursor: default;
+}
+/* ToggleButton selected — accent tint. */
+.btn[data-selected] {
+  background: var(--accent-tint);
+  color: var(--accent-strong);
+}
+
+/* Fixed square sizes (guarantee a 1:1 hit area regardless of glyph/char width). */
+.sizeS {
+  width: 30px;
+  height: 30px;
+}
+.sizeM {
+  width: 34px;
+  height: 34px;
+}
+.sizeL {
+  width: 38px;
+  height: 38px;
+}
+.sizeXL {
+  width: 44px;
+  height: 44px;
+}
+
+/* Tooltip — small dark chip. */
+.tooltip {
+  background: var(--s-ink);
+  color: var(--canvas);
+  font-family: var(--font-ui);
+  font-size: 0.8rem;
+  padding: 5px 9px;
+  border-radius: var(--radius-sm);
+  box-shadow: var(--shadow-pop);
+  max-width: 240px;
+}
+.tooltip[data-entering] {
+  animation: tip-in 0.12s ease;
+}
+@keyframes tip-in {
+  from {
+    opacity: 0;
+    transform: scale(0.96);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .tooltip[data-entering] {
+    animation: none;
+  }
+}

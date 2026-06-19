@@ -83,18 +83,33 @@ export async function loadState(): Promise<AppState> {
   return { ...EMPTY_STATE };
 }
 
+// The provider registers a handler so a failed write can surface a (localized) toast. Kept as a
+// module-level hook so this React-free persistence layer doesn't import the UI.
+let saveErrorHandler: (() => void) | null = null;
+export function setSaveErrorHandler(fn: (() => void) | null): void {
+  saveErrorHandler = fn;
+}
+
 let saveTimer: ReturnType<typeof setTimeout> | null = null;
 let pendingState: AppState | null = null;
+let saveFailed = false; // de-dupe: warn once until a save succeeds again, so a full disk can't spam
 function writeNow(): void {
   if (pendingState == null) return;
   const s = pendingState;
   pendingState = null;
   if (saveTimer) clearTimeout(saveTimer);
   saveTimer = null;
-  idbSet(STATE_KEY, s).catch((e) => {
-    console.error("Saving failed:", e);
-    alert("Saving failed — storage may be full or unavailable. Export a backup (JSON).");
-  });
+  idbSet(STATE_KEY, s)
+    .then(() => {
+      saveFailed = false;
+    })
+    .catch((e) => {
+      console.error("Saving failed:", e);
+      if (!saveFailed) {
+        saveFailed = true;
+        saveErrorHandler?.();
+      }
+    });
 }
 export function saveState(state: AppState): void {
   pendingState = state;

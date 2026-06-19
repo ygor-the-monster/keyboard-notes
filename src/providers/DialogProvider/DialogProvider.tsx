@@ -7,8 +7,9 @@ import {
   useState,
   type ReactNode,
 } from "react";
-import { AlertDialog, DialogContainer } from "@react-spectrum/s2";
+import { ModalOverlay, Modal, Dialog, Heading, Button } from "react-aria-components";
 import { useI18n } from "../I18nProvider/I18nProvider.tsx";
+import s from "./DialogProvider.module.css";
 
 export type DialogVariant = "confirmation" | "information" | "destructive" | "warning" | "error";
 
@@ -31,7 +32,7 @@ export interface DialogValue {
 
 const DialogContext = createContext<DialogValue | null>(null);
 
-// App-wide, promise-based replacement for window.confirm / window.alert using the S2 AlertDialog.
+// App-wide, promise-based replacement for window.confirm / window.alert using a React Aria modal.
 // `opts` is a string (used as the title) or { title, message, confirmLabel, cancelLabel, variant }.
 export function DialogProvider({ children }: { children: ReactNode }) {
   const { t } = useI18n();
@@ -47,10 +48,8 @@ export function DialogProvider({ children }: { children: ReactNode }) {
     });
   }, []);
 
-  // Resolve exactly once (idempotent). A button press fires its handler AND the container's
-  // onDismiss in the same click; the buttons resolve *synchronously* so they always win, while
-  // onDismiss resolves false only on a microtask — after every sync handler has run — covering
-  // Esc / outside-click without overriding a button choice, regardless of firing order.
+  // Resolve exactly once (idempotent), then close. Buttons settle synchronously; an Esc / outside
+  // click closes via onOpenChange → settle(false), which no-ops if a button already resolved.
   const settle = useCallback((result: boolean) => {
     const r = resolveRef.current;
     if (!r) return;
@@ -70,23 +69,44 @@ export function DialogProvider({ children }: { children: ReactNode }) {
   return (
     <DialogContext.Provider value={api}>
       {children}
-      <DialogContainer onDismiss={() => queueMicrotask(() => settle(false))}>
-        {opts && (
-          <AlertDialog
-            variant={opts.variant || (opts.alert ? "information" : "confirmation")}
-            title={opts.title || ""}
-            primaryActionLabel={
-              opts.confirmLabel || (opts.alert ? t("common.ok") : t("common.confirm"))
-            }
-            cancelLabel={opts.alert ? undefined : opts.cancelLabel || t("common.cancel")}
-            autoFocusButton={opts.alert ? "primary" : "cancel"}
-            onPrimaryAction={() => settle(true)}
-            onCancel={() => settle(false)}
-          >
-            {opts.message || ""}
-          </AlertDialog>
-        )}
-      </DialogContainer>
+      <ModalOverlay
+        className={s.overlay}
+        isOpen={!!opts}
+        isDismissable={!opts?.alert}
+        onOpenChange={(open) => {
+          if (!open) settle(false);
+        }}
+      >
+        <Modal className={s.modal}>
+          <Dialog role="alertdialog" className={s.dialog}>
+            {opts && (
+              <>
+                {opts.title && (
+                  <Heading slot="title" className={s.title}>
+                    {opts.title}
+                  </Heading>
+                )}
+                {opts.message && <p className={s.message}>{opts.message}</p>}
+                <div className={s.buttons}>
+                  {!opts.alert && (
+                    <Button className={s.cancel} autoFocus onPress={() => settle(false)}>
+                      {opts.cancelLabel || t("common.cancel")}
+                    </Button>
+                  )}
+                  <Button
+                    className={s.confirm}
+                    data-variant={opts.variant || (opts.alert ? "information" : "confirmation")}
+                    autoFocus={opts.alert || undefined}
+                    onPress={() => settle(true)}
+                  >
+                    {opts.confirmLabel || (opts.alert ? t("common.ok") : t("common.confirm"))}
+                  </Button>
+                </div>
+              </>
+            )}
+          </Dialog>
+        </Modal>
+      </ModalOverlay>
     </DialogContext.Provider>
   );
 }

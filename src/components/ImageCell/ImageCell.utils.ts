@@ -6,6 +6,29 @@ const QUALITY = 0.85;
 
 export { fileToDataUrl } from "../../utils/fileToDataUrl/fileToDataUrl.ts";
 
+// Blank-canvas presets — the "whiteboard" option. A solid-white PNG becomes the Original, so the
+// non-destructive Filter / Crop / Annotation overlays all work on it unchanged (a whiteboard is
+// just a blank Image). 960px base gives a comfortable size to draw on; the ratio is 3:2.
+export type BlankPreset = "landscape" | "square" | "portrait";
+const BLANK_BASE = 960;
+const BLANK_SHORT = Math.round((BLANK_BASE * 2) / 3); // 640
+const BLANK_DIMS: Record<BlankPreset, [number, number]> = {
+  landscape: [BLANK_BASE, BLANK_SHORT], // 960×640
+  square: [BLANK_BASE, BLANK_BASE], // 960×960
+  portrait: [BLANK_SHORT, BLANK_BASE], // 640×960
+};
+
+export function makeBlankImage(preset: BlankPreset): string {
+  const [w, h] = BLANK_DIMS[preset];
+  const c = document.createElement("canvas");
+  c.width = w;
+  c.height = h;
+  const ctx = c.getContext("2d")!;
+  ctx.fillStyle = "#fff";
+  ctx.fillRect(0, 0, w, h);
+  return c.toDataURL("image/png");
+}
+
 export function loadImage(src: string): Promise<HTMLImageElement> {
   return new Promise((resolve, reject) => {
     const img = new Image();

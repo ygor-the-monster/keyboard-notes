@@ -8,21 +8,18 @@ import {
   type ReactNode,
 } from "react";
 import { LOCALES, MESSAGES, DEFAULT_LOCALE } from "./locales/index.ts";
-import type { Tool } from "../../components/Toolbar/Toolbar.tsx";
 
-// Tiny app-level i18n. useI18n() → { locale, setLocale, locales, t, tl, localizeTools }.
+// Tiny app-level i18n. useI18n() → { locale, setLocale, locales, t }.
 //   t("audio.largeMsg", { mb: "5.2" })  → interpolates {mb} placeholders.
 // Lookups walk the dotted key path in the active locale, then fall back to English, then to the
-// raw key — so a missing translation degrades gracefully, never throws.
+// raw key — so a missing translation degrades gracefully, never throws. Toolbar tools translate
+// their own labels through t() at build time (see each cell's *.tools.ts builder).
 
 export interface I18nValue {
   locale: string;
   setLocale: (l: string) => void;
   locales: readonly string[];
   t: (key: string, vars?: Record<string, unknown>) => string;
-  tl: (label: string) => string;
-  // Localizes a Toolbar `tools` array — translates each label / altLabel / option label.
-  localizeTools: (tools: Tool[]) => Tool[];
 }
 
 const I18nContext = createContext<I18nValue | null>(null);
@@ -84,36 +81,9 @@ export function I18nProvider({ children }: { children: ReactNode }) {
     [locale],
   );
 
-  // Translate a toolbar label by its English text. Keys in the `toolLabels` map carry spaces and
-  // punctuation, so they can't go through the dotted-path t(); this looks the label up directly,
-  // falling back to English then to the label itself (graceful for un-mapped labels).
-  const tl = useCallback(
-    (label: string) => {
-      const here = messages[locale]?.toolLabels;
-      const en = messages[DEFAULT_LOCALE]?.toolLabels;
-      return (here && here[label]) ?? (en && en[label]) ?? label;
-    },
-    [locale],
-  );
-
-  // Run a Toolbar `tools` array through tl(), translating every label / altLabel (including
-  // nested group options) on the final composed strings — no per-label edits in the cells.
-  const localizeTools = useCallback(
-    (tools: Tool[]): Tool[] =>
-      tools.map((it) => {
-        if (it.kind === "sep") return it;
-        const out = { ...it };
-        out.label = tl(out.label);
-        if ("altLabel" in out && out.altLabel) out.altLabel = tl(out.altLabel);
-        if ("options" in out) out.options = out.options.map((o) => ({ ...o, label: tl(o.label) }));
-        return out;
-      }),
-    [tl],
-  );
-
   const value = useMemo<I18nValue>(
-    () => ({ locale, setLocale, locales: LOCALES, t, tl, localizeTools }),
-    [locale, setLocale, t, tl, localizeTools],
+    () => ({ locale, setLocale, locales: LOCALES, t }),
+    [locale, setLocale, t],
   );
   return <I18nContext.Provider value={value}>{children}</I18nContext.Provider>;
 }

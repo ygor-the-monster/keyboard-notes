@@ -79,6 +79,7 @@ export function buildScrollTools({
       id: "scroll",
       icon: Play,
       altIcon: Pause,
+      tone: "scroll",
       label: t("scroll.auto"),
       altLabel: t("scroll.stop"),
       value: scrolling,

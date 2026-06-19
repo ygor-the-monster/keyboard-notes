@@ -28,17 +28,6 @@
   background: var(--s-line-strong);
 }
 
-/* Icon-only S2 buttons: S2 reserves a text column (label-sized padding) for buttons
-   holding non-Spectrum (Phosphor) icons, which left-aligns the glyph. Collapse that
-   column and square the hit area so the icon truly centers (tablet-friendly). */
-.btnIcononly {
-  display: flex !important;
-  align-items: center !important;
-  justify-content: center !important;
-  gap: 0 !important;
-  padding-inline: 0 !important;
-  aspect-ratio: 1 / 1;
-}
 
 /* Filled brand CTA (Play, empty-state) — uses the cell's --accent, used sparingly. */
 .btnMagenta {
@@ -139,4 +128,55 @@
   font-family: var(--font-content);
   font-size: 1.1rem;
   color: var(--s-ink);
+}
+
+/* React Aria DropZone surface — dashed media drop target, highlights while dragging over. */
+.dropZone {
+  width: 100%;
+  border: 2px dashed var(--s-line);
+  border-radius: var(--radius);
+  background: var(--canvas);
+  outline: none;
+  transition:
+    border-color 0.15s ease,
+    background 0.15s ease;
+}
+.dropZone[data-drop-target] {
+  border-color: var(--accent, var(--s-magenta));
+  background: var(--accent-tint);
+}
+.dropZone[data-focus-visible] {
+  border-color: var(--accent, var(--s-magenta));
+  box-shadow: 0 0 0 3px var(--accent-ring, var(--s-magenta-ring));
+}
+
+/* Secondary text button — quiet, neutral; pairs with .btnMagenta as the primary CTA. */
+.btnSecondary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-family: var(--font-ui);
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--s-ink);
+  background: var(--s-neutral-tint);
+  border: 1px solid var(--s-line);
+  border-radius: var(--radius-pill);
+  padding: 10px 21px;
+  cursor: pointer;
+  transition:
+    background 0.15s ease,
+    border-color 0.15s ease,
+    transform 0.06s ease;
+}
+.btnSecondary:hover {
+  border-color: var(--s-line-strong);
+}
+.btnSecondary:active {
+  transform: translateY(1px);
+}
+.btnSecondary:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px var(--accent-ring, var(--s-magenta-ring));
 }

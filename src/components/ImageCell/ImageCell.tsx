@@ -1,19 +1,12 @@
 import { useEffect, useRef, useState, type PointerEvent as ReactPointerEvent } from "react";
-import { Button, DropZone, FileTrigger } from "@react-spectrum/s2";
+import { Button, DropZone, FileTrigger } from "react-aria-components";
 import EmptyState from "../EmptyState/EmptyState.tsx";
 import {
-  CropIcon as Crop,
-  CheckIcon as Check,
   ArrowCounterClockwiseIcon as ArrowCounterClockwise,
   ArrowClockwiseIcon as ArrowClockwise,
   FlipHorizontalIcon as FlipHorizontal,
   FlipVerticalIcon as FlipVertical,
-  SunIcon as Sun,
-  CircleHalfIcon as CircleHalf,
-  DropIcon as Drop,
   ImageSquareIcon as ImageSquare,
-  UploadSimpleIcon as UploadSimple,
-  ArrowUUpLeftIcon as ArrowUUpLeft,
   ArrowsOutIcon as ArrowsOut,
 } from "@phosphor-icons/react";
 import { useStore } from "../../providers/StoreProvider/StoreProvider.tsx";
@@ -29,18 +22,22 @@ import {
   composeCrop,
   rotateCrop,
   flipCrop,
+  makeBlankImage,
 } from "./ImageCell.utils.ts";
+import type { BlankPreset } from "./ImageCell.utils.ts";
 import { ANNOT_COLORS, buildAnnotationTools } from "../AnnotationLayer/AnnotationLayer.utils.ts";
+import { buildImageTools } from "./ImageCell.tools.ts";
 import { useStrokeHistory } from "../AnnotationLayer/AnnotationLayer.hooks.ts";
 import AnnotationLayer from "../AnnotationLayer/AnnotationLayer.tsx";
 import Toolbar from "../Toolbar/Toolbar.tsx";
 import type { GroupOption, Tool } from "../Toolbar/Toolbar.tsx";
+import { normalizePointer } from "../../utils/pointer/pointer.ts";
+import { clamp } from "../../utils/numeric/numeric.ts";
 import shared from "../../providers/ThemeProvider/ThemeProvider.module.css";
-import { dropFull } from "./ImageCell.styled.ts";
 import css from "./ImageCell.module.css";
 
 const ADJUST_LIMIT = 6;
-const clampStep = (n: number) => Math.max(-ADJUST_LIMIT, Math.min(ADJUST_LIMIT, n));
+const clampStep = (n: number) => clamp(n, -ADJUST_LIMIT, ADJUST_LIMIT);
 type Adjustable = "bright" | "contrast" | "sat";
 
 export default function ImageCell({ cell, editing }: { cell: CellOf<"image">; editing: boolean }) {
@@ -94,6 +91,15 @@ export default function ImageCell({ cell, editing }: { cell: CellOf<"image">; ed
     });
   }
 
+  // Whiteboard: a blank white canvas becomes the Original, so pen/crop/filter all apply on top.
+  function addBlank(preset: BlankPreset) {
+    updateCell(cell.id, {
+      dataUrl: makeBlankImage(preset),
+      filter: { ...DEFAULT_IMAGE_FILTER },
+      strokes: [],
+    });
+  }
+
   const updateFilter = (patch: Partial<ImageFilter>) =>
     updateCell(cell.id, { filter: { ...filter, ...patch } });
   const setStrokes = (next: typeof strokes) => updateCell(cell.id, { strokes: next });
@@ -116,11 +122,7 @@ export default function ImageCell({ cell, editing }: { cell: CellOf<"image">; ed
 
   // Crop point in display-normalised coordinates, read off the visible canvas box.
   function cropPoint(e: ReactPointerEvent): [number, number] {
-    const r = canvasRef.current!.getBoundingClientRect();
-    return [
-      Math.max(0, Math.min(1, (e.clientX - r.left) / r.width)),
-      Math.max(0, Math.min(1, (e.clientY - r.top) / r.height)),
-    ];
+    return normalizePointer(e, canvasRef.current!);
   }
   function onCropDown(e: ReactPointerEvent) {
     e.currentTarget.setPointerCapture?.(e.pointerId);
@@ -176,11 +178,11 @@ export default function ImageCell({ cell, editing }: { cell: CellOf<"image">; ed
         }}
       >
         <DropZone
+          className={shared.dropZone}
           onDrop={async (e) => {
             const f = e.items.find((i) => i.kind === "file");
             if (f && f.kind === "file") addFile(await f.getFile());
           }}
-          styles={dropFull}
         >
           <div className={shared.mediaEmpty}>
             <ImageSquare size={40} aria-hidden />
@@ -189,8 +191,22 @@ export default function ImageCell({ cell, editing }: { cell: CellOf<"image">; ed
               acceptedFileTypes={["image/*"]}
               onSelect={(files) => files && addFile(files[0])}
             >
-              <Button variant="primary">{t("common.browse")}</Button>
+              <Button className={shared.btnMagenta}>{t("common.browse")}</Button>
             </FileTrigger>
+            <div className={css.blank}>
+              <span className={css.blankTitle}>{t("image.blankTitle")}</span>
+              <div className={css.blankPresets}>
+                <Button className={shared.btnSecondary} onPress={() => addBlank("landscape")}>
+                  {t("image.blankLandscape")}
+                </Button>
+                <Button className={shared.btnSecondary} onPress={() => addBlank("square")}>
+                  {t("image.blankSquare")}
+                </Button>
+                <Button className={shared.btnSecondary} onPress={() => addBlank("portrait")}>
+                  {t("image.blankPortrait")}
+                </Button>
+              </div>
+            </div>
           </div>
         </DropZone>
       </div>
@@ -254,50 +270,15 @@ export default function ImageCell({ cell, editing }: { cell: CellOf<"image">; ed
       onUse: () => updateFilter({ crop: null }),
     });
 
-  const tools: Tool[] = [
-    {
-      kind: "group",
-      id: "transform",
-      icon: ArrowClockwise,
-      label: t("image.transform"),
-      options: transformOptions,
-    },
-    {
-      kind: "toggle",
-      id: "crop",
-      icon: Crop,
-      altIcon: Check,
-      label: t("image.crop"),
-      altLabel: t("image.applyCrop"),
-      value: mode === "crop",
-      onToggle: toggleCrop,
-    },
-    {
-      kind: "spinner",
-      id: "bright",
-      icon: Sun,
-      label: t("image.brightness"),
-      onPrev: () => adjust("bright", -1),
-      onNext: () => adjust("bright", 1),
-    },
-    {
-      kind: "spinner",
-      id: "contrast",
-      icon: CircleHalf,
-      label: t("image.contrast"),
-      onPrev: () => adjust("contrast", -1),
-      onNext: () => adjust("contrast", 1),
-    },
-    {
-      kind: "spinner",
-      id: "sat",
-      icon: Drop,
-      label: t("image.saturation"),
-      onPrev: () => adjust("sat", -1),
-      onNext: () => adjust("sat", 1),
-    },
-    { kind: "sep" },
-    ...buildAnnotationTools({
+  const tools: Tool[] = buildImageTools({
+    t,
+    transformOptions,
+    mode,
+    toggleCrop,
+    adjust,
+    revert,
+    openReplace: () => fileRef.current?.click(),
+    annotationTools: buildAnnotationTools({
       t,
       color,
       setColor,
@@ -317,16 +298,7 @@ export default function ImageCell({ cell, editing }: { cell: CellOf<"image">; ed
       canRedo: history.canRedo,
       canClear: history.canClear,
     }),
-    { kind: "sep" },
-    {
-      kind: "action",
-      id: "replace",
-      icon: UploadSimple,
-      label: t("image.replace"),
-      onUse: () => fileRef.current?.click(),
-    },
-    { kind: "action", id: "revert", icon: ArrowUUpLeft, label: t("image.revert"), onUse: revert },
-  ];
+  });
 
   return (
     <div className={css.col}>

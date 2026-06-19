@@ -25,8 +25,8 @@ One block within a Lesson. Cells are reorderable and each is of a single Kind.
 _Avoid_: block, section, item
 
 **Kind**:
-The discriminator that fixes which of the six kinds a Cell is (Note, Score, Cifra, Image,
-PDF, Audio). The single source of truth for the closed set of kinds.
+The discriminator that fixes which of the seven kinds a Cell is (Note, Score, Cifra, Image,
+PDF, Audio, External). The single source of truth for the closed set of kinds.
 _Avoid_: type (overloaded), variant, flavor
 
 ### Cell kinds
@@ -54,12 +54,21 @@ A Cell embedding sheet-music PDF, page-navigable and annotatable.
 A Cell holding a recorded or imported sound clip, trimmable, with timeline Marks.
 _Avoid_: sound, clip cell, recording
 
+**External**:
+A Cell pointing outside the notebook — an embedded video or web page by URL. The one kind that
+isn't offline-self-contained, so it degrades to an offline placeholder when there's no connection.
+Styled silver (achromatic), since color is reserved for native content.
+_Avoid_: link, embed, bookmark
+
 ### Non-destructive overlays
 
-The Original media is never overwritten; everything below layers on top and is applied at view time.
+The overlays below layer on top of the Original and are applied at view time — never baked into it.
+Structural edits are the exception: PDF page operations and Audio trims intentionally rewrite the
+Original (see ADR-0004).
 
 **Original**:
-The untouched source bytes of an Image, PDF, or Audio Cell — never overwritten once imported.
+The source bytes of an Image, PDF, or Audio Cell. The overlays never overwrite it; structural
+PDF/Audio edits intentionally do (ADR-0004).
 _Avoid_: source, raw, base
 
 **Filter**:
@@ -84,6 +93,14 @@ _Avoid_: cue, marker, annotation (that is the pen overlay)
 **Staff**:
 One horizontal line-system in a Score. A piano Score has two — right hand and left hand.
 _Avoid_: voice, line, stave, part
+
+### Sound
+
+**Pitch**:
+The equal-temperament note↔frequency math, referenced to a tunable A4 — the one place note names,
+the chromatic (modulo-12) wrap, and Hz conversions live. The Tuner, Drone, and chord tools all read
+through it.
+_Avoid_: frequency (too narrow), note math
 
 ### Practice aids
 

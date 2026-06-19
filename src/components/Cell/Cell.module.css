@@ -37,6 +37,13 @@
   --accent-tint: var(--s-purple-tint);
   --accent-ring: var(--s-purple-ring);
 }
+/* External is the one achromatic kind — silver, since it points outside the notebook. */
+.typeExternal {
+  --accent: var(--s-silver);
+  --accent-strong: var(--s-silver-strong);
+  --accent-tint: var(--s-silver-tint);
+  --accent-ring: var(--s-silver-ring);
+}
 
 /* Clean white card, hairline border, soft shadow. */
 .tagGroup {
@@ -57,10 +64,12 @@
   border-radius: var(--radius);
   padding: 26px 30px;
   box-shadow: var(--shadow-card);
+  scale: 1; /* explicit base so .dragging's scale:1.05 can transition (none → 1.05 won't interpolate) */
   transition:
     border-color 0.18s ease,
     box-shadow 0.18s ease,
-    transform 0.18s ease;
+    transform 0.18s ease,
+    scale 0.18s ease;
   animation: cell-in 0.5s cubic-bezier(0.2, 0.7, 0.2, 1) backwards;
   animation-delay: var(--stagger, 0ms);
 }
@@ -112,12 +121,45 @@
 .cellDrag:active {
   cursor: grabbing;
 }
-/* Lifted while being dragged to reorder. */
+/* Lifted while dragging — the card sticks to the pointer via a live `--stick` translate, neighbours
+   slide underneath, and a dotted accent ghost (.dragGhost) marks the slot it would drop into. */
 .cell.dragging {
-  box-shadow: var(--shadow-card), var(--shadow-pop);
-  opacity: 0.96;
-  cursor: grabbing;
   z-index: 5;
+  cursor: grabbing;
+  box-shadow:
+    var(--shadow-card),
+    0 18px 40px -12px rgb(0 0 0 / 0.3); /* lifted off the page while held */
+  transform: translateY(var(--stick, 0px)); /* NOT transitioned — must track the pointer 1:1 */
+  scale: 1.05; /* standalone scale property so the grab lift can ease in without lagging the follow */
+  transition:
+    scale 0.18s cubic-bezier(0.2, 0.7, 0.2, 1),
+    box-shadow 0.18s ease;
+}
+
+/* Deleting — fade + slight shrink in place (keeps its slot). When the cell then leaves the store,
+   the FLIP closes the gap, so there's no double-animation. */
+.cell.exiting {
+  pointer-events: none;
+  animation: cell-out 0.2s ease forwards;
+}
+@keyframes cell-out {
+  to {
+    opacity: 0;
+    transform: scale(0.97);
+  }
+}
+
+/* Ghost marking the slot the dragged card would drop into. A sibling of the cell (not a child), so
+   the card's transform doesn't move it; follow() positions it (fixed) over the untransformed slot.
+   Inherits the cell's accent from its type class. */
+.dragGhost {
+  position: fixed;
+  z-index: 1; /* above the resting cells (auto), behind the lifted card (z-index 5) */
+  border-radius: var(--radius);
+  border: 2px dashed var(--accent);
+  background: var(--accent-tint);
+  opacity: 0.7;
+  pointer-events: none;
 }
 
 /* Cell type tag — subtle tinted pill in the block's accent. */
@@ -142,6 +184,10 @@
   }
   .cell.editing {
     transform: none;
+  }
+  .cell.exiting {
+    animation: none;
+    opacity: 0;
   }
 }
 

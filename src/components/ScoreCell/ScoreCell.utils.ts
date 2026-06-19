@@ -257,24 +257,3 @@ export function withTempo(header: string, tempo: number): string {
   if (/^\s*K:.*$/m.test(header)) return header.replace(/^(\s*K:.*)$/m, "$1\nQ:1/4=" + tempo);
   return header + "\nQ:1/4=" + tempo;
 }
-
-// Insert text at the caret (replacing any selection) while preserving the browser's native undo
-// stack via execCommand; `back` leaves the caret N chars from the end (paired tokens).
-export function insertIntoTextarea(
-  ta: HTMLTextAreaElement | null,
-  text: string,
-  back = 0,
-  onValue?: (v: string) => void,
-): void {
-  if (!ta) return;
-  ta.focus();
-  const inserted = document.execCommand && document.execCommand("insertText", false, text);
-  if (!inserted) {
-    ta.setRangeText(text, ta.selectionStart, ta.selectionEnd, "end");
-    onValue?.(ta.value);
-  }
-  if (back) {
-    const p = ta.selectionStart - back;
-    ta.setSelectionRange(p, p);
-  }
-}

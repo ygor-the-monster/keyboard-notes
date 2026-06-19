@@ -29,8 +29,8 @@ export default function AddBar() {
               className={s.addBtn}
               style={
                 {
-                  "--c": `var(${view.accent.c})`,
-                  "--ct": `var(${view.accent.ct})`,
+                  "--c": `var(${view.hue.base})`,
+                  "--ct": `var(${view.hue.tint})`,
                 } as CSSProperties
               }
               aria-label={t(view.addLabelKey)}

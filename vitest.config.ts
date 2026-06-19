@@ -1,6 +1,5 @@
 import { defineConfig } from "vitest/config";
 import { playwright } from "@vitest/browser-playwright";
-import macros from "unplugin-parcel-macros";
 
 // Three test kinds, split by filename:
 //   *.test-unit.ts     — fast, pure logic in jsdom
@@ -12,7 +11,7 @@ export default defineConfig({
     coverage: {
       provider: "v8",
       include: ["src/**/*.{ts,tsx}"],
-      exclude: ["src/**/*.test-*.{ts,tsx}", "src/**/*.styled.ts", "src/env.d.ts", "src/main.tsx"],
+      exclude: ["src/**/*.test-*.{ts,tsx}", "src/env.d.ts", "src/main.tsx"],
     },
     projects: [
       {
@@ -24,10 +23,11 @@ export default defineConfig({
         },
       },
       {
-        // Compiles the S2 `style` macro (used in *.styled.ts) for components imported by browser
-        // tests. Project-level so it actually runs (root plugins don't propagate into projects);
-        // without it the uncompiled macro calls Node's fileURLToPath and crashes in the browser.
-        plugins: [macros.vite()],
+        // React Aria hooks (e.g. useMove in Cell) must share ONE React instance with the test
+        // renderer; without deduping + pre-bundling, the browser optimizer hands react-aria a second
+        // React and its hooks hit a null dispatcher.
+        resolve: { dedupe: ["react", "react-dom"] },
+        optimizeDeps: { include: ["react-aria", "react", "react-dom"] },
         test: {
           name: "browser",
           include: ["src/**/*.test-browser.{ts,tsx}"],

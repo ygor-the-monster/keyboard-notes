@@ -3,8 +3,9 @@
   --metro-card-w: 280px;
   position: relative;
   display: flex;
+  flex-direction: row-reverse; /* card left, tab right — dock anchors to the left screen edge */
   align-items: flex-start;
-  transform: translateX(var(--metro-card-w));
+  transform: translateX(calc(-1 * var(--metro-card-w)));
   transition: transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
 }
 .metroDock.open {
@@ -24,7 +25,7 @@
   cursor: pointer;
   color: #fff;
   background: var(--s-magenta);
-  border-radius: var(--radius) 0 0 var(--radius);
+  border-radius: 0 var(--radius) var(--radius) 0;
   box-shadow: var(--shadow-pop);
 }
 .metroTabLabel {
@@ -65,9 +66,9 @@
   --accent-ring: var(--s-magenta-ring);
   background: var(--surface);
   border: 1px solid var(--s-line);
-  border-right: none;
+  border-left: none;
   box-shadow: var(--shadow-pop);
-  border-radius: 0 0 0 var(--radius);
+  border-radius: 0 0 var(--radius) 0;
   padding: 20px;
   display: flex;
   flex-direction: column;

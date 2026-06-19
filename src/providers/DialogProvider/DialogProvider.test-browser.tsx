@@ -9,20 +9,17 @@ import {
   fireEvent,
 } from "@testing-library/react";
 import type { ReactNode } from "react";
-import { Provider } from "@react-spectrum/s2";
 import { I18nProvider } from "../I18nProvider/I18nProvider.tsx";
 import { DialogProvider, useDialog } from "./DialogProvider.tsx";
 
 afterEach(cleanup);
 
-// Promise-based confirm/alert backed by the real S2 AlertDialog — needs a browser to render the
-// modal overlay and dispatch real presses. DialogProvider reads useI18n, so it sits inside I18n.
+// Promise-based confirm/alert backed by a React Aria modal — needs a browser to render the modal
+// overlay and dispatch real presses. DialogProvider reads useI18n, so it sits inside I18n.
 const wrapper = ({ children }: { children: ReactNode }) => (
-  <Provider background="base" colorScheme="light">
-    <I18nProvider>
-      <DialogProvider>{children}</DialogProvider>
-    </I18nProvider>
-  </Provider>
+  <I18nProvider>
+    <DialogProvider>{children}</DialogProvider>
+  </I18nProvider>
 );
 
 const dialogButton = async (name: RegExp | string) => {

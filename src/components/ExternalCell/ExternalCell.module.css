@@ -1,0 +1,188 @@
+.col {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+/* Empty-state URL form — input + embed button on one row. */
+.addForm {
+  display: flex;
+  gap: 8px;
+  width: 100%;
+  max-width: 460px;
+}
+.urlInput,
+.titleInput {
+  flex: 1;
+  min-width: 0;
+  font-family: var(--font-ui);
+  font-size: 0.95rem;
+  color: var(--s-ink);
+  background: var(--canvas);
+  border: 1px solid var(--s-line);
+  border-radius: var(--radius-sm);
+  padding: 9px 12px;
+}
+.urlInput:focus,
+.titleInput:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-ring);
+}
+
+/* Edit bar above the rendered link — retitle + change-link. */
+.editBar {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+/* Embedded provider — video frames take an aspect-ratio (inline), audio widgets a fixed height. */
+.embedWrap {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  align-self: flex-start;
+  max-width: 100%;
+  font-family: var(--font-ui);
+  font-size: 0.8rem;
+  color: var(--s-ink-muted);
+}
+.chipLabel {
+  font-weight: 600;
+  color: var(--s-ink);
+}
+.chipTitle {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.chipTitle::before {
+  content: "·";
+  margin: 0 6px;
+  color: var(--s-line-strong);
+}
+.frameWrap {
+  position: relative;
+  width: 100%;
+  border: 1px solid var(--s-line);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+}
+.videoFrame {
+  background: #000;
+}
+.audioFrame {
+  background: var(--canvas);
+}
+.pageFrame {
+  background: var(--surface);
+}
+/* Footer under an attempted generic-page frame — the escape hatch when a frame refuses to render. */
+.frameFooter {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  align-self: flex-start;
+  max-width: 100%;
+  font-family: var(--font-ui);
+  font-size: 0.82rem;
+  color: var(--accent-strong);
+  text-decoration: none;
+}
+.frameFooter:hover {
+  text-decoration: underline;
+}
+.frameFooterText {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.frame {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border: 0;
+}
+.audioFrame .frame {
+  position: static;
+}
+
+/* Generic page — tappable link card. */
+.linkCard {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 16px;
+  text-decoration: none;
+  color: var(--s-ink);
+  background: var(--accent-tint);
+  border: 1px solid var(--s-line);
+  border-radius: var(--radius-sm);
+  transition: border-color 0.15s ease;
+}
+.linkCard:hover {
+  border-color: var(--accent);
+}
+.linkIcon {
+  flex: none;
+  color: var(--accent-strong);
+}
+.linkText {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+  flex: 1;
+}
+.linkTitle {
+  font-family: var(--font-content);
+  font-weight: 600;
+  font-size: 1rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.linkUrl {
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+  color: var(--s-ink-muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Offline fallback — illustration + message + raw link. */
+.offline {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  text-align: center;
+  padding: 24px 16px;
+  background: var(--canvas);
+  border: 1px dashed var(--s-line-strong);
+  border-radius: var(--radius-sm);
+}
+.offlineArt {
+  width: min(220px, 60%);
+  height: auto;
+  opacity: 0.9;
+}
+.offlineMsg {
+  font-family: var(--font-content);
+  font-size: 1rem;
+  color: var(--s-ink);
+}
+.rawLink {
+  font-family: var(--font-mono);
+  font-size: 0.82rem;
+  color: var(--accent-strong);
+  word-break: break-all;
+}

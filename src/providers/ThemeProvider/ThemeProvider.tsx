@@ -1,13 +1,10 @@
 import { createContext, useContext, useEffect, useMemo, type ReactNode } from "react";
-import { Provider } from "@react-spectrum/s2";
-import "@react-spectrum/s2/page.css";
 import { IconContext } from "@phosphor-icons/react";
 import { usePref } from "../StoreProvider/StoreProvider.utils.ts";
 import "./ThemeProvider.globals.css";
 
-// App theme: Spectrum 2 + thin Phosphor icons + the global design-token layer. The colour scheme
-// (light/dark) persists in localStorage and drives both S2 components (via the Provider) and the
-// manuscript token layer (via [data-color-scheme] on <html>).
+// App theme: thin Phosphor icons + the global design-token layer. The colour scheme (light/dark)
+// persists in localStorage and drives the manuscript token layer via [data-color-scheme] on <html>.
 export interface ThemeValue {
   scheme: string;
   setScheme: (next: string | ((prev: string) => string)) => void;
@@ -26,6 +23,10 @@ export default function ThemeProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     document.documentElement.dataset.colorScheme = scheme;
+    // Keep the browser/PWA toolbar (theme-color) in sync with the user's chosen scheme —
+    // values mirror --canvas in ThemeProvider.globals.css.
+    const themeColor = scheme === "dark" ? "#181715" : "#f6f5f1";
+    document.querySelector('meta[name="theme-color"]')?.setAttribute("content", themeColor);
   }, [scheme]);
 
   const value = useMemo<ThemeValue>(
@@ -38,12 +39,8 @@ export default function ThemeProvider({ children }: { children: ReactNode }) {
   );
 
   return (
-    <Provider background="base" colorScheme={scheme as "light" | "dark"}>
-      <ThemeContext.Provider value={value}>
-        <IconContext.Provider value={{ weight: "light", size: 20 }}>
-          {children}
-        </IconContext.Provider>
-      </ThemeContext.Provider>
-    </Provider>
+    <ThemeContext.Provider value={value}>
+      <IconContext.Provider value={{ weight: "light", size: 20 }}>{children}</IconContext.Provider>
+    </ThemeContext.Provider>
   );
 }

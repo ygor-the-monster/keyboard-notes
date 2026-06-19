@@ -1,0 +1,201 @@
+/* Pull-tab dock — mirrors the scratchpad/metronome docks. Silver accent: a utility, not content. */
+.dock {
+  --card-w: 260px;
+  position: relative;
+  display: flex;
+  flex-direction: row-reverse; /* card left, tab right — dock anchors to the left screen edge */
+  align-items: flex-start;
+  transform: translateX(calc(-1 * var(--card-w)));
+  transition: transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+.dock.open {
+  transform: translateX(0);
+}
+.tab {
+  flex: none;
+  width: 42px;
+  align-self: flex-start;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  padding: 16px 0 18px;
+  border: none;
+  cursor: pointer;
+  color: #fff;
+  background: var(--s-silver);
+  border-radius: 0 var(--radius) var(--radius) 0;
+  box-shadow: var(--shadow-pop);
+}
+.dock.running .tab {
+  animation: goal-pulse 0.9s ease-in-out infinite alternate;
+}
+@keyframes goal-pulse {
+  from {
+    box-shadow: var(--shadow-pop);
+  }
+  to {
+    box-shadow:
+      var(--shadow-pop),
+      0 0 0 4px var(--s-silver-ring);
+  }
+}
+.tabLabel {
+  writing-mode: vertical-rl;
+  text-orientation: mixed;
+  font-family: var(--font-ui);
+  font-weight: 600;
+  font-size: 0.78rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+.tabCount {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  font-weight: 500;
+  padding: 2px 0;
+  opacity: 0.85;
+}
+.card {
+  width: var(--card-w);
+  --accent: var(--s-silver);
+  --accent-strong: var(--s-silver-strong);
+  --accent-ring: var(--s-silver-ring);
+  background: var(--surface);
+  border: 1px solid var(--s-line);
+  border-left: none;
+  box-shadow: var(--shadow-pop);
+  border-radius: 0 0 var(--radius) 0;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  overflow: hidden;
+  max-height: 420px;
+  transition:
+    max-height 0.4s cubic-bezier(0.2, 0.8, 0.2, 1),
+    padding 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+.dock:not(.open) .card {
+  max-height: 0;
+  padding-top: 0;
+  padding-bottom: 0;
+  border-top: none;
+  border-bottom: none;
+}
+.head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--font-content);
+  font-weight: 600;
+  font-size: 1.05rem;
+  color: var(--s-ink);
+}
+.time {
+  font-family: var(--font-mono);
+  font-size: 2.2rem;
+  font-weight: 600;
+  text-align: center;
+  color: var(--s-ink);
+  font-variant-numeric: tabular-nums;
+}
+.reachedTime {
+  color: var(--s-seafoam);
+}
+.bar {
+  height: 8px;
+  border-radius: var(--radius-pill);
+  background: var(--s-neutral-tint);
+  overflow: hidden;
+}
+.barFill {
+  height: 100%;
+  border-radius: var(--radius-pill);
+  background: var(--accent-strong);
+  transition: width 0.4s ease;
+}
+.reached {
+  text-align: center;
+  font-family: var(--font-ui);
+  font-weight: 600;
+  font-size: 0.9rem;
+  color: var(--s-seafoam);
+}
+.controls {
+  display: flex;
+  gap: 8px;
+}
+.primary,
+.secondary {
+  flex: 1;
+  font-family: var(--font-ui);
+  font-size: 0.95rem;
+  font-weight: 600;
+  border-radius: var(--radius-pill);
+  padding: 9px 0;
+  cursor: pointer;
+  transition:
+    background 0.15s ease,
+    border-color 0.15s ease;
+}
+.primary {
+  color: #fff;
+  background: var(--accent-strong);
+  border: 1px solid transparent;
+}
+.secondary {
+  color: var(--s-ink);
+  background: var(--s-neutral-tint);
+  border: 1px solid var(--s-line);
+}
+.secondary:hover {
+  border-color: var(--s-line-strong);
+}
+.primary:disabled,
+.secondary:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+.goalRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--font-ui);
+  font-size: 0.9rem;
+  color: var(--s-ink);
+}
+.goalLabel {
+  flex: 1;
+  color: var(--s-ink-muted);
+}
+.goalValue {
+  min-width: 56px;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+}
+.step {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: var(--radius-pill);
+  border: 1px solid var(--s-line);
+  background: var(--canvas);
+  color: var(--s-ink);
+  cursor: pointer;
+}
+.step:hover {
+  border-color: var(--s-line-strong);
+}
+@media (prefers-reduced-motion: reduce) {
+  .dock,
+  .card,
+  .barFill {
+    transition: none;
+  }
+  .dock.running .tab {
+    animation: none;
+  }
+}

@@ -1,10 +1,10 @@
 import { useState } from "react";
-import { Picker, PickerItem, Slider } from "@react-spectrum/s2";
 import { WaveformIcon as Waveform } from "@phosphor-icons/react";
 import { useI18n } from "../../providers/I18nProvider/I18nProvider.tsx";
 import { usePref } from "../../providers/StoreProvider/StoreProvider.utils.ts";
 import { useDrone } from "./Drone.hooks.ts";
-import { fullWidth } from "./Drone.styled.ts";
+import { Select, SelectItem } from "../fields/Select.tsx";
+import { Slider } from "../fields/Slider.tsx";
 import shared from "../../providers/ThemeProvider/ThemeProvider.module.css";
 import s from "./Drone.module.css";
 
@@ -45,30 +45,28 @@ export default function Drone() {
           <span>{t("drone.name")}</span>
         </div>
         <div className={s.row}>
-          <Picker
+          <Select
             label={t("drone.note")}
             selectedKey={String(note)}
             onSelectionChange={(k) => setNote(Number(k))}
-            styles={fullWidth}
           >
             {NOTES.map((n, i) => (
-              <PickerItem key={i} id={String(i)}>
+              <SelectItem key={i} id={String(i)}>
                 {n}
-              </PickerItem>
+              </SelectItem>
             ))}
-          </Picker>
-          <Picker
+          </Select>
+          <Select
             label={t("drone.octave")}
             selectedKey={String(octave)}
             onSelectionChange={(k) => setOctave(Number(k))}
-            styles={fullWidth}
           >
             {OCTAVES.map((o) => (
-              <PickerItem key={o} id={String(o)}>
+              <SelectItem key={o} id={String(o)}>
                 {String(o)}
-              </PickerItem>
+              </SelectItem>
             ))}
-          </Picker>
+          </Select>
         </div>
         <Slider
           label={t("drone.volume")}
@@ -77,13 +75,13 @@ export default function Drone() {
           step={0.05}
           value={volume}
           onChange={setVolume}
-          styles={fullWidth}
+          format={(v) => `${Math.round(v * 100)}%`}
         />
         <button
           type="button"
           className={`${shared.btnMagenta} ${s.start}`}
           onClick={toggle}
-          style={playing ? { background: "var(--s-purple-strong)" } : undefined}
+          style={playing ? { background: "var(--accent-strong)" } : undefined}
         >
           {playing ? t("drone.stop") : t("drone.play")}
         </button>

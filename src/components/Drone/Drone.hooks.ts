@@ -1,9 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { startTone, type Voice } from "../../utils/audioEngine/audioEngine.ts";
-
-// Note index (0 = C) + octave → frequency, via equal temperament around A4 = 440 Hz.
-const freqOf = (noteIdx: number, octave: number): number =>
-  440 * 2 ** (((octave + 1) * 12 + noteIdx - 69) / 12);
+import { noteToFreq } from "../../utils/pitch/pitch.ts";
 
 // Sustained reference pitch (drone) for intonation / ear-training. Wraps one engine Voice and
 // keeps its frequency / volume in sync while sounding; click-free ramps live in the engine.
@@ -21,7 +18,7 @@ export function useDrone({
 
   function start() {
     if (voiceRef.current) return;
-    voiceRef.current = startTone({ freq: freqOf(note, octave), gain: volume });
+    voiceRef.current = startTone({ freq: noteToFreq(note, octave), gain: volume });
     setPlaying(true);
   }
   function stop() {
@@ -33,7 +30,7 @@ export function useDrone({
 
   // Live-update frequency / volume while sounding.
   useEffect(() => {
-    voiceRef.current?.setFrequency(freqOf(note, octave));
+    voiceRef.current?.setFrequency(noteToFreq(note, octave));
   }, [note, octave]);
   useEffect(() => {
     voiceRef.current?.setGain(volume);

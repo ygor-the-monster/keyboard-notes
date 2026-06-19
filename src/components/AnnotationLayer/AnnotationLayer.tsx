@@ -6,6 +6,8 @@ import {
   thicknessFraction,
 } from "./AnnotationLayer.utils.ts";
 import type { AnnotationStroke } from "../../utils/cellKinds/cellKinds.ts";
+import { setupCanvas } from "../../utils/canvas/canvas.ts";
+import { normalizePointer } from "../../utils/pointer/pointer.ts";
 import css from "./AnnotationLayer.module.css";
 
 // A transparent canvas that captures freehand strokes and renders them in normalised coordinates
@@ -42,12 +44,7 @@ export default function AnnotationLayer({
     const rect = cv.getBoundingClientRect();
     const w = rect.width || 1;
     const h = rect.height || 1;
-    const dpr = Math.min(window.devicePixelRatio || 1, 2);
-    cv.width = Math.round(w * dpr);
-    cv.height = Math.round(h * dpr);
-    const ctx = cv.getContext("2d")!;
-    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-    ctx.clearRect(0, 0, w, h);
+    const ctx = setupCanvas(cv, w, h);
     drawStrokes(ctx, workingRef.current, w, h);
     if (liveRef.current) drawStroke(ctx, liveRef.current, w, h);
   }
@@ -63,11 +60,7 @@ export default function AnnotationLayer({
   }, [strokes]);
 
   function norm(e: ReactPointerEvent): [number, number] {
-    const rect = canvasRef.current!.getBoundingClientRect();
-    return [
-      Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width)),
-      Math.max(0, Math.min(1, (e.clientY - rect.top) / rect.height)),
-    ];
+    return normalizePointer(e, canvasRef.current!);
   }
 
   function eraseAt(pt: [number, number]) {

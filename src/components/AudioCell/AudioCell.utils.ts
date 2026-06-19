@@ -3,7 +3,7 @@
 // re-encode — splice / trim / delete — since the browser can't re-encode to opus offline).
 import { output } from "../../utils/audioEngine/audioEngine.ts";
 import type { Mark } from "../../utils/cellKinds/cellKinds.ts";
-export { fileToDataUrl } from "../../utils/fileToDataUrl/fileToDataUrl.ts";
+export { fileToDataUrl, dataUrlSizeMB } from "../../utils/fileToDataUrl/fileToDataUrl.ts";
 
 // Audio-cell decode + buffer math run on the shared output context from the engine.
 export function audioCtx(): AudioContext {

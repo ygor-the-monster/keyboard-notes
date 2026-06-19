@@ -10,6 +10,7 @@ import {
   ImageIcon,
   FilePdfIcon as FilePdf,
   WaveformIcon as Waveform,
+  ArrowSquareOutIcon as ArrowSquareOut,
 } from "@phosphor-icons/react";
 import type { Cell, Kind } from "../cellKinds/cellKinds.ts";
 import NoteCell from "../../components/NoteCell/NoteCell.tsx";
@@ -18,6 +19,7 @@ import CifraCell from "../../components/CifraCell/CifraCell.tsx";
 import ImageCell from "../../components/ImageCell/ImageCell.tsx";
 import PdfCell from "../../components/PdfCell/PdfCell.tsx";
 import AudioCell from "../../components/AudioCell/AudioCell.tsx";
+import ExternalCell from "../../components/ExternalCell/ExternalCell.tsx";
 
 export interface CellView {
   component: ComponentType<{ cell: Cell; editing: boolean }>;
@@ -25,7 +27,11 @@ export interface CellView {
   tagLabelKey: string; // i18n key for the Cell tag (cell.*)
   addLabelKey: string; // i18n key for the AddBar button (addbar.*)
   typeClass: string; // class name in Cell.module.css
-  accent: { c: string; ct: string }; // AddBar CSS custom-property names
+  // The kind's rainbow hue, as Spectrum CSS custom-property names: `base` (the AddBar fill and the
+  // undo-toast accent), `tint` (the AddBar wash), `strong` (the undo-toast's stronger accent). Gold
+  // is pale, so its `base` is the -strong variant to stay legible. Single source — App and AddBar
+  // both read here, so the hue can't drift across them.
+  hue: { base: string; tint: string; strong: string };
 }
 
 // Typed `Record<Kind, …>`, so a Kind without a view entry is a compile error under tsgo — this
@@ -37,7 +43,7 @@ export const cellRegistry: Record<Kind, CellView> = {
     tagLabelKey: "cell.note",
     addLabelKey: "addbar.note",
     typeClass: "typeNote",
-    accent: { c: "--s-purple", ct: "--s-purple-tint" },
+    hue: { base: "--s-purple", tint: "--s-purple-tint", strong: "--s-purple-strong" },
   },
   score: {
     component: ScoreCell as CellView["component"],
@@ -45,7 +51,7 @@ export const cellRegistry: Record<Kind, CellView> = {
     tagLabelKey: "cell.score",
     addLabelKey: "addbar.score",
     typeClass: "typeScore",
-    accent: { c: "--s-magenta", ct: "--s-magenta-tint" },
+    hue: { base: "--s-magenta", tint: "--s-magenta-tint", strong: "--s-magenta-strong" },
   },
   cifra: {
     // Cast: each cell narrows its own kind; the registry dispatches by kind, so this is safe.
@@ -54,7 +60,7 @@ export const cellRegistry: Record<Kind, CellView> = {
     tagLabelKey: "cell.cifra",
     addLabelKey: "addbar.cifra",
     typeClass: "typeCifra",
-    accent: { c: "--s-cinnamon", ct: "--s-cinnamon-tint" },
+    hue: { base: "--s-cinnamon", tint: "--s-cinnamon-tint", strong: "--s-cinnamon-strong" },
   },
   image: {
     component: ImageCell as CellView["component"],
@@ -62,7 +68,7 @@ export const cellRegistry: Record<Kind, CellView> = {
     tagLabelKey: "cell.image",
     addLabelKey: "addbar.image",
     typeClass: "typeImage",
-    accent: { c: "--s-seafoam", ct: "--s-seafoam-tint" },
+    hue: { base: "--s-seafoam", tint: "--s-seafoam-tint", strong: "--s-seafoam-strong" },
   },
   pdf: {
     component: PdfCell as CellView["component"],
@@ -70,7 +76,7 @@ export const cellRegistry: Record<Kind, CellView> = {
     tagLabelKey: "cell.pdf",
     addLabelKey: "addbar.pdf",
     typeClass: "typePdf",
-    accent: { c: "--s-blue", ct: "--s-blue-tint" },
+    hue: { base: "--s-blue", tint: "--s-blue-tint", strong: "--s-blue-strong" },
   },
   audio: {
     component: AudioCell as CellView["component"],
@@ -78,9 +84,28 @@ export const cellRegistry: Record<Kind, CellView> = {
     tagLabelKey: "cell.audio",
     addLabelKey: "addbar.audio",
     typeClass: "typeAudio",
-    accent: { c: "--s-gold-strong", ct: "--s-gold-tint" },
+    // Gold is pale: `base` uses the -strong variant so the fill and accent stay legible.
+    hue: { base: "--s-gold-strong", tint: "--s-gold-tint", strong: "--s-gold-strong" },
+  },
+  external: {
+    component: ExternalCell as CellView["component"],
+    icon: ArrowSquareOut,
+    tagLabelKey: "cell.external",
+    addLabelKey: "addbar.external",
+    typeClass: "typeExternal",
+    // Silver — the one achromatic kind: External points outside the notebook, so it stays out of
+    // the rainbow reserved for native content (see ThemeProvider.globals.css).
+    hue: { base: "--s-silver", tint: "--s-silver-tint", strong: "--s-silver-strong" },
   },
 };
 
 // AddBar's rainbow order — distinct from KINDS order, so it's listed explicitly.
-export const ADD_BAR_ORDER: readonly Kind[] = ["score", "cifra", "audio", "image", "pdf", "note"];
+export const ADD_BAR_ORDER: readonly Kind[] = [
+  "score",
+  "cifra",
+  "audio",
+  "image",
+  "pdf",
+  "note",
+  "external",
+];

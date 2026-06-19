@@ -28,12 +28,12 @@ describe("Cell (dispatch + chrome)", () => {
     expect(screen.getByText("Chords")).toBeTruthy(); // t("cell.cifra")
   });
 
-  it("gates deletion behind a confirmation dialog", async () => {
+  it("deletes on tap without a confirmation dialog (recoverable via the undo toast)", () => {
     const { container } = renderWithProviders(<Cell cell={note("x")} />);
     const del = container.querySelector<HTMLElement>('[aria-label="Delete cell"]');
     expect(del).not.toBeNull();
     fireEvent.click(del!);
-    // The delete is gated behind the confirmation dialog rather than firing immediately.
-    expect(await screen.findByText("Delete this cell?")).toBeTruthy();
+    // No confirmation gate — deletion fires immediately; undo is offered via a toast instead.
+    expect(screen.queryByText("Delete this cell?")).toBeNull();
   });
 });

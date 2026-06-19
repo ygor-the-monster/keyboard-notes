@@ -1,21 +1,31 @@
-import { useRef, useState } from "react";
-import { Slider, Picker, PickerItem } from "@react-spectrum/s2";
+import { useEffect, useRef, useState } from "react";
 import { MetronomeIcon, HandTapIcon as HandTap } from "@phosphor-icons/react";
 import { useMetronome } from "./Metronome.hooks.ts";
 import { useI18n } from "../../providers/I18nProvider/I18nProvider.tsx";
 import { usePref } from "../../providers/StoreProvider/StoreProvider.utils.ts";
-import { fullWidth } from "./Metronome.styled.ts";
+import { clamp } from "../../utils/numeric/numeric.ts";
+import { Select, SelectItem } from "../fields/Select.tsx";
+import { Slider } from "../fields/Slider.tsx";
 import shared from "../../providers/ThemeProvider/ThemeProvider.module.css";
 import m from "./Metronome.module.css";
 
 // A floating utility dock pinned to the right edge: an agenda-style tab that
 // slides the metronome card in and out. Tempo / time signature persist (localStorage).
-export default function Metronome() {
+export default function Metronome({ autostart = false }: { autostart?: boolean }) {
   const { t } = useI18n();
   const [open, setOpen] = useState(false);
   const [bpm, setBpm] = usePref("metro.bpm", 90);
   const [beats, setBeats] = usePref("metro.beats", 4);
-  const { running, toggle } = useMetronome({ bpm, beats });
+  const { running, start, toggle } = useMetronome({ bpm, beats });
+
+  // Launched via the "Metronome" app shortcut (?tool=metronome): open the panel and start ticking.
+  // start() is idempotent, so the effect re-running is harmless.
+  useEffect(() => {
+    if (autostart) {
+      setOpen(true);
+      start();
+    }
+  }, [autostart, start]);
 
   // Tap tempo — average the intervals of recent taps; a gap > 2s starts a fresh count.
   const tapsRef = useRef<number[]>([]);
@@ -26,7 +36,7 @@ export default function Metronome() {
     tapsRef.current = taps;
     if (taps.length >= 2) {
       const avg = (taps[taps.length - 1] - taps[0]) / (taps.length - 1);
-      setBpm(Math.max(40, Math.min(220, Math.round(60000 / avg))));
+      setBpm(clamp(Math.round(60000 / avg), 40, 220));
     }
   }
 
@@ -59,19 +69,18 @@ export default function Metronome() {
           maxValue={220}
           value={bpm}
           onChange={setBpm}
-          styles={fullWidth}
+          format={(v) => `${v} BPM`}
         />
-        <Picker
+        <Select
           label={t("metronome.timeSignature")}
           selectedKey={String(beats)}
           onSelectionChange={(k) => setBeats(Number(k))}
-          styles={fullWidth}
         >
-          <PickerItem id="4">4/4</PickerItem>
-          <PickerItem id="3">3/4</PickerItem>
-          <PickerItem id="2">2/4</PickerItem>
-          <PickerItem id="6">6/8</PickerItem>
-        </Picker>
+          <SelectItem id="4">4/4</SelectItem>
+          <SelectItem id="3">3/4</SelectItem>
+          <SelectItem id="2">2/4</SelectItem>
+          <SelectItem id="6">6/8</SelectItem>
+        </Select>
         <div className={m.metroButtons}>
           <button type="button" className={m.metroTap} onClick={tap}>
             <HandTap size={18} aria-hidden />
@@ -81,7 +90,7 @@ export default function Metronome() {
             type="button"
             className={`${shared.btnMagenta} ${m.metroStart}`}
             onClick={toggle}
-            style={running ? { background: "var(--s-seafoam-strong)" } : undefined}
+            style={running ? { background: "var(--accent-strong)" } : undefined}
           >
             {running ? t("metronome.stop") : t("metronome.start")}
           </button>

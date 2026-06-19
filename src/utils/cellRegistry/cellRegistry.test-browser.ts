@@ -3,7 +3,7 @@ import { cellRegistry, ADD_BAR_ORDER } from "./cellRegistry.tsx";
 import { KINDS } from "../cellKinds/cellKinds.ts";
 
 // The registry is typed Record<Kind, CellView>, so a missing kind is already a compile error.
-// These runtime checks guard the *shape* of each entry (component/icon/keys/accent) and that the
+// These runtime checks guard the *shape* of each entry (component/icon/keys/hue) and that the
 // AddBar order stays a permutation of KINDS — things types alone don't enforce.
 describe("cellRegistry", () => {
   it("has a complete, well-formed view entry for every Kind", () => {
@@ -14,8 +14,9 @@ describe("cellRegistry", () => {
       expect(view.tagLabelKey).toMatch(/^cell\./);
       expect(view.addLabelKey).toMatch(/^addbar\./);
       expect(view.typeClass).toMatch(/^type/);
-      expect(view.accent.c).toMatch(/^--s-/);
-      expect(view.accent.ct).toMatch(/^--s-/);
+      expect(view.hue.base).toMatch(/^--s-/);
+      expect(view.hue.tint).toMatch(/^--s-/);
+      expect(view.hue.strong).toMatch(/^--s-/);
     }
   });
 

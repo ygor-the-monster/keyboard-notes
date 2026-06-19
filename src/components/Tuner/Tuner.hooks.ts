@@ -1,33 +1,17 @@
 import { useEffect, useRef, useState } from "react";
+import { toast } from "../Toasts/toasts.ts";
 import { PitchDetector } from "pitchy";
-import { useDialog } from "../../providers/DialogProvider/DialogProvider.tsx";
+import { useI18n } from "../../providers/I18nProvider/I18nProvider.tsx";
+import { freqToNote, type NoteReading } from "../../utils/pitch/pitch.ts";
 
-const NOTE_NAMES = ["C", "C♯", "D", "D♯", "E", "F", "F♯", "G", "G♯", "A", "A♯", "B"];
-
-export interface NoteReading {
-  note: string;
-  octave: number;
-  cents: number;
-}
 export interface TunerReading extends NoteReading {
   hz: number;
-}
-
-// Hz → { note, octave, cents } via the equal-tempered scale, referenced to a tunable A4.
-export function hzToNote(hz: number, a4 = 440): NoteReading {
-  const midi = 69 + 12 * Math.log2(hz / a4);
-  const nearest = Math.round(midi);
-  return {
-    note: NOTE_NAMES[((nearest % 12) + 12) % 12],
-    octave: Math.floor(nearest / 12) - 1,
-    cents: Math.round((midi - nearest) * 100),
-  };
 }
 
 // Live pitch detection from the microphone (via pitchy). `a4` is the reference pitch (e.g. 440 or
 // 442). The Tuner keeps its own input AudioContext (closed on stop to free the mic).
 export function useTuner(a4 = 440) {
-  const { alert } = useDialog();
+  const { t } = useI18n();
   const [listening, setListening] = useState(false);
   const [reading, setReading] = useState<TunerReading | null>(null);
   const ctxRef = useRef<AudioContext | null>(null);
@@ -69,16 +53,13 @@ export function useTuner(a4 = 440) {
         analyser.getFloatTimeDomainData(buf);
         const [hz, clarity] = detector.findPitch(buf, ctx.sampleRate);
         if (clarity > 0.92 && hz > 40 && hz < 2000) {
-          setReading({ ...hzToNote(hz, a4Ref.current), hz: Math.round(hz) });
+          setReading({ ...freqToNote(hz, a4Ref.current), hz: Math.round(hz) });
         }
         rafRef.current = requestAnimationFrame(loop);
       };
       rafRef.current = requestAnimationFrame(loop);
     } catch {
-      alert({
-        title: "Microphone unavailable",
-        message: "Permission denied or no microphone found.",
-      });
+      toast.negative(t("audio.micUnavailableMsg"));
     }
   }
 
