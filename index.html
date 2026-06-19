@@ -11,8 +11,10 @@
       content="A practice notebook for people learning an instrument — notes, engraved staves you can hear, chord charts, recordings, and sheet-music PDFs in one lesson."
     />
     <!-- Scalable sticker favicon; raster app-icon links are injected at build by
-         vite-plugin-pwa from public/icon-detailed.png -->
-    <link rel="icon" type="image/svg+xml" href="/icons/icon-simple.svg" />
+         vite-plugin-pwa from public/icon-detailed.png. `sizes="any"` marks the SVG
+         as resolution-independent so browsers prefer it over the build-injected
+         favicon.ico (sizes="48x48") even for tiny 16px tab icons. -->
+    <link rel="icon" type="image/svg+xml" sizes="any" href="/icons/icon-simple.svg" />
     <!-- Fonts are self-hosted (public/fonts/) and declared via @font-face in
          ThemeProvider.globals.css — no render-blocking external request. -->
   </head>
