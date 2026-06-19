@@ -12,7 +12,7 @@
 import sharp from "sharp";
 
 const CANVAS = 1024; // native source resolution — compose and emit at this size
-const FG_HEIGHT = 680; // ~66% of canvas — keeps the artwork (incl. corners) inside the round-mask safe circle
+const FG_HEIGHT = 780; // ~76% of canvas — fills the icon while staying inside the 80% round-mask safe circle
 const SIZES = [1024, 512]; // manifest references both (icons/maskable-icon-<size>x<size>.png)
 
 const bg = await sharp("public/icons/icon-bg.png")

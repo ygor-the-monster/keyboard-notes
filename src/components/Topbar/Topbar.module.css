@@ -74,6 +74,34 @@
   letter-spacing: 0.01em;
   color: var(--s-ink);
 }
+/* Phones / small tablets: the brand word, lesson switcher, title and up to six
+   tool icons can't share one row. Stack the title onto its own full-width row so
+   the toolbar stops crushing it. Matches CellRail's 760px breakpoint. */
+@media (max-width: 760px) {
+  .bar {
+    flex-wrap: wrap;
+    column-gap: 8px;
+    row-gap: 10px;
+    padding: 10px 14px;
+  }
+  /* Keep the logo as the brand anchor; drop the word to free up row-1 space. */
+  .brandWord {
+    display: none;
+  }
+  /* Dividers only read as dividers within a single row. */
+  .vDivider {
+    display: none;
+  }
+  /* Title wraps to its own second row, full width. */
+  .titleField {
+    order: 1;
+    flex-basis: 100%;
+  }
+  /* Anchor the actions to the right edge — classic app-bar rhythm. */
+  .tools {
+    margin-left: auto;
+  }
+}
 @media (prefers-reduced-motion: reduce) {
   .topbar {
     animation: none;

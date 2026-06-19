@@ -56,9 +56,32 @@ export default defineConfig({
             purpose: "monochrome",
           },
         ],
+        // Stable install identity, decoupled from start_url/scope — so changing the
+        // GitHub Pages path later doesn't make the OS treat this as a brand-new app.
+        id: "./",
         name: "Keyboard Notes",
         short_name: "Keyboard Notes",
         description: "A practice notebook for people learning an instrument — notes, engraved staves you can hear, chord charts, recordings, and sheet-music PDFs in one lesson.",
+        categories: ["music", "education", "productivity"],
+        // Shown in Android/Chromium's rich install dialog. Needs both a wide
+        // (desktop) and narrow (mobile) form factor to trigger the richer UI;
+        // captured from a real lesson via scripts/playwright, not mockups.
+        screenshots: [
+          {
+            src: "screenshots/lesson-wide.png",
+            sizes: "1440x900",
+            type: "image/png",
+            form_factor: "wide",
+            label: "A lesson mixing notes, an engraved playable staff, and a chord chart",
+          },
+          {
+            src: "screenshots/lesson-narrow.png",
+            sizes: "412x915",
+            type: "image/png",
+            form_factor: "narrow",
+            label: "The same lesson on a phone",
+          },
+        ],
         // Static fallback (manifests can't track color-scheme); the app boots light and
         // ThemeProvider updates the live <meta name="theme-color"> to follow the user's scheme.
         theme_color: "#f6f5f1",
@@ -121,10 +144,16 @@ export default defineConfig({
         // Include .mjs so the pdf.js worker (pdf.worker.min-*.mjs) is precached and PDFs
         // render offline. 4 MB cap covers the ~1.2 MB worker.
         globPatterns: ["**/*.{js,mjs,css,html,svg,png,ico,woff2,otf}"],
-        // These are build-time SOURCE images (inputs to the icon generators), not runtime
-        // assets — nothing in the app or manifest references them. They're still emitted to
-        // dist, but excluding them from the precache saves users a ~700 KB download on install.
-        globIgnores: ["icon-detailed.png", "icons/icon-fg.png", "icons/icon-bg.png"],
+        // icon-detailed/icon-fg/icon-bg are build-time SOURCE images (inputs to the icon
+        // generators) that nothing references at runtime. The screenshots are only fetched
+        // by the OS at install time, never offline. Both are still emitted to dist but
+        // excluded from the precache, saving users ~900 KB on install.
+        globIgnores: [
+          "icon-detailed.png",
+          "icons/icon-fg.png",
+          "icons/icon-bg.png",
+          "screenshots/*.png",
+        ],
         maximumFileSizeToCacheInBytes: 4 * 1024 * 1024,
       },
       devOptions: { enabled: false },

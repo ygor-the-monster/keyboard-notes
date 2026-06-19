@@ -18,6 +18,14 @@ tuner, and drone. On your device, offline, installable like an app.
 
 ---
 
+<div align="center">
+
+<img src="public/screenshots/lesson-wide.png" alt="A Keyboard Notes lesson: a markdown note with practice checkboxes, an engraved playable grand staff, and a transposable chord chart" width="840" />
+
+<sub>One lesson, three cell kinds — a note with practice tasks, an engraved staff you can hear, and a transposable chord chart.</sub>
+
+</div>
+
 ## What it is
 
 Think of it like a Jupyter notebook, but for music practice. A **Lesson** is an
