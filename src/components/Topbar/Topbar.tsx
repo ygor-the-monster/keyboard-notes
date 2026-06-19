@@ -1,4 +1,4 @@
-import { useRef, type ChangeEvent } from "react";
+import { useEffect, useRef, type ChangeEvent } from "react";
 import {
   MenuTrigger,
   Menu,
@@ -53,6 +53,21 @@ export default function Topbar() {
   const { t, locale, setLocale, locales } = useI18n();
   const { scheme, toggle: toggleTheme } = useTheme();
   const fileRef = useRef<HTMLInputElement>(null);
+  const headerRef = useRef<HTMLElement>(null);
+
+  // Publish the bar's live height as --topbar-h so fixed overlays (the left utility dock) can sit
+  // below it. The bar is a permanent header (it never scrolls away), but its height changes between
+  // the one-row desktop layout and the two-row phone layout — measure rather than hard-code.
+  useEffect(() => {
+    const el = headerRef.current;
+    if (!el) return;
+    const setVar = () =>
+      document.documentElement.style.setProperty("--topbar-h", `${el.offsetHeight}px`);
+    setVar();
+    const ro = new ResizeObserver(setVar);
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
 
   const lessons = state.order.filter((id) => state.lessons[id]);
 
@@ -158,7 +173,7 @@ export default function Topbar() {
   }
 
   return (
-    <header className={`${s.topbar} no-print`}>
+    <header ref={headerRef} className={`${s.topbar} no-print`}>
       <div className={s.bar}>
         <span className={s.brandMark} aria-hidden>
           <img className={s.brandLogo} src={`${import.meta.env.BASE_URL}icons/icon-simple.svg`} alt="" />

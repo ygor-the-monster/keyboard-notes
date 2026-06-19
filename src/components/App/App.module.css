@@ -30,9 +30,11 @@
    so the cell rail can sit by the scrollbar.) */
 .utilityDock {
   position: fixed;
-  top: 0;
+  /* Sit below the permanent header (height published as --topbar-h by Topbar) so the dock tabs
+     can never overlap it — falls back to a sensible desktop height before the var is set. */
+  top: var(--topbar-h, 64px);
   left: 0;
-  height: 100dvh;
+  height: calc(100dvh - var(--topbar-h, 64px));
   z-index: 40;
   display: flex;
   flex-direction: column;
