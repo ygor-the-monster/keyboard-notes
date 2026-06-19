@@ -32,6 +32,15 @@ export default defineConfig({
           { src: "pwa-64x64.png", sizes: "64x64", type: "image/png" },
           { src: "pwa-192x192.png", sizes: "192x192", type: "image/png" },
           { src: "pwa-512x512.png", sizes: "512x512", type: "image/png", purpose: "any" },
+          // Two maskable sizes: tablets render the home-screen icon physically
+          // large at high DPI and pick the biggest maskable available, so the
+          // full-res 1024 keeps it crisp; the 512 is the fallback.
+          {
+            src: "icons/maskable-icon-1024x1024.png",
+            sizes: "1024x1024",
+            type: "image/png",
+            purpose: "maskable",
+          },
           {
             src: "icons/maskable-icon-512x512.png",
             sizes: "512x512",

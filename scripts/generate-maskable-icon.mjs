@@ -4,14 +4,16 @@
 //
 // Maskable icons are cropped by the OS into arbitrary shapes (circle, squircle,
 // rounded square). So the background must bleed edge-to-edge and the foreground
-// must sit inside the central ~80% "safe zone". We scale the foreground down to
-// FG_HEIGHT within a 1024 canvas, then downscale the result to the 512 the
-// manifest references. Re-run with `npm run icons:maskable` if either layer changes.
+// must sit inside the central ~80% "safe zone". We compose at 1024 (the native
+// resolution of the source layers) and emit two sizes: the full 1024 for the
+// large, high-DPI launcher slots tablets use, plus a 512 fallback. The earlier
+// build downscaled the only output to 512, which left tablet home-screen icons
+// blurry. Re-run with `npm run icons:maskable` if either layer changes.
 import sharp from "sharp";
 
-const CANVAS = 1024; // compose large, then downscale for crispness
-const OUT = 512; // size referenced by the manifest (maskable-icon-512x512.png)
+const CANVAS = 1024; // native source resolution — compose and emit at this size
 const FG_HEIGHT = 680; // ~66% of canvas — keeps the artwork (incl. corners) inside the round-mask safe circle
+const SIZES = [1024, 512]; // manifest references both (icons/maskable-icon-<size>x<size>.png)
 
 const bg = await sharp("public/icons/icon-bg.png")
   .resize(CANVAS, CANVAS, { fit: "cover" })
@@ -24,13 +26,16 @@ const { data: fgTrimmed } = await sharp("public/icons/icon-fg.png")
   .toBuffer({ resolveWithObject: true });
 const fg = await sharp(fgTrimmed).resize({ height: FG_HEIGHT }).toBuffer();
 
-// Compose at full canvas first (sharp applies resize before composite, so the
+// Compose once at full canvas (sharp applies resize before composite, so any
 // downscale must be a separate pass or the foreground would overflow the base).
 const composed = await sharp(bg)
   .composite([{ input: fg, gravity: "center" }])
   .png()
   .toBuffer();
 
-await sharp(composed).resize(OUT, OUT).png().toFile("public/icons/maskable-icon-512x512.png");
-
-console.log(`Wrote public/icons/maskable-icon-512x512.png (${OUT}x${OUT}).`);
+for (const size of SIZES) {
+  const out = `public/icons/maskable-icon-${size}x${size}.png`;
+  // size === CANVAS writes the composed pixels straight through (no resampling).
+  await sharp(composed).resize(size, size).png().toFile(out);
+  console.log(`Wrote ${out} (${size}x${size}).`);
+}
