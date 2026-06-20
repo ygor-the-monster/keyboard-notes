@@ -20,13 +20,14 @@ import {
   TranslateIcon as Translate,
   MoonIcon as Moon,
   SunIcon as Sun,
+  MagnifyingGlassIcon as MagnifyingGlass,
 } from "@phosphor-icons/react";
 import { useStore } from "../../providers/StoreProvider/StoreProvider.tsx";
 import { storageEstimate } from "../../providers/StoreProvider/StoreProvider.utils.ts";
 import { usePwa } from "../../providers/PWAProvider/PWAProvider.tsx";
 import { useDialog } from "../../providers/DialogProvider/DialogProvider.tsx";
 import { useI18n } from "../../providers/I18nProvider/I18nProvider.tsx";
-import { useTheme } from "../../providers/ThemeProvider/ThemeProvider.tsx";
+import { useTheme, ZOOM_LEVELS } from "../../providers/ThemeProvider/ThemeProvider.tsx";
 import IconBtn from "../IconBtn/IconBtn.tsx";
 import ic from "../IconBtn/IconBtn.module.css";
 import f from "../fields/fields.module.css";
@@ -51,7 +52,7 @@ export default function Topbar() {
   const { canInstall, promptInstall } = usePwa();
   const { alert } = useDialog();
   const { t, locale, setLocale, locales } = useI18n();
-  const { scheme, toggle: toggleTheme } = useTheme();
+  const { scheme, toggle: toggleTheme, zoom, setZoom } = useTheme();
   const fileRef = useRef<HTMLInputElement>(null);
   const headerRef = useRef<HTMLElement>(null);
 
@@ -246,6 +247,30 @@ export default function Topbar() {
                 {locales.map((l) => (
                   <MenuItem key={l} id={l} className={f.menuItem}>
                     {t(`lang.${l}`)}
+                  </MenuItem>
+                ))}
+              </Menu>
+            </Popover>
+          </MenuTrigger>
+          <MenuTrigger>
+            <Button
+              aria-label={t("zoom.label")}
+              className={menuBtn}
+              // Show the current level on the trigger so it doubles as a status readout.
+              data-zoom={zoom !== 1 ? Math.round(zoom * 100) : undefined}
+            >
+              <MagnifyingGlass size={22} aria-hidden />
+            </Button>
+            <Popover className={f.menuPopover}>
+              <Menu
+                className={f.menu}
+                selectionMode="single"
+                selectedKeys={[String(zoom)]}
+                onAction={(k) => setZoom(Number(k))}
+              >
+                {ZOOM_LEVELS.map((lvl) => (
+                  <MenuItem key={lvl} id={String(lvl)} className={f.menuItem}>
+                    {Math.round(lvl * 100)}%{lvl === 1 ? ` · ${t("zoom.reset")}` : ""}
                   </MenuItem>
                 ))}
               </Menu>

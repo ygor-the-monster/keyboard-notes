@@ -108,6 +108,10 @@ export default {
     dark: "Modalità scura",
     light: "Modalità chiara",
   },
+  zoom: {
+    label: "Zoom",
+    reset: "Reimposta",
+  },
   undo: {
     deleted: "Cella {kind} eliminata",
     action: "Annulla",

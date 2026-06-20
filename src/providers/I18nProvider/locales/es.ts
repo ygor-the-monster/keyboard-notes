@@ -107,6 +107,10 @@ export default {
     dark: "Modo oscuro",
     light: "Modo claro",
   },
+  zoom: {
+    label: "Zoom",
+    reset: "Restablecer",
+  },
   undo: {
     deleted: "Celda de {kind} eliminada",
     action: "Deshacer",

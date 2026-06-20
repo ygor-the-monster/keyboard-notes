@@ -107,6 +107,10 @@ export default {
     dark: "Mode sombre",
     light: "Mode clair",
   },
+  zoom: {
+    label: "Zoom",
+    reset: "Réinitialiser",
+  },
   undo: {
     deleted: "Cellule {kind} supprimée",
     action: "Annuler",

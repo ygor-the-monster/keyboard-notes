@@ -9,6 +9,25 @@
   align-items: center;
   column-gap: 4px;
 }
+/* Zoom trigger shows the current level as a small badge when it isn't 100%. */
+.tools [data-zoom] {
+  position: relative;
+}
+.tools [data-zoom]::after {
+  content: attr(data-zoom) "%";
+  position: absolute;
+  right: -2px;
+  bottom: -1px;
+  padding: 0 3px;
+  border-radius: 6px;
+  background: var(--s-magenta);
+  color: #fff;
+  font-family: var(--font-ui);
+  font-size: 0.6rem;
+  font-weight: 700;
+  line-height: 1.35;
+  pointer-events: none;
+}
 .vDivider {
   width: 1px;
   height: 28px;

@@ -107,6 +107,10 @@ export default {
     dark: "Dunkelmodus",
     light: "Hellmodus",
   },
+  zoom: {
+    label: "Zoom",
+    reset: "Zurücksetzen",
+  },
   undo: {
     deleted: "{kind}-Zelle gelöscht",
     action: "Rückgängig",

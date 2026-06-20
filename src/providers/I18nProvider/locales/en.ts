@@ -107,6 +107,10 @@ export default {
     dark: "Dark mode",
     light: "Light mode",
   },
+  zoom: {
+    label: "Zoom",
+    reset: "Reset",
+  },
   undo: {
     deleted: "{kind} cell deleted",
     action: "Undo",
