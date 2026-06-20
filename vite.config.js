@@ -81,6 +81,22 @@ export default defineConfig({
             form_factor: "narrow",
             label: "The same lesson on a phone",
           },
+          // Per-tool full-screen views. Added as each utility tool gains its expanded screen
+          // (metronome first); they ride the same install carousel as the lesson shots.
+          {
+            src: "screenshots/tool-metronome-wide.png",
+            sizes: "1440x900",
+            type: "image/png",
+            form_factor: "wide",
+            label: "The metronome's full screen — accent pattern, subdivisions and polyrhythm",
+          },
+          {
+            src: "screenshots/tool-metronome-narrow.png",
+            sizes: "412x915",
+            type: "image/png",
+            form_factor: "narrow",
+            label: "The metronome's full screen on a phone",
+          },
         ],
         // Static fallback (manifests can't track color-scheme); the app boots light and
         // ThemeProvider updates the live <meta name="theme-color"> to follow the user's scheme.

@@ -8,6 +8,8 @@ import Toasts from "../Toasts/Toasts.tsx";
 import { toast } from "../Toasts/toasts.ts";
 import { useEditing } from "../../providers/EditingProvider/EditingProvider.tsx";
 import { useI18n } from "../../providers/I18nProvider/I18nProvider.tsx";
+import { useRoute } from "../../providers/RouteProvider/RouteProvider.tsx";
+import { toolRegistry } from "../../utils/toolRegistry/toolRegistry.ts";
 import Topbar from "../Topbar/Topbar.tsx";
 import Cell from "../Cell/Cell.tsx";
 import EmptyState from "../EmptyState/EmptyState.tsx";
@@ -31,6 +33,7 @@ export default function App() {
   const { setEditing } = useEditing();
   const { canInstall, promptInstall } = usePwa();
   const { t } = useI18n();
+  const { openScreen } = useRoute();
 
   // Keep the screen awake while a lesson is open — the user is reading notation at the piano with
   // their hands busy. Auto-released when the tab is backgrounded, so it never drains battery idle.
@@ -50,8 +53,8 @@ export default function App() {
   }, [t]);
 
   // Manifest shortcuts arrive as query params on launch. Capture them once at first render (before
-  // we scrub the URL), then act: ?new=1 creates a lesson; ?tool=… auto-opens a dock tool (passed as
-  // `autostart` below). A plain launch restores the last active lesson — the store's default.
+  // we scrub the URL), then act: ?new=1 creates a lesson; ?tool=… targets a utility tool. A plain
+  // launch restores the last active lesson — the store's default.
   const [launch] = useState(() => {
     const p = new URLSearchParams(window.location.search);
     return { newLesson: p.get("new") === "1", tool: p.get("tool") };
@@ -59,9 +62,20 @@ export default function App() {
   useEffect(() => {
     if (hydrated && launch.newLesson) createLesson();
   }, [hydrated, launch.newLesson, createLesson]);
-  // Scrub the params so a refresh doesn't repeat the shortcut action.
+  // A tool shortcut opens that tool's full screen if it has one (still autostarts via the `autostart`
+  // prop below); tools without a screen just autostart their dock.
   useEffect(() => {
-    if (launch.newLesson || launch.tool) window.history.replaceState(null, "", "./");
+    if (launch.tool && toolRegistry[launch.tool]) openScreen(launch.tool);
+  }, [launch.tool, openScreen]);
+  // Scrub the one-shot query so a refresh doesn't repeat it — but keep any screen hash openScreen set.
+  useEffect(() => {
+    if (launch.newLesson || launch.tool) {
+      window.history.replaceState(
+        window.history.state,
+        "",
+        window.location.pathname + window.location.hash,
+      );
+    }
   }, [launch]);
 
   // Encourage installing the app, once — installing is what protects lessons from being cleared
