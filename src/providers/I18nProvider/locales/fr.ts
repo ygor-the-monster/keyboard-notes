@@ -111,6 +111,10 @@ export default {
     label: "Zoom",
     reset: "Réinitialiser",
   },
+  screen: {
+    back: "Retour",
+    expand: "Agrandir",
+  },
   undo: {
     deleted: "Cellule {kind} supprimée",
     action: "Annuler",

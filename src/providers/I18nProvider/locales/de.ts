@@ -111,6 +111,10 @@ export default {
     label: "Zoom",
     reset: "Zurücksetzen",
   },
+  screen: {
+    back: "Zurück",
+    expand: "Vergrößern",
+  },
   undo: {
     deleted: "{kind}-Zelle gelöscht",
     action: "Rückgängig",

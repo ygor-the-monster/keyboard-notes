@@ -112,6 +112,10 @@ export default {
     label: "Zoom",
     reset: "Reimposta",
   },
+  screen: {
+    back: "Indietro",
+    expand: "Espandi",
+  },
   undo: {
     deleted: "Cella {kind} eliminata",
     action: "Annulla",

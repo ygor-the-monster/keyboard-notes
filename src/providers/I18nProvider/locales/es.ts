@@ -111,6 +111,10 @@ export default {
     label: "Zoom",
     reset: "Restablecer",
   },
+  screen: {
+    back: "Volver",
+    expand: "Expandir",
+  },
   undo: {
     deleted: "Celda de {kind} eliminada",
     action: "Deshacer",

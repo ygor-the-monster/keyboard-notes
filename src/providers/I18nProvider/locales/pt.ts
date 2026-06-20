@@ -111,6 +111,10 @@ export default {
     label: "Zoom",
     reset: "Redefinir",
   },
+  screen: {
+    back: "Voltar",
+    expand: "Expandir",
+  },
   undo: {
     deleted: "Célula de {kind} excluída",
     action: "Desfazer",

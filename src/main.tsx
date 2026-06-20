@@ -6,6 +6,7 @@ import { DialogProvider } from "./providers/DialogProvider/DialogProvider.tsx";
 import { StoreProvider } from "./providers/StoreProvider/StoreProvider.tsx";
 import { PWAProvider } from "./providers/PWAProvider/PWAProvider.tsx";
 import { EditingProvider } from "./providers/EditingProvider/EditingProvider.tsx";
+import { RouteProvider } from "./providers/RouteProvider/RouteProvider.tsx";
 import App from "./components/App/App.tsx";
 
 createRoot(document.getElementById("root")!).render(
@@ -16,7 +17,9 @@ createRoot(document.getElementById("root")!).render(
           <StoreProvider>
             <PWAProvider>
               <EditingProvider>
-                <App />
+                <RouteProvider>
+                  <App />
+                </RouteProvider>
               </EditingProvider>
             </PWAProvider>
           </StoreProvider>

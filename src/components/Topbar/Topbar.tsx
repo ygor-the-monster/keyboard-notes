@@ -28,6 +28,8 @@ import { usePwa } from "../../providers/PWAProvider/PWAProvider.tsx";
 import { useDialog } from "../../providers/DialogProvider/DialogProvider.tsx";
 import { useI18n } from "../../providers/I18nProvider/I18nProvider.tsx";
 import { useTheme, ZOOM_LEVELS } from "../../providers/ThemeProvider/ThemeProvider.tsx";
+import { useRoute } from "../../providers/RouteProvider/RouteProvider.tsx";
+import { toolRegistry } from "../../utils/toolRegistry/toolRegistry.ts";
 import IconBtn from "../IconBtn/IconBtn.tsx";
 import ic from "../IconBtn/IconBtn.module.css";
 import f from "../fields/fields.module.css";
@@ -53,6 +55,9 @@ export default function Topbar() {
   const { alert } = useDialog();
   const { t, locale, setLocale, locales } = useI18n();
   const { scheme, toggle: toggleTheme, zoom, setZoom } = useTheme();
+  const { screen } = useRoute();
+  // While a tool screen is open, the lesson title isn't editable — swap it for the tool's name.
+  const screenTool = screen ? toolRegistry[screen] : undefined;
   const fileRef = useRef<HTMLInputElement>(null);
   const headerRef = useRef<HTMLElement>(null);
 
@@ -221,15 +226,19 @@ export default function Topbar() {
           </Popover>
         </MenuTrigger>
 
-        <TextField
-          aria-label={t("topbar.lessonTitle")}
-          value={activeLesson?.title || ""}
-          onChange={setTitle}
-          isDisabled={!activeLesson}
-          className={s.titleField}
-        >
-          <Input className={s.titleInput} placeholder={t("topbar.untitled")} />
-        </TextField>
+        {screenTool ? (
+          <span className={s.screenTitle}>{t(screenTool.labelKey)}</span>
+        ) : (
+          <TextField
+            aria-label={t("topbar.lessonTitle")}
+            value={activeLesson?.title || ""}
+            onChange={setTitle}
+            isDisabled={!activeLesson}
+            className={s.titleField}
+          >
+            <Input className={s.titleInput} placeholder={t("topbar.untitled")} />
+          </TextField>
+        )}
 
         <Separator orientation="vertical" className={s.vDivider} />
         <div className={s.tools} role="toolbar" aria-label={t("topbar.lessonTools")}>

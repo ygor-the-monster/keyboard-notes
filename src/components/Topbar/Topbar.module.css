@@ -41,6 +41,18 @@
   min-width: 0;
   display: flex;
 }
+/* Stands in for the title field while a tool screen is open — keeps the bar's spacing. */
+.screenTitle {
+  flex: 1 1 auto;
+  min-width: 0;
+  font-family: var(--font-content);
+  font-weight: 600;
+  font-size: 1rem;
+  color: var(--s-ink-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
 .titleInput {
   width: 100%;
   font-family: var(--font-content);

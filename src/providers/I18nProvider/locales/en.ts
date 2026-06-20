@@ -111,6 +111,10 @@ export default {
     label: "Zoom",
     reset: "Reset",
   },
+  screen: {
+    back: "Back",
+    expand: "Expand",
+  },
   undo: {
     deleted: "{kind} cell deleted",
     action: "Undo",
