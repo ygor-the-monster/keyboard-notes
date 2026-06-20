@@ -143,6 +143,13 @@ export default {
     start: "Start",
     stop: "Stop",
     tap: "Tap",
+    sound: "Sound",
+    tone: { classic: "Classic", wood: "Wood", beep: "Beep" },
+    accent: "Accent pattern",
+    beat: "Beat",
+    levelMuted: "Muted",
+    levelWeak: "Weak",
+    levelStrong: "Strong",
   },
   drone: {
     name: "Drone",

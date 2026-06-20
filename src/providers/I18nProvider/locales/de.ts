@@ -143,6 +143,13 @@ export default {
     start: "Start",
     stop: "Stopp",
     tap: "Tippen",
+    sound: "Klang",
+    tone: { classic: "Klassisch", wood: "Holz", beep: "Piep" },
+    accent: "Betonungsmuster",
+    beat: "Schlag",
+    levelMuted: "Stumm",
+    levelWeak: "Schwach",
+    levelStrong: "Stark",
   },
   drone: {
     name: "Bordun",

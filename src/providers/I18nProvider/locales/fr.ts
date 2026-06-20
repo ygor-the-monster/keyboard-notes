@@ -143,6 +143,13 @@ export default {
     start: "Démarrer",
     stop: "Arrêter",
     tap: "Taper",
+    sound: "Son",
+    tone: { classic: "Classique", wood: "Bois", beep: "Bip" },
+    accent: "Motif d'accent",
+    beat: "Temps",
+    levelMuted: "Muet",
+    levelWeak: "Faible",
+    levelStrong: "Fort",
   },
   drone: {
     name: "Bourdon",

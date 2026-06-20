@@ -144,6 +144,13 @@ export default {
     start: "Avvia",
     stop: "Ferma",
     tap: "Tocca",
+    sound: "Suono",
+    tone: { classic: "Classico", wood: "Legno", beep: "Bip" },
+    accent: "Schema accenti",
+    beat: "Battito",
+    levelMuted: "Muto",
+    levelWeak: "Debole",
+    levelStrong: "Forte",
   },
   drone: {
     name: "Bordone",

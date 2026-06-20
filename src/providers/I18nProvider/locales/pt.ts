@@ -143,6 +143,13 @@ export default {
     start: "Iniciar",
     stop: "Parar",
     tap: "Marcar",
+    sound: "Som",
+    tone: { classic: "Clássico", wood: "Madeira", beep: "Bipe" },
+    accent: "Padrão de acento",
+    beat: "Tempo",
+    levelMuted: "Mudo",
+    levelWeak: "Fraco",
+    levelStrong: "Forte",
   },
   drone: {
     name: "Bordão",

@@ -77,6 +77,57 @@
   padding: 2px 0;
   opacity: 0.85;
 }
+
+/* ----- Full-screen beat indicator / accent editor (tap a pip to cycle its accent) ----- */
+.beats {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  padding: 8px 0 4px;
+}
+.pip {
+  flex: none;
+  width: 22px;
+  height: 22px;
+  padding: 0;
+  border: 2px solid var(--accent, var(--s-magenta));
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--accent, var(--s-magenta)) 22%, transparent);
+  cursor: pointer;
+  transition:
+    transform 0.08s ease,
+    background 0.12s ease,
+    box-shadow 0.12s ease,
+    opacity 0.12s ease;
+}
+/* Strong beat — larger, solid. */
+.pipStrong {
+  width: 30px;
+  height: 30px;
+  background: var(--accent, var(--s-magenta));
+}
+/* Muted beat — hollow, dashed, faded. */
+.pipMute {
+  background: transparent;
+  border-style: dashed;
+  opacity: 0.4;
+}
+/* Currently sounding beat — ring + lift, in sync with the audible click. */
+.pipActive {
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--accent, var(--s-magenta)) 30%, transparent);
+  transform: scale(1.18);
+}
+.pip:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent, var(--s-magenta)) 45%, transparent);
+}
+@media (prefers-reduced-motion: reduce) {
+  .pip {
+    transition: none;
+  }
+}
 .metroDock.running .metroTab {
   animation: metro-pulse 0.6s ease-in-out infinite alternate;
 }
