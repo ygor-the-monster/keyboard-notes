@@ -22,8 +22,17 @@
 .labelText {
   white-space: nowrap;
 }
+/* Column of evenly-split button rows — width spans the page so JS can measure available room. */
+.rows {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  row-gap: 10px;
+  width: 100%;
+}
 .row {
   display: flex;
+  /* Safety fallback only — row sizes are computed to fit, so this should never trigger. */
   flex-wrap: wrap;
   justify-content: center;
   gap: 10px;
