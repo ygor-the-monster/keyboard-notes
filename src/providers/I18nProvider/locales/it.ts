@@ -151,6 +151,10 @@ export default {
     levelMuted: "Muto",
     levelWeak: "Debole",
     levelStrong: "Forte",
+    subdivision: "Suddivisione",
+    sub: { none: "Nessuna", eighths: "Crome", triplets: "Terzine", sixteenths: "Semicrome" },
+    polyrhythm: "Poliritmia",
+    polyOff: "Spento",
   },
   drone: {
     name: "Bordone",

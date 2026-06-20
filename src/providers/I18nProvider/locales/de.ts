@@ -150,6 +150,10 @@ export default {
     levelMuted: "Stumm",
     levelWeak: "Schwach",
     levelStrong: "Stark",
+    subdivision: "Unterteilung",
+    sub: { none: "Keine", eighths: "Achtel", triplets: "Triolen", sixteenths: "Sechzehntel" },
+    polyrhythm: "Polyrhythmus",
+    polyOff: "Aus",
   },
   drone: {
     name: "Bordun",

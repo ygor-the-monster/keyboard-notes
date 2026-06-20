@@ -150,6 +150,10 @@ export default {
     levelMuted: "Muted",
     levelWeak: "Weak",
     levelStrong: "Strong",
+    subdivision: "Subdivision",
+    sub: { none: "None", eighths: "Eighths", triplets: "Triplets", sixteenths: "Sixteenths" },
+    polyrhythm: "Polyrhythm",
+    polyOff: "Off",
   },
   drone: {
     name: "Drone",

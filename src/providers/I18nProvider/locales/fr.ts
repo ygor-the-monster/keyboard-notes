@@ -150,6 +150,10 @@ export default {
     levelMuted: "Muet",
     levelWeak: "Faible",
     levelStrong: "Fort",
+    subdivision: "Subdivision",
+    sub: { none: "Aucune", eighths: "Croches", triplets: "Triolets", sixteenths: "Doubles croches" },
+    polyrhythm: "Polyrythmie",
+    polyOff: "Désactivé",
   },
   drone: {
     name: "Bourdon",

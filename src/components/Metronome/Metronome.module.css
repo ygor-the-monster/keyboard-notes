@@ -123,8 +123,31 @@
   outline: none;
   box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent, var(--s-magenta)) 45%, transparent);
 }
+
+/* Polyrhythm layer indicator — same magenta family, paler/desaturated so it reads as the secondary
+   voice against the main beat row. Indicator only (not editable). */
+.polyBeats {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 0 0 2px;
+}
+.polyPip {
+  flex: none;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  border: 2px solid color-mix(in srgb, var(--accent, var(--s-magenta)) 55%, var(--canvas));
+  background: color-mix(in srgb, var(--accent, var(--s-magenta)) 32%, var(--canvas));
+  transition:
+    transform 0.08s ease,
+    box-shadow 0.12s ease;
+}
 @media (prefers-reduced-motion: reduce) {
-  .pip {
+  .pip,
+  .polyPip {
     transition: none;
   }
 }

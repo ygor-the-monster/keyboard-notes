@@ -150,6 +150,10 @@ export default {
     levelMuted: "Silenciado",
     levelWeak: "Débil",
     levelStrong: "Fuerte",
+    subdivision: "Subdivisión",
+    sub: { none: "Ninguna", eighths: "Corcheas", triplets: "Tresillos", sixteenths: "Semicorcheas" },
+    polyrhythm: "Polirritmia",
+    polyOff: "Apagado",
   },
   drone: {
     name: "Bordón",

@@ -24,6 +24,9 @@ const TONES: Record<string, ToneSpec> = {
   beep: { accent: { freq: 1320, type: "square" }, beat: { freq: 880, type: "square" } },
 };
 const TONE_IDS = ["classic", "wood", "beep"] as const;
+const SUBDIVS = [1, 2, 3, 4] as const; // none, eighths, triplets, sixteenths
+const SUBDIV_KEYS: Record<number, string> = { 1: "none", 2: "eighths", 3: "triplets", 4: "sixteenths" };
+const POLYS = [0, 2, 3, 4, 5, 6, 7] as const; // 0 = off
 
 // Build the effective accent pattern for the current meter: reuse stored levels, default a strong
 // downbeat + weak rest, so changing the time signature always yields a sensible pattern.
@@ -43,11 +46,20 @@ export default function Metronome({ autostart = false }: { autostart?: boolean }
   const [beats, setBeats] = usePref("metro.beats", 4);
   const [storedPattern, setStoredPattern] = usePref<AccentLevel[]>("metro.pattern", [2, 1, 1, 1]);
   const [toneId, setToneId] = usePref("metro.tone", "classic");
+  const [subdiv, setSubdiv] = usePref("metro.subdiv", 1);
+  const [poly, setPoly] = usePref("metro.poly", 0);
   const onScreen = screen === SCREEN_ID;
 
   const pattern = buildPattern(storedPattern, beats);
   const sound = TONES[toneId] ?? TONES.classic;
-  const { running, currentBeat, start, toggle } = useMetronome({ bpm, beats, pattern, sound });
+  const { running, currentBeat, currentPoly, start, toggle } = useMetronome({
+    bpm,
+    beats,
+    pattern,
+    sound,
+    subdiv,
+    poly,
+  });
 
   // Launched via the "Metronome" app shortcut (?tool=metronome): open the panel and start ticking.
   // start() is idempotent, so the effect re-running is harmless.
@@ -152,6 +164,47 @@ export default function Metronome({ autostart = false }: { autostart?: boolean }
     </div>
   );
 
+  // Polyrhythm layer indicator (indigo, to contrast the magenta main layer). Shown only when on.
+  const polyIndicator = poly > 1 && (
+    <div className={m.polyBeats} role="group" aria-label={t("metronome.polyrhythm")}>
+      {Array.from({ length: poly }, (_, i) => (
+        <span
+          key={i}
+          className={[m.polyPip, running && i === currentPoly && m.pipActive].filter(Boolean).join(" ")}
+        />
+      ))}
+    </div>
+  );
+
+  const subdivField = (
+    <Select
+      label={t("metronome.subdivision")}
+      selectedKey={String(subdiv)}
+      onSelectionChange={(k) => setSubdiv(Number(k))}
+    >
+      {SUBDIVS.map((n) => (
+        <SelectItem key={n} id={String(n)}>
+          {t(`metronome.sub.${SUBDIV_KEYS[n]}`)}
+        </SelectItem>
+      ))}
+    </Select>
+  );
+
+  const polyField = (
+    <Select
+      label={t("metronome.polyrhythm")}
+      selectedKey={poly > 1 ? String(poly) : "off"}
+      onSelectionChange={(k) => setPoly(k === "off" ? 0 : Number(k))}
+    >
+      <SelectItem id="off">{t("metronome.polyOff")}</SelectItem>
+      {POLYS.filter((n) => n > 1).map((n) => (
+        <SelectItem key={n} id={String(n)}>
+          {n}:{beats}
+        </SelectItem>
+      ))}
+    </Select>
+  );
+
   const soundField = (
     <Select
       label={t("metronome.sound")}
@@ -216,7 +269,10 @@ export default function Metronome({ autostart = false }: { autostart?: boolean }
           onClose={closeScreen}
         >
           {beatIndicator}
+          {polyIndicator}
           {controls}
+          {subdivField}
+          {polyField}
           {soundField}
           {transport}
         </ToolScreen>

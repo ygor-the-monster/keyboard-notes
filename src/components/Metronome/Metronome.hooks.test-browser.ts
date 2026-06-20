@@ -12,7 +12,14 @@ const SOUND: ToneSpec = {
   accent: { freq: 1600, type: "sine" },
   beat: { freq: 1000, type: "sine" },
 };
-const params = (bpm: number, beats: number) => ({ bpm, beats, pattern: PATTERN, sound: SOUND });
+const params = (bpm: number, beats: number, subdiv = 1, poly = 0) => ({
+  bpm,
+  beats,
+  pattern: PATTERN,
+  sound: SOUND,
+  subdiv,
+  poly,
+});
 
 describe("useMetronome (real Web Audio)", () => {
   it("starts stopped, with no current beat", () => {
@@ -38,5 +45,15 @@ describe("useMetronome (real Web Audio)", () => {
     expect(result.current.running).toBe(true);
     act(() => result.current.toggle());
     expect(result.current.running).toBe(false);
+  });
+
+  it("schedules subdivisions + a polyrhythm layer without throwing", () => {
+    // 4 beats, sixteenth subdivisions, 3-against-4 polyrhythm.
+    const { result } = renderHook(() => useMetronome(params(120, 4, 4, 3)));
+    expect(() => act(() => result.current.start())).not.toThrow();
+    expect(result.current.running).toBe(true);
+    act(() => result.current.stop());
+    expect(result.current.running).toBe(false);
+    expect(result.current.currentPoly).toBe(-1);
   });
 });
