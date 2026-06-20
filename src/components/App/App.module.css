@@ -2,6 +2,11 @@
   max-width: 880px;
   margin-inline: auto;
   padding: 44px 24px;
+  /* Keep cells clear of the fixed left dock tabs (~42px). The centred column only nears the
+     screen edge once the viewport drops below max-width + gutters, so grow the left inset just
+     in that range: 52px when the column hits the edge, easing back to the normal 24px gutter as
+     the auto margins reopen on wider screens (right gutter stays 24px). 880px mirrors max-width. */
+  padding-left: clamp(24px, calc(52px - (100vw - 880px) / 2), 52px);
 }
 .stack {
   display: flex;
@@ -31,10 +36,13 @@
 .utilityDock {
   position: fixed;
   /* Sit below the permanent header (height published as --topbar-h by Topbar) so the dock tabs
-     can never overlap it — falls back to a sensible desktop height before the var is set. */
+     can never overlap it — falls back to a sensible desktop height before the var is set.
+     Anchor top+bottom (not a 100dvh height): under the in-app CSS `zoom`, viewport units like
+     dvh aren't scaled by the zoom factor, so a dvh-based height came out too short when zoomed
+     out and clipped the lower tabs. top/bottom are plain layout offsets that scale correctly. */
   top: var(--topbar-h, 64px);
+  bottom: 0;
   left: 0;
-  height: calc(100dvh - var(--topbar-h, 64px));
   z-index: 40;
   display: flex;
   flex-direction: column;
