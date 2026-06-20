@@ -12,6 +12,7 @@
 .dock.open {
   transform: translateX(0);
 }
+/* Tab holds two stacked buttons: expand (opens the full screen) above the toggle (slides the card). */
 .tab {
   flex: none;
   width: 42px;
@@ -19,14 +20,46 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 10px;
-  padding: 16px 0 18px;
-  border: none;
-  cursor: pointer;
   color: #fff;
   background: var(--s-cinnamon-strong);
   border-radius: 0 var(--radius) var(--radius) 0;
   box-shadow: var(--shadow-pop);
+  overflow: hidden;
+}
+.tabExpand {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  padding: 7px 0;
+  border: none;
+  background: rgba(0, 0, 0, 0.14);
+  color: inherit;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+.tabExpand:hover {
+  background: rgba(0, 0, 0, 0.26);
+}
+.tabExpand:focus-visible {
+  outline: 2px solid #fff;
+  outline-offset: -2px;
+}
+.tabToggle {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 14px 0 18px;
+  border: none;
+  background: none;
+  color: inherit;
+  cursor: pointer;
+}
+.tabToggle:focus-visible {
+  outline: 2px solid #fff;
+  outline-offset: -2px;
 }
 .tabLabel {
   writing-mode: vertical-rl;
@@ -186,6 +219,164 @@
 .start {
   width: 100%;
 }
+/* ===== Expanded screen ===== */
+.gauge {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+.gaugeNote {
+  font-family: var(--font-content);
+  font-size: 5rem;
+  font-weight: 600;
+  line-height: 1;
+  color: var(--s-ink);
+}
+.gauge.gaugeInTune .gaugeNote {
+  color: var(--accent);
+}
+.gaugeCents {
+  font-family: var(--font-mono);
+  font-size: 1.1rem;
+  color: var(--s-ink-muted);
+}
+.gauge.gaugeInTune .gaugeCents {
+  color: var(--accent);
+  font-weight: 600;
+}
+/* Big cents meter — wider/taller than the dock's, with an in-tune window shaded around centre. */
+.bigMeter {
+  position: relative;
+  width: 100%;
+  height: 16px;
+  margin-top: 6px;
+  background: var(--canvas);
+  border: 1px solid var(--s-line);
+  border-radius: var(--radius-pill);
+}
+.bigMeter::before {
+  /* ±5¢ in-tune zone (the meter spans ±50¢, so 5% each side of centre). */
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 45%;
+  right: 45%;
+  background: color-mix(in srgb, var(--accent) 20%, transparent);
+}
+.bigNeedle {
+  position: absolute;
+  top: -4px;
+  bottom: -4px;
+  width: 4px;
+  border-radius: 2px;
+  background: var(--accent);
+  transform: translateX(-50%);
+  transition: left 0.09s linear;
+}
+.heard {
+  font-family: var(--font-ui);
+  font-size: 0.82rem;
+  color: var(--s-ink-muted);
+  min-height: 1em;
+}
+/* Instrument string chips. */
+.strings {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px;
+}
+.stringBtn {
+  flex: none;
+  min-width: 46px;
+  font-family: var(--font-mono);
+  font-size: 0.85rem;
+  font-weight: 600;
+  padding: 8px 10px;
+  border: 1px solid var(--s-line);
+  border-radius: var(--radius-sm);
+  background: var(--canvas);
+  color: var(--s-ink-muted);
+  cursor: pointer;
+  transition:
+    background 0.15s ease,
+    border-color 0.15s ease,
+    color 0.15s ease;
+}
+/* Auto-highlighted nearest string (subtle) vs. user-pinned target (filled). */
+.stringNearest {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+.stringPinned {
+  border-color: var(--accent);
+  background: var(--accent);
+  color: #fff;
+}
+.row {
+  display: flex;
+  gap: 12px;
+}
+.row > * {
+  flex: 1 1 0;
+  min-width: 0;
+}
+.fieldLabel {
+  display: block;
+  font-family: var(--font-ui);
+  font-size: 0.78rem;
+  color: var(--s-ink-muted);
+  margin-bottom: 6px;
+}
+.traceWrap {
+  width: 100%;
+}
+.trace {
+  display: block;
+  width: 100%;
+  height: 44px;
+  background: var(--canvas);
+  border: 1px solid var(--s-line);
+  border-radius: var(--radius-sm);
+}
+.traceMid {
+  stroke: var(--s-line-strong);
+  stroke-width: 0.5;
+}
+.tracePath {
+  stroke: var(--accent);
+  stroke-width: 1.5;
+  stroke-linejoin: round;
+  stroke-linecap: round;
+  vector-effect: non-scaling-stroke;
+}
+.signalWrap {
+  width: 100%;
+}
+.signalBar {
+  height: 10px;
+  background: var(--canvas);
+  border: 1px solid var(--s-line);
+  border-radius: var(--radius-pill);
+  overflow: hidden;
+}
+.signalFill {
+  display: block;
+  height: 100%;
+  background: var(--accent);
+  border-radius: var(--radius-pill);
+  transition: width 0.09s linear;
+}
+.weak {
+  display: block;
+  margin-top: 4px;
+  font-family: var(--font-ui);
+  font-size: 0.76rem;
+  color: var(--s-ink-muted);
+}
+
 @media (prefers-reduced-motion: reduce) {
   .dock {
     transition: none;
@@ -195,5 +386,9 @@
   }
   .dock.live .tab {
     animation: none;
+  }
+  .bigNeedle,
+  .signalFill {
+    transition: none;
   }
 }

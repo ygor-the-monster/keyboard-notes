@@ -97,6 +97,20 @@ export default defineConfig({
             form_factor: "narrow",
             label: "The metronome's full screen on a phone",
           },
+          {
+            src: "screenshots/tool-tuner-wide.png",
+            sizes: "1440x900",
+            type: "image/png",
+            form_factor: "wide",
+            label: "The tuner's full screen — instrument targets, stability trace and signal meter",
+          },
+          {
+            src: "screenshots/tool-tuner-narrow.png",
+            sizes: "412x915",
+            type: "image/png",
+            form_factor: "narrow",
+            label: "The tuner's full screen on a phone",
+          },
         ],
         // Static fallback (manifests can't track color-scheme); the app boots light and
         // ThemeProvider updates the live <meta name="theme-color"> to follow the user's scheme.
