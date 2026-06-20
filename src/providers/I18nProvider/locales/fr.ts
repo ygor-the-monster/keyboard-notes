@@ -170,6 +170,10 @@ export default {
     show: "Afficher le bloc-notes",
     hide: "Masquer le bloc-notes",
     placeholder: "Notes rapides pour ce cours…",
+    todos: "À faire",
+    addTodo: "Ajouter une tâche",
+    todoPlaceholder: "Ajouter une tâche…",
+    removeTodo: "Supprimer la tâche",
   },
   goal: {
     name: "Entraînement",

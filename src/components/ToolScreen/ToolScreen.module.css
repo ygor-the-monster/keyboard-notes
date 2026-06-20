@@ -81,3 +81,8 @@
   --accent-strong: color-mix(in srgb, var(--screen-accent) 86%, black);
   --accent-ring: color-mix(in srgb, var(--screen-accent) 30%, transparent);
 }
+/* Writing/list tools want room and a top-aligned column that fills the height. */
+.bodyWide {
+  max-width: 760px;
+  justify-content: flex-start;
+}

@@ -170,6 +170,10 @@ export default {
     show: "Mostrar rascunho",
     hide: "Ocultar rascunho",
     placeholder: "Notas rápidas para esta aula…",
+    todos: "Tarefas",
+    addTodo: "Adicionar tarefa",
+    todoPlaceholder: "Adicionar uma tarefa…",
+    removeTodo: "Remover tarefa",
   },
   goal: {
     name: "Prática",

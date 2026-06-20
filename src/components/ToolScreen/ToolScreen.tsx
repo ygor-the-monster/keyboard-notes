@@ -14,10 +14,19 @@ interface ToolScreenProps {
   /** Accent token base from toolRegistry, e.g. "--s-magenta". */
   accent: string;
   onClose: () => void;
+  /** Wider body for writing/list tools (e.g. the scratchpad) vs. the default control-panel column. */
+  wide?: boolean;
   children: ReactNode;
 }
 
-export default function ToolScreen({ title, icon: Icon, accent, onClose, children }: ToolScreenProps) {
+export default function ToolScreen({
+  title,
+  icon: Icon,
+  accent,
+  onClose,
+  wide = false,
+  children,
+}: ToolScreenProps) {
   const { t } = useI18n();
   const backRef = useRef<HTMLButtonElement>(null);
 
@@ -50,7 +59,7 @@ export default function ToolScreen({ title, icon: Icon, accent, onClose, childre
           {title}
         </span>
       </div>
-      <div className={s.body}>{children}</div>
+      <div className={`${s.body}${wide ? ` ${s.bodyWide}` : ""}`}>{children}</div>
     </section>,
     document.body,
   );

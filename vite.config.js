@@ -111,6 +111,20 @@ export default defineConfig({
             form_factor: "narrow",
             label: "The tuner's full screen on a phone",
           },
+          {
+            src: "screenshots/tool-scratchpad-wide.png",
+            sizes: "1440x900",
+            type: "image/png",
+            form_factor: "wide",
+            label: "The scratchpad's full screen — a roomy note area and a per-lesson to-do list",
+          },
+          {
+            src: "screenshots/tool-scratchpad-narrow.png",
+            sizes: "412x915",
+            type: "image/png",
+            form_factor: "narrow",
+            label: "The scratchpad's full screen on a phone",
+          },
         ],
         // Static fallback (manifests can't track color-scheme); the app boots light and
         // ThemeProvider updates the live <meta name="theme-color"> to follow the user's scheme.

@@ -170,6 +170,10 @@ export default {
     show: "Notizzettel anzeigen",
     hide: "Notizzettel ausblenden",
     placeholder: "Schnelle Notizen für diese Stunde…",
+    todos: "Aufgaben",
+    addTodo: "Aufgabe hinzufügen",
+    todoPlaceholder: "Aufgabe hinzufügen…",
+    removeTodo: "Aufgabe entfernen",
   },
   goal: {
     name: "Üben",

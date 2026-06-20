@@ -170,6 +170,10 @@ export default {
     show: "Show scratchpad",
     hide: "Hide scratchpad",
     placeholder: "Quick notes for this lesson…",
+    todos: "To-do",
+    addTodo: "Add task",
+    todoPlaceholder: "Add a task…",
+    removeTodo: "Remove task",
   },
   goal: {
     name: "Practice",

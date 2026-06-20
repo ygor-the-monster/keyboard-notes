@@ -171,6 +171,10 @@ export default {
     show: "Mostra blocco appunti",
     hide: "Nascondi blocco appunti",
     placeholder: "Appunti rapidi per questa lezione…",
+    todos: "Da fare",
+    addTodo: "Aggiungi attività",
+    todoPlaceholder: "Aggiungi un'attività…",
+    removeTodo: "Rimuovi attività",
   },
   goal: {
     name: "Esercizio",

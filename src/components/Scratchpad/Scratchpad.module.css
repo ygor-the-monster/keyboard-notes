@@ -12,6 +12,7 @@
 .dock.open {
   transform: translateX(0);
 }
+/* Tab holds two stacked buttons: expand (opens the full screen) above the toggle (slides the card). */
 .tab {
   flex: none;
   width: 42px;
@@ -19,14 +20,46 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 10px;
-  padding: 16px 0 18px;
-  border: none;
-  cursor: pointer;
   color: #fff;
   background: var(--s-blue);
   border-radius: 0 var(--radius) var(--radius) 0;
   box-shadow: var(--shadow-pop);
+  overflow: hidden;
+}
+.tabExpand {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  padding: 7px 0;
+  border: none;
+  background: rgba(0, 0, 0, 0.14);
+  color: inherit;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+.tabExpand:hover {
+  background: rgba(0, 0, 0, 0.26);
+}
+.tabExpand:focus-visible {
+  outline: 2px solid #fff;
+  outline-offset: -2px;
+}
+.tabToggle {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 14px 0 18px;
+  border: none;
+  background: none;
+  color: inherit;
+  cursor: pointer;
+}
+.tabToggle:focus-visible {
+  outline: 2px solid #fff;
+  outline-offset: -2px;
 }
 .tabLabel {
   writing-mode: vertical-rl;
@@ -98,6 +131,129 @@
   border-color: var(--accent);
   box-shadow: 0 0 0 3px var(--accent-ring);
 }
+/* ===== Expanded screen ===== */
+.screenWrap {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  --accent: var(--s-blue);
+}
+/* The note fills most of the height; the to-do list sits below at its natural size. */
+.screenArea {
+  flex: 1;
+  min-height: 180px;
+  resize: none;
+  width: 100%;
+  font-family: var(--font-content);
+  font-size: 1.02rem;
+  line-height: 1.6;
+  color: var(--s-ink);
+  background: var(--canvas);
+  border: 1px solid var(--s-line);
+  border-radius: var(--radius-sm);
+  padding: 16px 18px;
+}
+.screenArea:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-ring);
+}
+.todoSection {
+  display: flex;
+  flex-direction: column;
+}
+.fieldLabel {
+  font-family: var(--font-ui);
+  font-size: 0.78rem;
+  color: var(--s-ink-muted);
+  margin-bottom: 8px;
+}
+.todoAdd {
+  display: flex;
+  gap: 8px;
+}
+.todoInput {
+  flex: 1 1 auto;
+  min-width: 0;
+  font-family: var(--font-content);
+  font-size: 0.95rem;
+  color: var(--s-ink);
+  background: var(--canvas);
+  border: 1px solid var(--s-line);
+  border-radius: var(--radius-sm);
+  padding: 9px 12px;
+}
+.todoInput:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-ring);
+}
+.todoAddBtn {
+  flex: none;
+  width: 42px;
+  height: 42px;
+  padding: 0;
+  border-radius: var(--radius-sm);
+}
+.todoList {
+  list-style: none;
+  margin: 12px 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+}
+.todoItem {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 2px;
+  border-bottom: 1px solid var(--s-line);
+}
+.todoCheck {
+  flex: 1 1 auto;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+}
+.todoBox {
+  flex: none;
+  width: 18px;
+  height: 18px;
+  accent-color: var(--accent);
+  cursor: pointer;
+}
+.todoText {
+  font-family: var(--font-content);
+  font-size: 0.98rem;
+  color: var(--s-ink);
+}
+.todoDone {
+  font-family: var(--font-content);
+  font-size: 0.98rem;
+  color: var(--s-ink-muted);
+  text-decoration: line-through;
+}
+.todoDel {
+  flex: none;
+  display: inline-flex;
+  padding: 6px;
+  border: none;
+  background: none;
+  color: var(--s-ink-muted);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition:
+    color 0.15s ease,
+    background 0.15s ease;
+}
+.todoDel:hover {
+  color: var(--s-red, var(--s-ink));
+  background: var(--s-line);
+}
+
 @media (prefers-reduced-motion: reduce) {
   .dock,
   .card {

@@ -170,6 +170,10 @@ export default {
     show: "Mostrar bloc de notas",
     hide: "Ocultar bloc de notas",
     placeholder: "Notas rápidas para esta lección…",
+    todos: "Tareas",
+    addTodo: "Añadir tarea",
+    todoPlaceholder: "Añadir una tarea…",
+    removeTodo: "Eliminar tarea",
   },
   goal: {
     name: "Práctica",

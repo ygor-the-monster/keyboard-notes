@@ -13,4 +13,5 @@ export interface ToolView {
 export const toolRegistry: Record<string, ToolView> = {
   metronome: { id: "metronome", labelKey: "metronome.name", accent: "--s-magenta" },
   tuner: { id: "tuner", labelKey: "tuner.name", accent: "--s-cinnamon-strong" },
+  scratchpad: { id: "scratchpad", labelKey: "scratch.name", accent: "--s-blue" },
 };
