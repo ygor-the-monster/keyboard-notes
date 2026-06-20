@@ -170,7 +170,7 @@ export default {
     name: "Blocco appunti",
     show: "Mostra blocco appunti",
     hide: "Nascondi blocco appunti",
-    placeholder: "Appunti rapidi per questa lezione…",
+    placeholder: "Appunti rapidi…",
     todos: "Da fare",
     addTodo: "Aggiungi attività",
     todoPlaceholder: "Aggiungi un'attività…",

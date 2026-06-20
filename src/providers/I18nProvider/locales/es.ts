@@ -169,7 +169,7 @@ export default {
     name: "Bloc de notas",
     show: "Mostrar bloc de notas",
     hide: "Ocultar bloc de notas",
-    placeholder: "Notas rápidas para esta lección…",
+    placeholder: "Notas rápidas…",
     todos: "Tareas",
     addTodo: "Añadir tarea",
     todoPlaceholder: "Añadir una tarea…",

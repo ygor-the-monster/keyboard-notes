@@ -169,7 +169,7 @@ export default {
     name: "Rascunho",
     show: "Mostrar rascunho",
     hide: "Ocultar rascunho",
-    placeholder: "Notas rápidas para esta aula…",
+    placeholder: "Notas rápidas…",
     todos: "Tarefas",
     addTodo: "Adicionar tarefa",
     todoPlaceholder: "Adicionar uma tarefa…",

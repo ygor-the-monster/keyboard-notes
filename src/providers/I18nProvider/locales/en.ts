@@ -169,7 +169,7 @@ export default {
     name: "Scratchpad",
     show: "Show scratchpad",
     hide: "Hide scratchpad",
-    placeholder: "Quick notes for this lesson…",
+    placeholder: "Quick notes…",
     todos: "To-do",
     addTodo: "Add task",
     todoPlaceholder: "Add a task…",

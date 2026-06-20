@@ -5,7 +5,6 @@ import {
   PlusIcon as Plus,
   TrashIcon as Trash,
 } from "@phosphor-icons/react";
-import { useStore } from "../../providers/StoreProvider/StoreProvider.tsx";
 import { useI18n } from "../../providers/I18nProvider/I18nProvider.tsx";
 import { useRoute } from "../../providers/RouteProvider/RouteProvider.tsx";
 import { getPref, setPref } from "../../providers/StoreProvider/StoreProvider.utils.ts";
@@ -22,39 +21,36 @@ interface Todo {
   done: boolean;
 }
 
-// A pull-tab sticky note for the active lesson — quick reminders / homework, kept out of the cell
-// flow. Lightweight, so it lives in localStorage (keyed per lesson) rather than in the IndexedDB
-// lesson record. The expanded screen gives the text room to breathe and adds a per-lesson to-do list.
+// A pull-tab sticky note — quick reminders / homework, kept out of the cell flow. It's a single
+// global pad (not tied to a lesson), so it's always available and survives lesson switches.
+// Lightweight, so it lives in localStorage rather than the IndexedDB lesson record. The expanded
+// screen gives the text room to breathe and adds a to-do list.
+const PREF_KEY = "scratch.global";
+const TODO_KEY = "scratchTodos.global";
+
 export default function Scratchpad() {
-  const { activeLesson } = useStore();
   const { t } = useI18n();
   const { screen, openScreen, closeScreen } = useRoute();
   const [open, setOpen] = useState(false);
   const [count, setCount] = useState(0);
   const taRef = useRef<HTMLTextAreaElement>(null);
-  const id = activeLesson?.id;
-  const prefKey = id ? "scratch." + id : null;
-  const todoKey = id ? "scratchTodos." + id : null;
   const onScreen = screen === SCREEN_ID;
 
-  // Uncontrolled textarea (keeps native undo); reload it whenever the active lesson changes or the
-  // surface swaps between the dock card and the screen (a different textarea element mounts).
+  // Uncontrolled textarea (keeps native undo); reload it when the surface swaps between the dock
+  // card and the screen (a different textarea element mounts).
   useEffect(() => {
     const ta = taRef.current;
-    const text = prefKey ? getPref(prefKey, "") : "";
+    const text = getPref(PREF_KEY, "");
     if (ta) ta.value = text;
     setCount(text.length);
-  }, [prefKey, open, onScreen]);
+  }, [open, onScreen]);
 
-  // To-do list (screen-only), persisted per lesson alongside the note text.
-  const [todos, setTodos] = useState<Todo[]>([]);
+  // To-do list (screen-only), persisted alongside the note text.
+  const [todos, setTodos] = useState<Todo[]>(() => getPref<Todo[]>(TODO_KEY, []));
   const [draft, setDraft] = useState("");
-  useEffect(() => {
-    setTodos(todoKey ? getPref<Todo[]>(todoKey, []) : []);
-  }, [todoKey]);
   function saveTodos(next: Todo[]) {
     setTodos(next);
-    if (todoKey) setPref(todoKey, next);
+    setPref(TODO_KEY, next);
   }
   function addTodo() {
     const text = draft.trim();
@@ -64,7 +60,7 @@ export default function Scratchpad() {
   }
 
   function onAreaChange(e: ChangeEvent<HTMLTextAreaElement>) {
-    if (prefKey) setPref(prefKey, e.target.value);
+    setPref(PREF_KEY, e.target.value);
     setCount(e.target.value.length);
   }
 
@@ -107,7 +103,6 @@ export default function Scratchpad() {
               placeholder={t("scratch.placeholder")}
               aria-label={t("scratch.name")}
               onChange={onAreaChange}
-              disabled={!activeLesson}
             />
           </div>
         )}
@@ -128,7 +123,6 @@ export default function Scratchpad() {
               placeholder={t("scratch.placeholder")}
               aria-label={t("scratch.name")}
               onChange={onAreaChange}
-              disabled={!activeLesson}
             />
 
             <div className={s.todoSection}>
@@ -146,13 +140,12 @@ export default function Scratchpad() {
                   onChange={(e) => setDraft(e.target.value)}
                   placeholder={t("scratch.todoPlaceholder")}
                   aria-label={t("scratch.addTodo")}
-                  disabled={!activeLesson}
                 />
                 <button
                   type="submit"
                   className={`${shared.btnMagenta} ${s.todoAddBtn}`}
                   aria-label={t("scratch.addTodo")}
-                  disabled={!activeLesson || !draft.trim()}
+                  disabled={!draft.trim()}
                 >
                   <Plus size={18} aria-hidden />
                 </button>

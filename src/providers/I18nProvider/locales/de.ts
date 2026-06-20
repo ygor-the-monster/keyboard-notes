@@ -169,7 +169,7 @@ export default {
     name: "Notizzettel",
     show: "Notizzettel anzeigen",
     hide: "Notizzettel ausblenden",
-    placeholder: "Schnelle Notizen für diese Stunde…",
+    placeholder: "Schnelle Notizen…",
     todos: "Aufgaben",
     addTodo: "Aufgabe hinzufügen",
     todoPlaceholder: "Aufgabe hinzufügen…",

@@ -169,7 +169,7 @@ export default {
     name: "Bloc-notes",
     show: "Afficher le bloc-notes",
     hide: "Masquer le bloc-notes",
-    placeholder: "Notes rapides pour ce cours…",
+    placeholder: "Notes rapides…",
     todos: "À faire",
     addTodo: "Ajouter une tâche",
     todoPlaceholder: "Ajouter une tâche…",
