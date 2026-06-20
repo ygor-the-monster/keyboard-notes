@@ -322,6 +322,18 @@ body,
 * {
   box-sizing: border-box;
 }
+/* iOS Safari auto-zooms when a focused text field renders below 16px, and we keep native
+   pinch-zoom enabled (no user-scalable=no) for accessibility. Lift text-entry controls to 16px
+   on touch devices so focusing them never triggers that jump; precise-pointer devices keep the
+   tighter design sizes. Toggles/sliders don't zoom, so they're excluded. */
+@media (pointer: coarse) {
+  input:not([type="checkbox"]):not([type="radio"]):not([type="range"]),
+  textarea,
+  select,
+  [contenteditable]:not([contenteditable="false"]) {
+    font-size: 16px;
+  }
+}
 body {
   font-family: var(--font-ui);
   color: var(--s-ink);

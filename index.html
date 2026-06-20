@@ -2,7 +2,10 @@
 <html lang="en" data-color-scheme="light">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <!-- No maximum-scale / user-scalable=no: native pinch-zoom must stay available for
+         low-vision users (Lighthouse a11y). Touch inputs are lifted to 16px in the globals
+         so iOS doesn't auto-zoom on focus. The in-app zoom control is a separate convenience. -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <!-- Light-default fallback; ThemeProvider updates this at runtime to track the user's scheme. -->
     <meta name="theme-color" content="#f6f5f1" />
     <title>Keyboard Notes</title>
