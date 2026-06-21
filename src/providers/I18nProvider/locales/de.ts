@@ -221,6 +221,11 @@ export default {
     clear: "Leeren",
     octaveHint:
       "Zweimal tippen für die Oktave darüber, dreimal für die darunter — der tiefste Ton bestimmt den Bass.",
+    spelling: "Noten",
+    lookup: "Akkord nachschlagen",
+    root: "Grundton",
+    quality: "Typ",
+    noShape: "Keine gängige Form",
   },
   tuner: {
     name: "Stimmgerät",

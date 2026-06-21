@@ -221,6 +221,11 @@ export default {
     clear: "Limpiar",
     octaveHint:
       "Pulsa dos veces para la octava superior, tres para la inferior — la nota más grave define el bajo.",
+    spelling: "Notas",
+    lookup: "Buscar un acorde",
+    root: "Tónica",
+    quality: "Calidad",
+    noShape: "Sin forma común",
   },
   tuner: {
     name: "Afinador",

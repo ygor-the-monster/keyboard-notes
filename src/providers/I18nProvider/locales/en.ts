@@ -221,6 +221,11 @@ export default {
     clear: "Clear",
     octaveHint:
       "Double-tap a key for the octave above, triple-tap for the octave below — the lowest note sets the bass.",
+    spelling: "Notes",
+    lookup: "Look up a chord",
+    root: "Root",
+    quality: "Quality",
+    noShape: "No common shape",
   },
   tuner: {
     name: "Tuner",

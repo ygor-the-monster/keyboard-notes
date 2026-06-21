@@ -221,6 +221,11 @@ export default {
     clear: "Effacer",
     octaveHint:
       "Tapez deux fois pour l'octave supérieure, trois fois pour l'inférieure — la note la plus grave définit la basse.",
+    spelling: "Notes",
+    lookup: "Chercher un accord",
+    root: "Fondamentale",
+    quality: "Qualité",
+    noShape: "Pas de forme courante",
   },
   tuner: {
     name: "Accordeur",

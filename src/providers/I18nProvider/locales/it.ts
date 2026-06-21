@@ -222,6 +222,11 @@ export default {
     clear: "Cancella",
     octaveHint:
       "Tocca due volte un tasto per l'ottava superiore, tre volte per l'ottava inferiore — la nota più bassa imposta il basso.",
+    spelling: "Note",
+    lookup: "Cerca un accordo",
+    root: "Fondamentale",
+    quality: "Tipo",
+    noShape: "Nessuna forma comune",
   },
   tuner: {
     name: "Accordatore",
