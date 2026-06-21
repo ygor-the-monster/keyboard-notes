@@ -11,6 +11,7 @@
 .dock.open {
   transform: translateX(0);
 }
+/* Tab holds two stacked buttons: expand (opens the full screen) above the toggle (slides the card). */
 .tab {
   flex: none;
   width: 42px;
@@ -18,14 +19,46 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 10px;
-  padding: 16px 0 18px;
-  border: none;
-  cursor: pointer;
   color: #fff;
   background: var(--s-silver);
   border-radius: 0 var(--radius) var(--radius) 0;
   box-shadow: var(--shadow-pop);
+  overflow: hidden;
+}
+.tabExpand {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  padding: 7px 0;
+  border: none;
+  background: rgba(0, 0, 0, 0.14);
+  color: inherit;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+.tabExpand:hover {
+  background: rgba(0, 0, 0, 0.26);
+}
+.tabExpand:focus-visible {
+  outline: 2px solid #fff;
+  outline-offset: -2px;
+}
+.tabToggle {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 14px 0 18px;
+  border: none;
+  background: none;
+  color: inherit;
+  cursor: pointer;
+}
+.tabToggle:focus-visible {
+  outline: 2px solid #fff;
+  outline-offset: -2px;
 }
 .dock.running .tab {
   animation: goal-pulse 0.9s ease-in-out infinite alternate;
@@ -189,10 +222,77 @@
 .step:hover {
   border-color: var(--s-line-strong);
 }
+/* ===== Expanded screen ===== */
+.streak {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+.streakOn {
+  color: var(--s-cinnamon-strong);
+}
+.streakOff {
+  color: var(--s-line-strong);
+}
+.streakNum {
+  font-family: var(--font-content);
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: var(--s-ink);
+  font-variant-numeric: tabular-nums;
+}
+.streakLabel {
+  font-family: var(--font-ui);
+  font-size: 0.9rem;
+  color: var(--s-ink-muted);
+}
+.historyBlock {
+  display: flex;
+  flex-direction: column;
+}
+.fieldLabel {
+  font-family: var(--font-ui);
+  font-size: 0.78rem;
+  color: var(--s-ink-muted);
+  margin-bottom: 10px;
+}
+.history {
+  display: flex;
+  align-items: flex-end;
+  gap: 5px;
+  height: 80px;
+}
+.histBar {
+  flex: 1 1 0;
+  display: flex;
+  align-items: flex-end;
+  height: 100%;
+  background: var(--s-neutral-tint);
+  border-radius: 3px;
+  overflow: hidden;
+}
+.histToday {
+  outline: 2px solid var(--accent-strong, var(--s-silver-strong));
+  outline-offset: 1px;
+}
+.histFill {
+  width: 100%;
+  min-height: 2px;
+  background: var(--s-silver-strong);
+  border-radius: 3px;
+  transition: height 0.3s ease;
+}
+/* Days that met the goal glow seafoam (the app's positive colour). */
+.histMet {
+  background: var(--s-seafoam);
+}
+
 @media (prefers-reduced-motion: reduce) {
   .dock,
   .card,
-  .barFill {
+  .barFill,
+  .histFill {
     transition: none;
   }
   .dock.running .tab {

@@ -16,4 +16,5 @@ export const toolRegistry: Record<string, ToolView> = {
   scratchpad: { id: "scratchpad", labelKey: "scratch.name", accent: "--s-blue" },
   drone: { id: "drone", labelKey: "drone.name", accent: "--s-gold-strong" },
   chords: { id: "chords", labelKey: "visual.name", accent: "--s-seafoam" },
+  practice: { id: "practice", labelKey: "goal.name", accent: "--s-silver-strong" },
 };

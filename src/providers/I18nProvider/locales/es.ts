@@ -207,6 +207,8 @@ export default {
     reset: "Restablecer",
     reached: "¡Objetivo alcanzado!",
     elapsed: "Transcurrido",
+    streak: "Racha",
+    history: "Últimos 14 días",
   },
   reference: {
     name: "Sintaxis",

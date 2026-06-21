@@ -207,6 +207,8 @@ export default {
     reset: "Reset",
     reached: "Goal reached!",
     elapsed: "Elapsed",
+    streak: "Streak",
+    history: "Last 14 days",
   },
   reference: {
     name: "Syntax",

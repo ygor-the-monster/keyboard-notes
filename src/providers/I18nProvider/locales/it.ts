@@ -208,6 +208,8 @@ export default {
     reset: "Reimposta",
     reached: "Obiettivo raggiunto!",
     elapsed: "Trascorso",
+    streak: "Serie",
+    history: "Ultimi 14 giorni",
   },
   reference: {
     name: "Sintassi",

@@ -207,6 +207,8 @@ export default {
     reset: "Zurücksetzen",
     reached: "Ziel erreicht!",
     elapsed: "Verstrichen",
+    streak: "Serie",
+    history: "Letzte 14 Tage",
   },
   reference: {
     name: "Syntax",
