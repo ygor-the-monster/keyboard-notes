@@ -16,6 +16,7 @@ import {
 } from "./StoreProvider.utils.ts";
 import { uid } from "../../utils/cellId/cellId.ts";
 import { clamp } from "../../utils/numeric/numeric.ts";
+import { normalizeTags } from "../../utils/lessonTags/lessonTags.ts";
 import { cellKinds, defaultLesson } from "../../utils/cellKinds/cellKinds.ts";
 import type { AppState, Cell, Kind, Lesson } from "../../utils/cellKinds/cellKinds.ts";
 
@@ -41,6 +42,10 @@ interface StoreApi {
   deleteLesson(id: string): DeletedLesson | null;
   restoreLesson(deleted: DeletedLesson): void;
   setTitle(title: string): void;
+  // Library organization (ADR-0005) — by lesson id, so they work from the Library screen on any
+  // lesson, not just the active one. Neither bumps `updated`: organizing isn't editing.
+  togglePin(id: string): void;
+  setLessonTags(id: string, tags: string[]): void;
   addCell(kind: Kind): string;
   updateCell(cellId: string, patch: Partial<Cell>): void;
   moveCell(cellId: string, dir: number): void;
@@ -171,6 +176,18 @@ export function StoreProvider({ children }: { children: ReactNode }) {
           }
         });
       },
+      togglePin(id) {
+        commit((d) => {
+          const lesson = d.lessons[id];
+          if (lesson) lesson.pinned = !lesson.pinned;
+        });
+      },
+      setLessonTags(id, tags) {
+        commit((d) => {
+          const lesson = d.lessons[id];
+          if (lesson) lesson.tags = normalizeTags(tags);
+        });
+      },
       addCell(kind) {
         const cell = cellKinds[kind].factory();
         commit((d) => {
@@ -271,6 +288,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
           lesson.id = uid();
           lesson.updated = Date.now();
           if (!lesson.created) lesson.created = Date.now();
+          if (lesson.tags !== undefined) lesson.tags = normalizeTags(lesson.tags);
           d.lessons[lesson.id] = lesson;
           d.order.unshift(lesson.id);
           d.activeId = lesson.id;
@@ -299,6 +317,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
             lesson.id = uid();
             if (!lesson.created) lesson.created = Date.now();
             lesson.updated = Date.now();
+            if (lesson.tags !== undefined) lesson.tags = normalizeTags(lesson.tags);
             d.lessons[lesson.id] = lesson;
             d.order.push(lesson.id);
             if (!firstNew) firstNew = lesson.id;

@@ -116,6 +116,11 @@ export interface Lesson {
   created: number;
   updated: number;
   cells: Cell[];
+  // Library organization (ADR-0005). Both optional + additive, so old records/files load unchanged.
+  // `pinned` floats the Lesson to the top of the Library; `tags` are normalized (see lessonTags).
+  // Editing either is organizing, not editing — neither bumps `updated`.
+  pinned?: boolean;
+  tags?: string[];
 }
 
 export interface AppState {

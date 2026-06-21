@@ -22,6 +22,7 @@ import GoalTimer from "../GoalTimer/GoalTimer.tsx";
 import SyntaxRef from "../SyntaxRef/SyntaxRef.tsx";
 import ChordBuilder from "../ChordBuilder/ChordBuilder.tsx";
 import CellRail from "../CellRail/CellRail.tsx";
+import LibraryScreen from "../LibraryScreen/LibraryScreen.tsx";
 import shared from "../../providers/ThemeProvider/ThemeProvider.module.css";
 import s from "./App.module.css";
 
@@ -200,6 +201,7 @@ export default function App() {
         )}
       </div>
       <CellRail />
+      <LibraryScreen />
       <Toasts />
     </div>
   );

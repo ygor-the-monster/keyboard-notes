@@ -5,6 +5,7 @@
 // Cell/Lesson factories live in src/cells/kinds.ts — this file is persistence only.
 import { useCallback, useState } from "react";
 import type { AppState } from "../../utils/cellKinds/cellKinds.ts";
+import { normalizeLessonTags } from "../../utils/lessonTags/lessonTags.ts";
 
 const STORE_KEY = "pianoNotes.v2"; // legacy localStorage key (migrated from, then cleared)
 const DB_NAME = "pianoNotes";
@@ -54,6 +55,9 @@ export function normalizeState(raw: unknown): AppState {
     (id) => lessons[id],
   );
   const activeId = d.activeId && lessons[d.activeId] ? d.activeId : (order[0] ?? null);
+  // Sanitize Library tags on every load (ADR-0005) so a hand-edited / legacy record can't carry a
+  // malformed tags field into the running app.
+  for (const id of order) normalizeLessonTags(lessons[id]);
   return { lessons, order, activeId };
 }
 

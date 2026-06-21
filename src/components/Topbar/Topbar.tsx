@@ -35,6 +35,7 @@ import {
   serializeLibrary,
   lessonFilename,
 } from "../../utils/lessonExport/lessonExport.ts";
+import { LIBRARY_SCREEN } from "../LibraryScreen/LibraryScreen.tsx";
 import IconBtn from "../IconBtn/IconBtn.tsx";
 import ic from "../IconBtn/IconBtn.module.css";
 import f from "../fields/fields.module.css";
@@ -60,7 +61,7 @@ export default function Topbar() {
   const { alert } = useDialog();
   const { t, locale, setLocale, locales } = useI18n();
   const { scheme, toggle: toggleTheme, zoom, setZoom } = useTheme();
-  const { screen } = useRoute();
+  const { screen, openScreen } = useRoute();
   // While a tool screen is open, the lesson title isn't editable — swap it for the tool's name.
   const screenTool = screen ? toolRegistry[screen] : undefined;
   const fileRef = useRef<HTMLInputElement>(null);
@@ -80,11 +81,17 @@ export default function Topbar() {
     return () => ro.disconnect();
   }, []);
 
-  const lessons = state.order.filter((id) => state.lessons[id]);
+  // The dropdown is for quick switching, not browsing — show only the 3 most-recently-touched
+  // lessons; the full Library screen (ADR-0005) is the browse/organize surface.
+  const recentLessons = state.order
+    .filter((id) => state.lessons[id])
+    .sort((a, b) => state.lessons[b].updated - state.lessons[a].updated)
+    .slice(0, 3);
 
   function onMenuAction(key: string | number) {
     const k = String(key);
     if (k === "__new") createLesson();
+    else if (k === "__library") openScreen(LIBRARY_SCREEN);
     else if (k === "__import") fileRef.current?.click();
     else if (k === "__backup") exportBackup();
     else if (k === "__storage") showStorage();
@@ -189,17 +196,20 @@ export default function Topbar() {
           </Button>
           <Popover className={f.menuPopover}>
             <Menu className={f.menu} onAction={onMenuAction}>
-              {lessons.length > 0 && (
+              {recentLessons.length > 0 && (
                 <MenuSection>
-                  {lessons.map((id) => (
+                  {recentLessons.map((id) => (
                     <MenuItem key={id} id={id} className={f.menuItem}>
                       {state.lessons[id].title || t("topbar.untitled")}
                     </MenuItem>
                   ))}
                 </MenuSection>
               )}
-              {lessons.length > 0 && <Separator className={f.menuSeparator} />}
+              {recentLessons.length > 0 && <Separator className={f.menuSeparator} />}
               <MenuSection>
+                <MenuItem id="__library" className={f.menuItem}>
+                  {t("topbar.openLibrary")}
+                </MenuItem>
                 <MenuItem id="__new" className={f.menuItem}>
                   {t("topbar.newLesson")}
                 </MenuItem>

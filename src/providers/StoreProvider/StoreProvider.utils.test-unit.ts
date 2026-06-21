@@ -127,6 +127,20 @@ describe("normalizeState (guards against corrupt persisted records)", () => {
     expect(normalizeState("nope")).toEqual({ lessons: {}, order: [], activeId: null });
   });
 
+  it("sanitizes malformed lesson tags on load (ADR-0005)", () => {
+    const raw = {
+      lessons: {
+        x: { id: "x", title: "X", created: 1, updated: 1, cells: [], tags: ["B", "b", " a ", 7] },
+        y: { id: "y", title: "Y", created: 1, updated: 1, cells: [] }, // untagged stays untagged
+      },
+      order: ["x", "y"],
+      activeId: "x",
+    };
+    const s = normalizeState(raw);
+    expect(s.lessons.x.tags).toEqual(["a", "b"]);
+    expect(s.lessons.y.tags).toBeUndefined();
+  });
+
   it("passes a well-formed state through unchanged", () => {
     const good = state("ok", "Good");
     expect(normalizeState(good)).toEqual(good);

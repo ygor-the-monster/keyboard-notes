@@ -158,6 +158,38 @@ describe("StoreProvider / useStore", () => {
     expect(noteSourceOf(cells, cells[0].id)).toBe("imported");
   });
 
+  it("togglePin flips a lesson's pinned flag without bumping updated", async () => {
+    const { result } = await mountStore();
+    const id = result.current.activeLesson!.id;
+    const updatedBefore = result.current.state.lessons[id].updated;
+    act(() => result.current.togglePin(id));
+    expect(result.current.state.lessons[id].pinned).toBe(true);
+    act(() => result.current.togglePin(id));
+    expect(result.current.state.lessons[id].pinned).toBe(false);
+    // Organizing isn't editing — the recency timestamp must be untouched (ADR-0005).
+    expect(result.current.state.lessons[id].updated).toBe(updatedBefore);
+  });
+
+  it("setLessonTags normalizes the tags and leaves updated untouched", async () => {
+    const { result } = await mountStore();
+    const id = result.current.activeLesson!.id;
+    const updatedBefore = result.current.state.lessons[id].updated;
+    act(() => result.current.setLessonTags(id, ["Bach", "bach ", "  Scales"]));
+    expect(result.current.state.lessons[id].tags).toEqual(["bach", "scales"]);
+    expect(result.current.state.lessons[id].updated).toBe(updatedBefore);
+  });
+
+  it("importLesson normalizes incoming tags", async () => {
+    const { result } = await mountStore();
+    act(() =>
+      result.current.importLesson({
+        cells: [{ id: "c", kind: "note", source: "x" }],
+        tags: ["B", "b", " a "],
+      }),
+    );
+    expect(result.current.activeLesson!.tags).toEqual(["a", "b"]);
+  });
+
   it("importLesson rejects a file with no cells", async () => {
     const { result } = await mountStore();
     expect(() => act(() => result.current.importLesson({ nope: true }))).toThrow(
