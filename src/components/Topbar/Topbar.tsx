@@ -30,6 +30,11 @@ import { useI18n } from "../../providers/I18nProvider/I18nProvider.tsx";
 import { useTheme, ZOOM_LEVELS } from "../../providers/ThemeProvider/ThemeProvider.tsx";
 import { useRoute } from "../../providers/RouteProvider/RouteProvider.tsx";
 import { toolRegistry } from "../../utils/toolRegistry/toolRegistry.ts";
+import {
+  serializeLesson,
+  serializeLibrary,
+  lessonFilename,
+} from "../../utils/lessonExport/lessonExport.ts";
 import IconBtn from "../IconBtn/IconBtn.tsx";
 import ic from "../IconBtn/IconBtn.module.css";
 import f from "../fields/fields.module.css";
@@ -121,12 +126,7 @@ export default function Topbar() {
 
   // Whole-library backup — device-local data has no cloud copy, so this is the safety net.
   function exportBackup() {
-    const data = JSON.stringify(
-      { app: "pianoNotes", version: 3, library: { lessons: state.lessons, order: state.order } },
-      null,
-      2,
-    );
-    const blob = new Blob([data], { type: "application/x-piano-notes" });
+    const blob = new Blob([serializeLibrary(state)], { type: "application/x-piano-notes" });
     const a = document.createElement("a");
     a.href = URL.createObjectURL(blob);
     a.download = "keyboard-notes-backup.pnotes";
@@ -145,17 +145,12 @@ export default function Topbar() {
     alert({ title: t("dialogs.storageTitle"), message: `${usageLine}\n\n${persistLine}`.trim() });
   }
 
-  const lessonJson = () =>
-    JSON.stringify({ app: "pianoNotes", version: 3, lesson: activeLesson }, null, 2);
-  const lessonFilename = () =>
-    (activeLesson?.title || "lesson").replace(/[^\w-]+/g, "_") + ".pnotes";
-
   function exportJson() {
     if (!activeLesson) return;
-    const blob = new Blob([lessonJson()], { type: "application/x-piano-notes" });
+    const blob = new Blob([serializeLesson(activeLesson)], { type: "application/x-piano-notes" });
     const a = document.createElement("a");
     a.href = URL.createObjectURL(blob);
-    a.download = lessonFilename();
+    a.download = lessonFilename(activeLesson);
     a.click();
     setTimeout(() => URL.revokeObjectURL(a.href), 1000);
     toast.positive(t("toast.exported"));
@@ -169,7 +164,9 @@ export default function Topbar() {
 
   async function shareLesson() {
     if (!activeLesson) return;
-    const file = new File([lessonJson()], lessonFilename(), { type: "text/plain" });
+    const file = new File([serializeLesson(activeLesson)], lessonFilename(activeLesson), {
+      type: "text/plain",
+    });
     try {
       await navigator.share({ files: [file], title: activeLesson.title || "Keyboard Notes lesson" });
       toast.positive(t("toast.shared"));

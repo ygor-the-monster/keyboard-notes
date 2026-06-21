@@ -1,9 +1,10 @@
-import { describe, it, expect, beforeEach } from "vitest";
-import { renderHook, act } from "@testing-library/react";
+import { describe, it, expect, beforeEach, vi } from "vitest";
+import { renderHook, act, waitFor } from "@testing-library/react";
 import {
   loadState,
   saveState,
   flushState,
+  setSaveErrorHandler,
   requestPersistentStorage,
   storageEstimate,
   normalizeState,
@@ -67,6 +68,36 @@ describe("StoreProvider persistence", () => {
   it("degrades gracefully when storage APIs are unavailable in jsdom", async () => {
     await expect(requestPersistentStorage()).resolves.toBe(false);
     await expect(storageEstimate()).resolves.toMatchObject({ persisted: false });
+  });
+
+  // A failed persist (full disk / IndexedDB unavailable) must not pass silently — it fires the
+  // registered handler (which the UI turns into a toast). A non-cloneable value (a function) makes
+  // the underlying put reject, standing in for a real write failure.
+  it("fires the save-error handler on a failed write, once until a save succeeds again", async () => {
+    const onError = vi.fn();
+    setSaveErrorHandler(onError);
+    const failing = { ...state("bad", "Bad"), broken: () => {} } as unknown as AppState;
+
+    // First failure surfaces.
+    saveState(failing);
+    flushState();
+    await waitFor(() => expect(onError).toHaveBeenCalledTimes(1));
+
+    // De-duped: a second failure while already-failed does not spam the handler.
+    saveState(failing);
+    flushState();
+    await Promise.resolve();
+    expect(onError).toHaveBeenCalledTimes(1);
+
+    // A successful save clears the failed flag, so the next failure surfaces again.
+    saveState(state("ok", "Ok"));
+    flushState();
+    await loadUntilTitle("Ok");
+    saveState(failing);
+    flushState();
+    await waitFor(() => expect(onError).toHaveBeenCalledTimes(2));
+
+    setSaveErrorHandler(null);
   });
 });
 

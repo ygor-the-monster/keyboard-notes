@@ -2,6 +2,7 @@ import { describe, it, expect } from "vitest";
 import { renderHook, act, waitFor } from "@testing-library/react";
 import type { ReactNode } from "react";
 import { StoreProvider, useStore } from "./StoreProvider.tsx";
+import { serializeLesson } from "../../utils/lessonExport/lessonExport.ts";
 import type { Cell } from "../../utils/cellKinds/cellKinds.ts";
 
 // The store hydrates from IndexedDB (provided in jsdom by fake-indexeddb, see test/setup-unit.ts),
@@ -162,5 +163,34 @@ describe("StoreProvider / useStore", () => {
     expect(() => act(() => result.current.importLesson({ nope: true }))).toThrow(
       /Keyboard Notes file/,
     );
+  });
+
+  // Export → import is the only backup/transfer bridge, so its fidelity is load-bearing. Build a
+  // lesson, serialize it through JSON exactly as the exporter does ({ app, version, lesson }), then
+  // re-import the parsed envelope and assert the cells survive byte-for-byte. A fresh lesson id is
+  // expected (import always mints one); cell ids and content must be preserved.
+  it("round-trips a lesson's cells through export-serialize → import", async () => {
+    const { result } = await mountStore();
+    let noteId = "";
+    let scoreId = "";
+    act(() => {
+      noteId = result.current.addCell("note");
+    });
+    act(() => result.current.updateCell(noteId, { source: "# Practice\n- [ ] scales" }));
+    act(() => {
+      scoreId = result.current.addCell("score");
+    });
+
+    const original = result.current.activeLesson!;
+    const originalCells = original.cells;
+    // Serialize through the real exporter Topbar uses — JSON is the lossy step we're guarding.
+    const parsed = JSON.parse(serializeLesson(original));
+
+    act(() => result.current.importLesson(parsed));
+
+    const imported = result.current.activeLesson!;
+    expect(imported.id).not.toBe(original.id); // a fresh id is minted on import
+    expect(imported.cells).toEqual(originalCells); // …but cells round-trip unchanged
+    expect(imported.cells.map((c) => c.id)).toEqual([noteId, scoreId]);
   });
 });
