@@ -17,9 +17,12 @@ import { useStore } from "../../providers/StoreProvider/StoreProvider.tsx";
 import { useEditing } from "../../providers/EditingProvider/EditingProvider.tsx";
 import { useI18n } from "../../providers/I18nProvider/I18nProvider.tsx";
 import IconBtn from "../IconBtn/IconBtn.tsx";
+import EmptyState from "../EmptyState/EmptyState.tsx";
+import CellErrorBoundary from "../CellErrorBoundary/CellErrorBoundary.tsx";
 import { cellRegistry } from "../../utils/cellRegistry/cellRegistry.tsx";
 import { dropIndex } from "./Cell.dnd.ts";
 import type { Cell as CellModel } from "../../utils/cellKinds/cellKinds.ts";
+import shared from "../../providers/ThemeProvider/ThemeProvider.module.css";
 import s from "./Cell.module.css";
 
 const EDGE = 90; // px band near the scroll edge where auto-scroll engages
@@ -237,7 +240,23 @@ export default function Cell({ cell, index = 0 }: { cell: CellModel; index?: num
         </div>
 
         <div className="cell-body">
-          <Body cell={cell} editing={editing} />
+          <CellErrorBoundary
+            resetKeys={[cell]}
+            fallback={(retry) => (
+              <EmptyState
+                kind={cell.kind}
+                neutral
+                title={t("cell.errBoundaryTitle")}
+                hint={t("cell.errBoundaryHint")}
+              >
+                <button type="button" className={shared.btnSecondary} onClick={retry}>
+                  {t("cell.errBoundaryRetry")}
+                </button>
+              </EmptyState>
+            )}
+          >
+            <Body cell={cell} editing={editing} />
+          </CellErrorBoundary>
         </div>
       </section>
       {dragging && (

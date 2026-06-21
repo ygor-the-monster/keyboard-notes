@@ -102,6 +102,9 @@ export default {
     errNotation: "Notation error: {msg}",
     errNoAudio: "Audio playback isn't supported in this browser.",
     errPlay: "Could not play: {msg}",
+    errBoundaryTitle: "This cell couldn’t be displayed",
+    errBoundaryHint: "Your other cells are safe. Try again, or edit the cell to fix it.",
+    errBoundaryRetry: "Try again",
   },
   theme: {
     dark: "Dark mode",
