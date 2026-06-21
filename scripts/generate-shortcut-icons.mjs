@@ -31,6 +31,11 @@ const ICONS = [
   { out: "shortcut-new", glyph: "NotePencil", bg: "#f6f5f1", ink: INK, border: "rgba(19,19,19,0.10)" },
   { out: "shortcut-metronome", glyph: "Metronome", bg: "rgb(217,35,97)", ink: CREAM }, // --s-magenta
   { out: "shortcut-tuner", glyph: "MusicNote", bg: "rgb(131,67,43)", ink: CREAM }, // --s-cinnamon-strong
+  { out: "shortcut-drone", glyph: "Waveform", bg: "rgb(150,110,0)", ink: CREAM }, // --s-gold-strong
+  { out: "shortcut-scratchpad", glyph: "NotePencil", bg: "rgb(35,101,224)", ink: CREAM }, // --s-blue
+  { out: "shortcut-chords", glyph: "PianoKeys", bg: "rgb(7,129,109)", ink: CREAM }, // --s-seafoam
+  { out: "shortcut-practice", glyph: "Timer", bg: "rgb(84,90,104)", ink: CREAM }, // --s-silver-strong
+  { out: "shortcut-syntax", glyph: "Code", bg: "rgb(154,71,226)", ink: CREAM }, // --s-purple
 ];
 
 const offset = (256 * (1 - SCALE)) / 2; // center the scaled 256-unit glyph

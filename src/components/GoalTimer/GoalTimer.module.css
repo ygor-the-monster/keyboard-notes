@@ -134,7 +134,7 @@
   font-variant-numeric: tabular-nums;
 }
 .reachedTime {
-  color: var(--s-seafoam);
+  color: var(--s-silver-strong);
 }
 .bar {
   height: 8px;
@@ -153,7 +153,7 @@
   font-family: var(--font-ui);
   font-weight: 600;
   font-size: 0.9rem;
-  color: var(--s-seafoam);
+  color: var(--s-silver-strong);
 }
 .controls {
   display: flex;
@@ -230,7 +230,7 @@
   gap: 8px;
 }
 .streakOn {
-  color: var(--s-cinnamon-strong);
+  color: var(--s-silver-strong);
 }
 .streakOff {
   color: var(--s-line-strong);
@@ -279,13 +279,13 @@
 .histFill {
   width: 100%;
   min-height: 2px;
-  background: var(--s-silver-strong);
+  background: var(--s-silver);
   border-radius: 3px;
   transition: height 0.3s ease;
 }
-/* Days that met the goal glow seafoam (the app's positive colour). */
+/* Days that met the goal read as a stronger silver (still achromatic — this is a tool, not content). */
 .histMet {
-  background: var(--s-seafoam);
+  background: var(--s-silver-strong);
 }
 
 @media (prefers-reduced-motion: reduce) {
