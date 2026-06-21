@@ -53,6 +53,12 @@
   overflow: hidden;
   text-overflow: ellipsis;
 }
+/* With a tool screen open, the title is a plain label (not the editable lesson input), so keep the
+   bar on one row and let the title ellipsize rather than pushing the action buttons to a 2nd line
+   (the mobile wrap below is meant for the lesson title, which drops to its own row instead). */
+.bar:has(.screenTitle) {
+  flex-wrap: nowrap;
+}
 .titleInput {
   width: 100%;
   font-family: var(--font-content);
