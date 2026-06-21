@@ -1,6 +1,7 @@
 import { describe, it, expect, afterEach } from "vitest";
 import { render, cleanup, fireEvent, screen } from "@testing-library/react";
 import { I18nProvider } from "../../providers/I18nProvider/I18nProvider.tsx";
+import { RouteProvider } from "../../providers/RouteProvider/RouteProvider.tsx";
 import ChordBuilder from "./ChordBuilder.tsx";
 
 afterEach(cleanup);
@@ -8,7 +9,9 @@ afterEach(cleanup);
 const renderBuilder = () =>
   render(
     <I18nProvider>
-      <ChordBuilder />
+      <RouteProvider>
+        <ChordBuilder />
+      </RouteProvider>
     </I18nProvider>,
   );
 
