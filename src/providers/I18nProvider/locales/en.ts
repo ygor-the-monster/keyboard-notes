@@ -214,6 +214,11 @@ export default {
     name: "Syntax",
     show: "Show syntax reference",
     hide: "Hide syntax reference",
+    templates: "Templates",
+    copy: "Copy",
+    copied: "Copied to clipboard",
+    copyFailed: "Couldn’t copy",
+    tpl: { chord: "Chord chart", abc: "ABC tune", note: "Practice note" },
   },
   visual: {
     name: "Reference",

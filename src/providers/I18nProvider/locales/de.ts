@@ -214,6 +214,11 @@ export default {
     name: "Syntax",
     show: "Syntaxreferenz anzeigen",
     hide: "Syntaxreferenz ausblenden",
+    templates: "Vorlagen",
+    copy: "Kopieren",
+    copied: "Kopiert",
+    copyFailed: "Kopieren fehlgeschlagen",
+    tpl: { chord: "Akkordblatt", abc: "ABC-Stück", note: "Übungsnotiz" },
   },
   visual: {
     name: "Referenz",

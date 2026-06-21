@@ -214,6 +214,11 @@ export default {
     name: "Syntaxe",
     show: "Afficher la référence de syntaxe",
     hide: "Masquer la référence de syntaxe",
+    templates: "Modèles",
+    copy: "Copier",
+    copied: "Copié",
+    copyFailed: "Copie impossible",
+    tpl: { chord: "Grille d'accords", abc: "Air ABC", note: "Note de travail" },
   },
   visual: {
     name: "Référence",

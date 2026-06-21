@@ -214,6 +214,11 @@ export default {
     name: "Sintaxis",
     show: "Mostrar referencia de sintaxis",
     hide: "Ocultar referencia de sintaxis",
+    templates: "Plantillas",
+    copy: "Copiar",
+    copied: "Copiado",
+    copyFailed: "No se pudo copiar",
+    tpl: { chord: "Cifrado", abc: "Melodía ABC", note: "Nota de práctica" },
   },
   visual: {
     name: "Referencia",

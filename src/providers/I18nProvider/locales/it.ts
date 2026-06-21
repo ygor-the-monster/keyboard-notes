@@ -215,6 +215,11 @@ export default {
     name: "Sintassi",
     show: "Mostra riferimento della sintassi",
     hide: "Nascondi riferimento della sintassi",
+    templates: "Modelli",
+    copy: "Copia",
+    copied: "Copiato",
+    copyFailed: "Impossibile copiare",
+    tpl: { chord: "Griglia accordi", abc: "Brano ABC", note: "Nota di studio" },
   },
   visual: {
     name: "Riferimento",

@@ -80,6 +80,9 @@
   --accent: var(--screen-accent);
   --accent-strong: color-mix(in srgb, var(--screen-accent) 86%, black);
   --accent-ring: color-mix(in srgb, var(--screen-accent) 30%, transparent);
+  /* Tint must be set here too, or accent-tint-using controls (e.g. the chord keyboard's pressed
+     keys) fall back to the global default accent (magenta) and look off-theme. */
+  --accent-tint: color-mix(in srgb, var(--screen-accent) 16%, var(--canvas));
 }
 /* Writing/list tools want room and a top-aligned column that fills the height. */
 .bodyWide {

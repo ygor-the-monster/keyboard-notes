@@ -214,6 +214,11 @@ export default {
     name: "Sintaxe",
     show: "Mostrar referência de sintaxe",
     hide: "Ocultar referência de sintaxe",
+    templates: "Modelos",
+    copy: "Copiar",
+    copied: "Copiado",
+    copyFailed: "Não foi possível copiar",
+    tpl: { chord: "Cifra", abc: "Melodia ABC", note: "Nota de estudo" },
   },
   visual: {
     name: "Referência",
