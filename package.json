@@ -9,6 +9,7 @@
     "build": "vite build",
     "icons:maskable": "node scripts/generate-maskable-icon.mjs",
     "icons:shortcuts": "node scripts/generate-shortcut-icons.mjs",
+    "assets": "npm run icons:maskable && npm run icons:shortcuts && npm run fonts:build",
     "screenshots": "vite build && node scripts/generate-tool-screenshots.mjs",
     "fonts:fetch": "node scripts/fetch-font-originals.mjs",
     "fonts:build": "node scripts/build-fonts.mjs",

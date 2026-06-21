@@ -42,18 +42,12 @@ jobs:
       - name: Test
         run: npm run test
 
-      # Recompose the maskable PWA icon from its source layers so the deployed
-      # icon always matches public/icons/icon-fg.png + public/icons/icon-bg.png.
-      - name: Generate maskable icon
-        run: npm run icons:maskable
-
-      # Re-subset the self-hosted fonts from the originals in fonts/ into public/fonts/,
-      # then fail if the committed output drifted (originals changed without rebuilding).
-      - name: Build fonts
-        run: |
-          npm run fonts:build
-          git diff --exit-code public/fonts \
-            || { echo "::error::public/fonts is stale — run 'npm run fonts:build' and commit."; exit 1; }
+      # Regenerate the gitignored assets from their committed sources before building, so dist
+      # always carries fresh art: the maskable icon (from icons/icon-fg.png + icon-bg.png), the
+      # shortcut icons (Phosphor glyphs on accent tiles), and the subset fonts (from fonts/).
+      # Tool/lesson screenshots stay committed, so they're already in public/.
+      - name: Generate assets
+        run: npm run assets
 
       - name: Build
         run: npm run build

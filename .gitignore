@@ -9,6 +9,14 @@ dist-ssr/
 dev-dist/
 *.tsbuildinfo
 
+# Generated assets — rebuilt from their committed sources by `npm run assets` (the prepare
+# lifecycle runs it on install + in CI). Sources stay tracked: fonts/ originals, public/icons/
+# icon-fg.png + icon-bg.png, the hand-authored SVGs, public/icon-detailed.png, and the
+# public/screenshots (lesson shots hand-captured; tool shots committed by choice).
+/public/fonts/
+/public/icons/maskable-icon-*.png
+/public/icons/shortcut-*.png
+
 # Test / coverage
 coverage/
 .vitest/
