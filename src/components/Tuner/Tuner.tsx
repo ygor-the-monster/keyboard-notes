@@ -4,6 +4,7 @@ import { useTuner } from "./Tuner.hooks.ts";
 import { useI18n } from "../../providers/I18nProvider/I18nProvider.tsx";
 import { useRoute } from "../../providers/RouteProvider/RouteProvider.tsx";
 import { usePref } from "../../providers/StoreProvider/StoreProvider.utils.ts";
+import { useRefPitch } from "../../hooks/useRefPitch.ts";
 import { NOTE_NAMES, noteToFreq } from "../../utils/pitch/pitch.ts";
 import { Select, SelectItem } from "../fields/Select.tsx";
 import ToolScreen from "../ToolScreen/ToolScreen.tsx";
@@ -34,7 +35,7 @@ export default function Tuner({ autostart = false }: { autostart?: boolean }) {
   const { t: tr } = useI18n();
   const { screen, openScreen, closeScreen } = useRoute();
   const [open, setOpen] = useState(false);
-  const [a4, setA4] = usePref("tuner.a4", 440);
+  const [a4, setA4] = useRefPitch();
   const [target, setTarget] = usePref("tuner.target", "chromatic");
   const [customNote, setCustomNote] = usePref("tuner.customNote", 9); // A
   const [customOctave, setCustomOctave] = usePref("tuner.customOctave", 4);

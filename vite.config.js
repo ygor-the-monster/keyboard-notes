@@ -125,6 +125,20 @@ export default defineConfig({
             form_factor: "narrow",
             label: "The scratchpad's full screen on a phone",
           },
+          {
+            src: "screenshots/tool-drone-wide.png",
+            sizes: "1440x900",
+            type: "image/png",
+            form_factor: "wide",
+            label: "The drone's full screen — chords, warm timbre and a scale to play over",
+          },
+          {
+            src: "screenshots/tool-drone-narrow.png",
+            sizes: "412x915",
+            type: "image/png",
+            form_factor: "narrow",
+            label: "The drone's full screen on a phone",
+          },
         ],
         // Static fallback (manifests can't track color-scheme); the app boots light and
         // ThemeProvider updates the live <meta name="theme-color"> to follow the user's scheme.
