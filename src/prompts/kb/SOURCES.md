@@ -16,9 +16,11 @@ Structured (non-Markdown) sources can be added later by writing a small adapter 
 script that emits the same `{ text, title, source }` chunk shape.
 
 ## Current sources
+
+### Original (project-licensed)
 | File | Provenance | License |
 | --- | --- | --- |
-| `fundamentals.md` | Original, written for this app | Project (proprietary, ships with the app) |
+| `fundamentals.md` | Original, written for this app | Project |
 | `scales-and-modes.md` | Original | Project |
 | `chords-and-sevenths.md` | Original | Project |
 | `progressions-and-cadences.md` | Original | Project |
@@ -26,13 +28,17 @@ script that emits the same `{ text, title, source }` chunk shape.
 | `expression.md` | Original | Project |
 | `notation-abc.md` | Original (app-specific ABC / chord-chart syntax) | Project |
 
-## Candidate external sources (not yet ingested)
-Evaluated for later expansion. Anything ingested must have its license verified and recorded here,
-with attribution carried into each chunk's `source` field.
+### External (vendored under `vendor/`, CC BY-SA 4.0)
+Each external source is vendored verbatim (so we redistribute it transparently per ShareAlike), and
+every chunk it produces carries an attributing `source` field. The in-app tutor shows a visible
+credit line (`chat.sources`). Derivative KB content from these is itself CC BY-SA 4.0.
 
-- **Music-Theory-Data** (normalized YAML: scales, chords, intervals) — strong fit; verify license.
-- **Open Music Theory** (Markdown textbook) — ideal format, but the GitHub repo has **no LICENSE
-  file**; confirm it is CC BY-SA (and carry attribution + share-alike) before ingesting.
+| Source | Vendored at | Author | License | Used for |
+| --- | --- | --- | --- | --- |
+| [music-theory-data](https://github.com/seancolsen/music-theory-data) | `vendor/music-theory-data/` | Sean Colsen | CC BY-SA 4.0 | Chord qualities + a curated set of common scales, decoded from the semitone bitmask into prose (see the YAML adapter in `scripts/build-kb-index.mjs`). The full `Scales.yaml` is vendored; the adapter emits only common scales. |
+| [Open Music Theory](https://openmusictheory.github.io/) | `vendor/open-music-theory/` | Shaffer, Hughes, Moseley et al. | CC BY-SA 4.0 | Selected chapters (embellishing/non-chord tones, harmonic functions), cleaned of Jekyll/image markup and chunked by heading. |
+
+## Candidate external sources (not yet ingested)
 - **Chordonomicon** (chord-progression dataset, CSV) — useful for progression questions; verify
   license (some chord datasets are CC BY-NC).
 - **PDMX / KernScores / FMA / MTG-Jamendo** — score corpora and track metadata. Out of scope for a

@@ -222,6 +222,17 @@
   opacity: 0.5;
   cursor: default;
 }
+
+/* Attribution for the CC BY-SA knowledge-base sources — kept visible (a license requirement) but
+   quiet. */
+.sources {
+  margin: 0;
+  font-family: var(--font-ui);
+  font-size: 0.68rem;
+  line-height: 1.4;
+  color: var(--s-ink-muted);
+  text-align: center;
+}
 .send[data-pressed] {
   opacity: 0.85;
 }

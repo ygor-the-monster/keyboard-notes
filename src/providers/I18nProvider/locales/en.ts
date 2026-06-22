@@ -49,6 +49,7 @@ export default {
     thinking: "Thinking…",
     errUnsupported: "This browser can’t run the on-device tutor (WebGPU is required). Try a recent Chrome, Edge, or Safari.",
     errFailed: "The tutor failed: {msg}",
+    sources: "Theory grounded in music-theory-data and Open Music Theory · CC BY-SA 4.0",
   },
   common: {
     cancel: "Cancel",

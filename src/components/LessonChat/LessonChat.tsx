@@ -215,6 +215,7 @@ export default function LessonChat() {
               {t("chat.send")}
             </Button>
           </div>
+          <p className={s.sources}>{t("chat.sources")}</p>
         </div>
       </div>
     </section>

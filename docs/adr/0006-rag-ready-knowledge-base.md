@@ -40,11 +40,13 @@ Markdown sources we author, with a pipeline designed so new sources are a drop-i
 
 ## Boundaries
 
-- **External sources are deferred, not adopted.** Markdown/YAML corpora (e.g. Music-Theory-Data,
-  Open Music Theory) fit the pluggable design — a source is just *files + an adapter emitting
-  `{text, metadata}`* — but each must have its license verified and recorded in `SOURCES.md` before
-  ingestion, since RAG commits the chunk text. Score corpora and track-metadata datasets (PDMX,
-  KernScores, FMA, MTG-Jamendo) are out of scope: they answer "what piece/song", not theory.
+- **External sources are pluggable** — a source is just *files + an adapter emitting
+  `{text, metadata}`*. Two are now ingested (both CC BY-SA 4.0, vendored under `src/prompts/kb/vendor/`
+  with attribution carried into each chunk's `source` field and a visible in-app credit):
+  **music-theory-data** (YAML → prose adapter for chord qualities + common scales) and **Open Music
+  Theory** (selected Markdown chapters, cleaned + chunked). Derivative KB content from these is
+  itself CC BY-SA. Score corpora and track-metadata datasets (PDMX, KernScores, FMA, MTG-Jamendo)
+  remain out of scope: they answer "what piece/song", not theory.
 - **Vectors are stored as float32 JSON.** At ~60 chunks the index is ~240 KB; int8 quantization is
   an obvious later optimization once the corpus grows, and the self-describing header leaves room to
   record it.

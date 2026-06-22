@@ -51,6 +51,7 @@ export default {
     thinking: "Pensando…",
     errUnsupported: "Este navegador não consegue rodar o tutor no dispositivo (é necessário WebGPU). Tente um Chrome, Edge ou Safari recente.",
     errFailed: "O tutor falhou: {msg}",
+    sources: "Teoria baseada em music-theory-data e Open Music Theory · CC BY-SA 4.0",
   },
   common: {
     cancel: "Cancelar",
