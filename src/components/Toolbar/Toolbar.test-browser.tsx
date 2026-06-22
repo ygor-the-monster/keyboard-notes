@@ -5,8 +5,7 @@ import type { Tool } from "./Toolbar.tsx";
 
 afterEach(cleanup);
 
-const renderToolbar = (tools: Tool[]) =>
-  render(<Toolbar label="Test tools" tools={tools} />);
+const renderToolbar = (tools: Tool[]) => render(<Toolbar label="Test tools" tools={tools} />);
 
 describe("Toolbar (React Aria buttons)", () => {
   it("renders a labelled toolbar and fires an action tool's onUse", () => {

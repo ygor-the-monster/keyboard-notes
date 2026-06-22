@@ -31,6 +31,8 @@ import {
   UserSoundIcon as UserSound,
 } from "@phosphor-icons/react";
 import { addStaff, removeStaff, staffIds, SMUFL } from "./ScoreCell.utils.ts";
+import { buildAssistantTool } from "../AssistantPanel/assistantTool.ts";
+import { runNotationTransform } from "../../utils/notationAssistant/notationAssistant.ts";
 import type { GroupOption, Tool } from "../Toolbar/Toolbar.tsx";
 
 const TEMPO_STEP = 2;
@@ -464,5 +466,18 @@ export function buildScoreTools({
       disabled: staffIds(headerNow(), bodyNow()).length <= 1,
       onUse: () => applyScore(removeStaff(headerNow(), bodyNow())),
     },
+    { kind: "sep" },
+    // On-device "describe an edit" assistant — last in the list (an optional power feature, not
+    // pushed up front). Runs a small LLM in the browser, validates its ABC against abcjs, and
+    // applies it. The heavy model loads lazily on first use (see AssistantPanel).
+    buildAssistantTool<{ header?: string; body: string }>({
+      t,
+      hintKey: "assistant.hint",
+      accent: "--s-magenta", // matches cellRegistry score hue
+      snapshot: () => ({ header: headerNow(), body: bodyNow() }),
+      apply: applyScore,
+      transform: (instruction, onProgress, tier) =>
+        runNotationTransform(instruction, headerNow(), bodyNow(), onProgress, tier),
+    }),
   ];
 }

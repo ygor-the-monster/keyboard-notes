@@ -1,6 +1,42 @@
 // Español — mirrors the shape of en.js. Any missing key falls back to the
 // English string (see I18nProvider).
 export default {
+  ai: {
+    tier: {
+      label: "Modelo de IA",
+      fast: "Rápido",
+      smart: "Inteligente",
+      ultra: "Ultra",
+      fastNote: "Modelo rápido de 1,2 B — respuestas ágiles, funciona en casi cualquier dispositivo.",
+      smartNote: "Modelo de 3 B — mejor razonamiento y ediciones más fiables. Descarga más grande.",
+      ultraNote:
+        "Modelo de clase 8 B — máxima calidad, pero descarga grande y requiere una GPU potente.",
+    },
+  },
+  assistant: {
+    toolLabel: "Asistente de notación — describe una edición",
+    title: "Asistente de notación",
+    hint: "Describe una edición en lenguaje sencillo — p. ej. «separar cada tres tiempos» u «ordenar el espaciado». Se ejecuta por completo en tu dispositivo.",
+    hintNote:
+      "Describe una edición en lenguaje sencillo — p. ej. «convertir en lista con viñetas» o «corregir los títulos». Se ejecuta por completo en tu dispositivo.",
+    hintChords:
+      "Describe una edición en lenguaje sencillo — p. ej. «alinear los acordes sobre la letra» o «añadir una sección de introducción». Se ejecuta por completo en tu dispositivo.",
+    placeholder: "Describe la edición…",
+    run: "Transformar",
+    enableTitle: "¿Activar el asistente en el dispositivo?",
+    enableMsg:
+      "La primera vez descarga un modelo de IA (alrededor de {size}) en tu dispositivo. Después funciona totalmente sin conexión — nunca se envía nada a un servidor.",
+    enableConfirm: "Descargar y activar",
+    downloading: "Descargando el modelo… {pct}%",
+    loading: "Cargando el modelo…",
+    thinking: "Pensando…",
+    errUnsupported:
+      "Este navegador no puede ejecutar el asistente en el dispositivo (se requiere WebGPU). Prueba con un Chrome, Edge o Safari reciente.",
+    errInvalid:
+      "El asistente no pudo producir una notación válida. Intenta reformular la instrucción.",
+    errFailed: "El asistente falló: {msg}",
+    revert: "Deshacer",
+  },
   common: {
     cancel: "Cancelar",
     confirm: "Confirmar",
@@ -65,6 +101,7 @@ export default {
   },
   rail: {
     label: "Esquema de la lección",
+    tutor: "Ir al tutor de música",
   },
   addbar: {
     title: "Añadir una celda",
@@ -151,7 +188,12 @@ export default {
     levelWeak: "Débil",
     levelStrong: "Fuerte",
     subdivision: "Subdivisión",
-    sub: { none: "Ninguna", eighths: "Corcheas", triplets: "Tresillos", sixteenths: "Semicorcheas" },
+    sub: {
+      none: "Ninguna",
+      eighths: "Corcheas",
+      triplets: "Tresillos",
+      sixteenths: "Semicorcheas",
+    },
     polyrhythm: "Polirritmia",
     polyOff: "Apagado",
   },

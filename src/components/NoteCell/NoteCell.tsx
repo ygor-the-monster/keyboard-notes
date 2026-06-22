@@ -58,7 +58,15 @@ export default function NoteCell({ cell, editing }: { cell: CellOf<"note">; edit
 
   return (
     <div style={{ display: "flex", flexDirection: "column", rowGap: 8 }}>
-      <Toolbar label={t("cell.formatTools")} tools={buildNoteTools({ t, format })} />
+      <Toolbar
+        label={t("cell.formatTools")}
+        tools={buildNoteTools({
+          t,
+          format,
+          sourceNow: () => taRef.current?.value ?? cell.source,
+          applySource: (next) => updateCell(cell.id, next),
+        })}
+      />
       <textarea
         ref={taRef}
         className={`${shared.codeMono} no-print`}

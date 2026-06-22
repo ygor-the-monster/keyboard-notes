@@ -13,6 +13,7 @@
     "screenshots": "vite build && node scripts/generate-tool-screenshots.mjs",
     "fonts:fetch": "node scripts/fetch-font-originals.mjs",
     "fonts:build": "node scripts/build-fonts.mjs",
+    "kb:index": "node scripts/build-kb-index.mjs",
     "preview": "vite preview",
     "lint": "oxlint",
     "lint:fix": "oxlint --fix",
@@ -27,6 +28,7 @@
     "format:check": "oxfmt --check src"
   },
   "dependencies": {
+    "@huggingface/transformers": "^4.2.0",
     "@phosphor-icons/react": "^2.1.10",
     "abcjs": "^6.4.3",
     "marked": "^18.0.5",

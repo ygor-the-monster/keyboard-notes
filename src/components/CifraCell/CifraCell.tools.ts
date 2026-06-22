@@ -1,6 +1,8 @@
 import { ArrowUUpLeftIcon as ArrowUUpLeft } from "@phosphor-icons/react";
 import type { Tool } from "../Toolbar/Toolbar.tsx";
 import { transposeLabel } from "./CifraCell.utils.ts";
+import { buildAssistantTool } from "../AssistantPanel/assistantTool.ts";
+import { runTextTransform } from "../../utils/notationAssistant/notationAssistant.ts";
 
 // Transpose + auto-scroll controls, shared by the performance (rendered) and editor views —
 // auto-scroll belongs in both, since you may set it up while editing too.
@@ -12,11 +14,15 @@ export function buildCifraTools({
   transpose,
   setTranspose,
   scrollTools,
+  sourceNow,
+  applySource,
 }: {
   t: (key: string, vars?: Record<string, unknown>) => string;
   transpose: number;
   setTranspose: (n: number) => void;
   scrollTools: Tool[];
+  sourceNow: () => string;
+  applySource: (next: { source: string }) => void;
 }): Tool[] {
   return [
     {
@@ -42,5 +48,19 @@ export function buildCifraTools({
       : []),
     { kind: "sep" },
     ...scrollTools,
+    { kind: "sep" },
+    // On-device assistant — last in the list (an optional power feature, not pushed up front).
+    // Edits the chord chart from a plain-language instruction (AssistantPanel).
+    buildAssistantTool<{ source: string }>({
+      t,
+      hintKey: "assistant.hintChords",
+      accent: "--s-cinnamon", // matches cellRegistry cifra hue
+      snapshot: () => ({ source: sourceNow() }),
+      apply: applySource,
+      transform: (instruction, onProgress, tier) =>
+        runTextTransform("chords", instruction, sourceNow(), onProgress, tier).then((source) => ({
+          source,
+        })),
+    }),
   ];
 }

@@ -1,0 +1,131 @@
+/* A segmented control for the AI model tier (Fast / Smart / Ultra). The active segment uses the
+   inherited --accent so it matches whatever surface hosts it. Used in roomy contexts (the tutor
+   card), so it carries its own breathing room and a divider from the content below. */
+.wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  padding: 14px 0;
+  border-bottom: 1px solid var(--s-line);
+}
+
+.seg {
+  position: relative;
+  display: flex;
+  background: var(--canvas);
+  border: 1px solid var(--s-line);
+  border-radius: var(--radius-pill);
+  padding: 3px;
+}
+
+/* The sliding pill. Sits behind the labels; its gradient (--seg-active, the tutor card's rainbow)
+   is scaled to the full track width and shifted per slot, so the band looks continuous across all
+   three segments while the pill itself slides to the active one. */
+.thumb {
+  position: absolute;
+  top: 3px;
+  bottom: 3px;
+  left: 3px;
+  width: calc((100% - 6px) / 3);
+  border-radius: var(--radius-pill);
+  background-image: var(--seg-active, var(--accent));
+  background-size: 300% 100%;
+  background-repeat: no-repeat;
+  transition:
+    transform 0.28s cubic-bezier(0.2, 0.8, 0.2, 1),
+    background-position 0.28s cubic-bezier(0.2, 0.8, 0.2, 1);
+  pointer-events: none;
+}
+
+.opt {
+  position: relative;
+  z-index: 1;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1px;
+  border: none;
+  background: none;
+  cursor: pointer;
+  border-radius: var(--radius-pill);
+  padding: 5px 6px;
+  font-family: var(--font-ui);
+  color: var(--s-ink);
+  transition: color 0.2s ease;
+}
+.opt:hover {
+  color: var(--accent);
+}
+/* Active label sits on the rainbow pill. */
+.optOn,
+.optOn:hover {
+  color: #fff;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .thumb {
+    transition: none;
+  }
+}
+
+.name {
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+.size {
+  font-size: 0.62rem;
+  font-weight: 500;
+  opacity: 0.72;
+}
+
+.note {
+  margin: 0;
+  font-family: var(--font-ui);
+  font-size: 0.72rem;
+  line-height: 1.4;
+  color: var(--s-ink-muted);
+  text-align: center;
+}
+
+/* Compact variant — a native dropdown that tucks beside the Transform button in the assistant
+   popups (where vertical space is tight). */
+.compact {
+  display: inline-flex;
+  align-items: center;
+  /* In the assistant popup's button row, hug the left so Transform/Undo stay on the right. */
+  margin-right: auto;
+}
+/* Custom chevron (appearance:none) so the arrow has room from the edge — native arrows sit flush. */
+.select {
+  font-family: var(--font-ui);
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--s-ink);
+  background-color: var(--canvas);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23888888' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 11px center;
+  border: 1px solid var(--s-line);
+  border-radius: var(--radius-pill);
+  padding: 6px 32px 6px 14px;
+  cursor: pointer;
+  appearance: none;
+  -webkit-appearance: none;
+}
+.select:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-ring);
+}
+.srOnly {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}

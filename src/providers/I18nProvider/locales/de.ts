@@ -1,6 +1,42 @@
 // German (de) — mirrors the English source-of-truth shape; any missing key falls
 // back to the English string (see I18nProvider).
 export default {
+  ai: {
+    tier: {
+      label: "KI-Modell",
+      fast: "Schnell",
+      smart: "Klug",
+      ultra: "Ultra",
+      fastNote: "Schnelles 1,2-B-Modell — flotte Antworten, läuft auf fast jedem Gerät.",
+      smartNote: "3-B-Modell — bessere Logik und zuverlässigere Änderungen. Größerer Download.",
+      ultraNote:
+        "Modell der 8-B-Klasse — beste Qualität, aber großer Download und leistungsstarke GPU nötig.",
+    },
+  },
+  assistant: {
+    toolLabel: "Notations-Assistent — Änderung beschreiben",
+    title: "Notations-Assistent",
+    hint: "Beschreibe eine Änderung in einfacher Sprache — z. B. „jeden dritten Schlag trennen“ oder „Abstände aufräumen“. Läuft vollständig auf deinem Gerät.",
+    hintNote:
+      "Beschreibe eine Änderung in einfacher Sprache — z. B. „in eine Aufzählung umwandeln“ oder „Überschriften korrigieren“. Läuft vollständig auf deinem Gerät.",
+    hintChords:
+      "Beschreibe eine Änderung in einfacher Sprache — z. B. „Akkorde über dem Text ausrichten“ oder „einen Intro-Abschnitt hinzufügen“. Läuft vollständig auf deinem Gerät.",
+    placeholder: "Änderung beschreiben…",
+    run: "Umwandeln",
+    enableTitle: "Assistent auf dem Gerät aktivieren?",
+    enableMsg:
+      "Beim ersten Mal wird ein KI-Modell (etwa {size}) auf dein Gerät geladen. Danach läuft es vollständig offline — es wird nie etwas an einen Server gesendet.",
+    enableConfirm: "Herunterladen & aktivieren",
+    downloading: "Modell wird heruntergeladen… {pct} %",
+    loading: "Modell wird geladen…",
+    thinking: "Denkt nach…",
+    errUnsupported:
+      "Dieser Browser kann den Assistenten nicht auf dem Gerät ausführen (WebGPU erforderlich). Versuche ein aktuelles Chrome, Edge oder Safari.",
+    errInvalid:
+      "Der Assistent konnte keine gültige Notation erzeugen. Formuliere die Anweisung anders.",
+    errFailed: "Der Assistent ist fehlgeschlagen: {msg}",
+    revert: "Rückgängig",
+  },
   common: {
     cancel: "Abbrechen",
     confirm: "Bestätigen",
@@ -65,6 +101,7 @@ export default {
   },
   rail: {
     label: "Lektionsübersicht",
+    tutor: "Zum Musik-Tutor springen",
   },
   addbar: {
     title: "Zelle hinzufügen",

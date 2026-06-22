@@ -21,7 +21,7 @@ function collectKeys(): Set<string> {
     return key;
   };
   const noop = () => {};
-  buildNoteTools({ t, format: noop });
+  buildNoteTools({ t, format: noop, sourceNow: () => "", applySource: noop });
   buildScoreTools({
     t,
     ins: noop,

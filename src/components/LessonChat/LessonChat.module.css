@@ -1,0 +1,227 @@
+/* The docked music-tutor card. Reads as a distinct "cell" below the add-strip: same surface/line
+   tokens as the editor cards, but instead of one cell hue it wears the rainbow --tutor-gradient
+   (it's the one card grounded in every cell type). A thin gradient hairline tops the card. */
+.card {
+  position: relative;
+  /* Generous gap so the tutor reads as separate furniture, not another item on the add-strip. */
+  margin-top: 40px;
+  border: 1px solid var(--s-line);
+  border-radius: var(--radius-md, 12px);
+  background: var(--surface);
+  overflow: hidden;
+}
+.card::before {
+  content: "";
+  position: absolute;
+  inset: 0 0 auto 0;
+  height: 3px;
+  background: var(--tutor-gradient);
+  z-index: 1;
+}
+
+/* Off-screen <svg> holding only the sparkle's gradient def — takes no layout space. */
+.defs {
+  position: absolute;
+  width: 0;
+  height: 0;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 12px 14px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  text-align: left;
+  color: var(--s-ink);
+}
+/* Neutral ivory hover — the tutor isn't a single-hue cell, so it shouldn't flash an accent tint. */
+.header:hover {
+  background: var(--canvas);
+}
+/* CSS fill beats the icon's `fill="currentColor"` attribute; falls back to the accent if the
+   gradient ref ever fails to resolve. */
+.spark {
+  color: var(--accent);
+  fill: url(#tutor-grad);
+  flex: none;
+}
+.titles {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-width: 0;
+}
+.title {
+  font-family: var(--font-ui);
+  font-size: 0.92rem;
+  font-weight: 600;
+}
+/* Gradient title text — the readable "strong"-shade sweep clipped to the glyphs. */
+.titleGrad {
+  background: var(--tutor-gradient-text);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  width: fit-content;
+}
+.subtitle {
+  font-family: var(--font-ui);
+  font-size: 0.74rem;
+  color: var(--s-ink-muted);
+}
+.caret {
+  flex: none;
+  color: var(--s-ink-muted);
+  transition: transform 0.18s ease;
+}
+.caretOpen {
+  transform: rotate(180deg);
+}
+
+/* Animated expand/collapse via the grid 0fr→1fr trick: the body stays mounted (so it can transition
+   height-auto) and is clipped to zero height when closed. */
+.bodyWrap {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows 0.28s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+.bodyWrapOpen {
+  grid-template-rows: 1fr;
+}
+.body {
+  overflow: hidden;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 0 14px 14px;
+  border-top: 1px solid var(--s-line);
+}
+@media (prefers-reduced-motion: reduce) {
+  .bodyWrap {
+    transition: none;
+  }
+}
+
+.log {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  max-height: 360px;
+  overflow-y: auto;
+  padding-top: 12px;
+}
+.empty {
+  margin: 0;
+  font-family: var(--font-ui);
+  font-size: 0.82rem;
+  line-height: 1.5;
+  color: var(--s-ink-muted);
+}
+
+/* Each user bubble's hue cycles the Spectrum cell colors (--bubble, set per-turn in the
+   component) so the thread itself reads as a little rainbow. */
+.user {
+  align-self: flex-end;
+  max-width: 85%;
+  padding: 8px 12px;
+  border-radius: 14px 14px 4px 14px;
+  background: var(--bubble, var(--accent));
+  color: #fff;
+  font-family: var(--font-ui);
+  font-size: 0.86rem;
+  line-height: 1.5;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+.assistant {
+  align-self: flex-start;
+  max-width: 92%;
+  padding: 8px 12px;
+  border-radius: 14px 14px 14px 4px;
+  background: var(--canvas);
+  border: 1px solid var(--s-line);
+  font-size: 0.86rem;
+}
+.assistant > :first-child {
+  margin-top: 0;
+}
+.assistant > :last-child {
+  margin-bottom: 0;
+}
+
+.status {
+  align-self: flex-start;
+  font-family: var(--font-ui);
+  font-size: 0.78rem;
+  color: var(--s-ink-muted);
+  font-style: italic;
+}
+.errorMsg {
+  align-self: flex-start;
+  font-family: var(--font-ui);
+  font-size: 0.78rem;
+  color: var(--s-danger, #b3261e);
+}
+
+/* The composer is one bordered box with the Send pill positioned *inside* the text area at the
+   bottom-right. The text area can't be resized (the drag handle clashed with the overlaid button),
+   and reserves bottom padding so typed text never slides under the pill. The focus ring lives on
+   the box. */
+.composer {
+  position: relative;
+  background: var(--canvas);
+  border: 1px solid var(--s-line);
+  border-radius: var(--radius-sm);
+}
+.composer:focus-within {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-ring);
+}
+.field {
+  display: block;
+  width: 100%;
+}
+.input {
+  width: 100%;
+  font-family: var(--font-ui);
+  font-size: 0.88rem;
+  line-height: 1.5;
+  color: var(--s-ink);
+  background: transparent;
+  border: none;
+  padding: 10px 12px 42px;
+  resize: none;
+  min-height: 86px;
+}
+.input:focus {
+  outline: none;
+}
+
+/* The send pill wears the *next* user-bubble hue (set inline by the component) so it previews the
+   color of the message about to be sent. Sits in the text area's reserved bottom-right corner. */
+.send {
+  position: absolute;
+  right: 8px;
+  bottom: 8px;
+  font-family: var(--font-ui);
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: #fff;
+  border: none;
+  border-radius: var(--radius-pill);
+  padding: 7px 18px;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+.send[data-disabled] {
+  opacity: 0.5;
+  cursor: default;
+}
+.send[data-pressed] {
+  opacity: 0.85;
+}

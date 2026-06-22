@@ -107,3 +107,21 @@ html[data-color-scheme="dark"] .expansion {
   text-align: center;
   white-space: nowrap;
 }
+
+/* Input-tool Popover: floats out of the (single-row, overflow-clipped) strip rather than growing
+   it. The panel inside carries its own surface/border/shadow, so this just animates the entry and
+   matches the strip's easing. */
+.popout {
+  outline: none;
+  transform-origin: top left;
+  animation: tool-expand 0.18s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+.popout[data-exiting] {
+  animation: tool-expand 0.12s cubic-bezier(0.4, 0, 1, 1) reverse;
+}
+@media (prefers-reduced-motion: reduce) {
+  .popout,
+  .popout[data-exiting] {
+    animation: none;
+  }
+}

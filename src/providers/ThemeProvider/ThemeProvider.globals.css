@@ -238,6 +238,29 @@
   --accent-strong: var(--s-magenta-strong);
   --accent-tint: var(--s-magenta-tint);
   --accent-ring: var(--s-magenta-ring);
+
+  /* Tutor "spectrum" gradient — the one element that isn't tied to a single cell hue, so it
+     sweeps the whole rainbow of cell accents (it's grounded in every cell type). Used by
+     LessonChat for fills (sparkle, send pill, user bubble, top hairline). The -text variant
+     uses the readable "strong" shades + skips bright gold so gradient title text stays legible
+     on the surface; both inherit the dark-mode shade flips automatically. */
+  --tutor-gradient: linear-gradient(
+    105deg,
+    var(--s-magenta) 0%,
+    var(--s-purple) 22%,
+    var(--s-blue) 44%,
+    var(--s-seafoam) 64%,
+    var(--s-gold) 84%,
+    var(--s-orange) 100%
+  );
+  --tutor-gradient-text: linear-gradient(
+    105deg,
+    var(--s-magenta-strong) 0%,
+    var(--s-purple-strong) 24%,
+    var(--s-blue-strong) 50%,
+    var(--s-seafoam-strong) 74%,
+    var(--s-orange-strong) 100%
+  );
   --s-ink: rgb(19, 19, 19); /* gray-900 */
   --s-ink-muted: rgb(113, 113, 113); /* gray-600 */
   --s-line: rgb(218, 218, 218); /* gray-300 */

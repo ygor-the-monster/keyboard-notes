@@ -17,15 +17,19 @@ import {
 } from "@phosphor-icons/react";
 import type { Icon } from "@phosphor-icons/react";
 import type { Tool } from "../Toolbar/Toolbar.tsx";
+import { buildAssistantTool } from "../AssistantPanel/assistantTool.ts";
+import { runTextTransform } from "../../utils/notationAssistant/notationAssistant.ts";
 
 interface NoteToolsArgs {
   t: (key: string, vars?: Record<string, unknown>) => string;
   format: (kind: string) => void;
+  sourceNow: () => string;
+  applySource: (next: { source: string }) => void;
 }
 
 // The Note (Markdown) editor's unified-Toolbar tools. Pure: every label reads through `t` and every
 // action delegates to `format(id)`.
-export function buildNoteTools({ t, format }: NoteToolsArgs): Tool[] {
+export function buildNoteTools({ t, format, sourceNow, applySource }: NoteToolsArgs): Tool[] {
   const act = (id: string, icon: Icon, key: string): Tool => ({
     kind: "action",
     id,
@@ -80,5 +84,19 @@ export function buildNoteTools({ t, format }: NoteToolsArgs): Tool[] {
       onUse: () => format("footnote"),
     },
     act("hr", Minus, "note.divider"),
+    { kind: "sep" },
+    // On-device assistant — last in the list (an optional power feature, not pushed up front).
+    // Edits the Markdown from a plain-language instruction (see AssistantPanel).
+    buildAssistantTool<{ source: string }>({
+      t,
+      hintKey: "assistant.hintNote",
+      accent: "--s-purple", // matches cellRegistry note hue
+      snapshot: () => ({ source: sourceNow() }),
+      apply: applySource,
+      transform: (instruction, onProgress, tier) =>
+        runTextTransform("markdown", instruction, sourceNow(), onProgress, tier).then((source) => ({
+          source,
+        })),
+    }),
   ];
 }

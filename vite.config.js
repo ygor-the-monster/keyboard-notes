@@ -288,6 +288,10 @@ export default defineConfig({
           "icons/icon-fg.png",
           "icons/icon-bg.png",
           "screenshots/*.png",
+          // The on-device Notation-assistant engine (Transformers.js + onnxruntime, named into
+          // its own chunk below). It's a large, opt-in feature loaded lazily only when the user
+          // enables the assistant — never precache it onto the ~everyone who won't use it.
+          "assets/transformers-*.js",
         ],
         maximumFileSizeToCacheInBytes: 4 * 1024 * 1024,
       },
@@ -302,5 +306,15 @@ export default defineConfig({
     // chunks; this raises the raw-size warning so it only flags real regressions.
     // If this trips again, split the main bundle / lazy-load the icon set.
     chunkSizeWarningLimit: 1024,
+    rollupOptions: {
+      output: {
+        // Pin the on-device assistant engine into one predictably-named chunk
+        // (assets/transformers-*.js) so the service worker can exclude it from the precache.
+        manualChunks: (id) =>
+          id.includes("@huggingface/transformers") || id.includes("onnxruntime")
+            ? "transformers"
+            : undefined,
+      },
+    },
   },
 });

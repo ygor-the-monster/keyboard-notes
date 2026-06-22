@@ -1,6 +1,42 @@
 // Italiano — rispecchia la struttura di en.js; ogni chiave mancante ricade
 // sulla stringa inglese (vedi I18nProvider).
 export default {
+  ai: {
+    tier: {
+      label: "Modello IA",
+      fast: "Veloce",
+      smart: "Intelligente",
+      ultra: "Ultra",
+      fastNote: "Modello veloce da 1,2 B — risposte rapide, funziona su quasi tutti i dispositivi.",
+      smartNote: "Modello da 3 B — ragionamento migliore e modifiche più affidabili. Download più grande.",
+      ultraNote:
+        "Modello di classe 8 B — qualità migliore, ma download grande e GPU potente necessaria.",
+    },
+  },
+  assistant: {
+    toolLabel: "Assistente di notazione — descrivi una modifica",
+    title: "Assistente di notazione",
+    hint: "Descrivi una modifica in linguaggio semplice — ad es. «separare ogni tre movimenti» o «sistemare la spaziatura». Funziona interamente sul tuo dispositivo.",
+    hintNote:
+      "Descrivi una modifica in linguaggio semplice — ad es. «trasforma in elenco puntato» o «correggi i titoli». Funziona interamente sul tuo dispositivo.",
+    hintChords:
+      "Descrivi una modifica in linguaggio semplice — ad es. «allinea gli accordi sopra il testo» o «aggiungi una sezione di introduzione». Funziona interamente sul tuo dispositivo.",
+    placeholder: "Descrivi la modifica…",
+    run: "Trasforma",
+    enableTitle: "Attivare l’assistente sul dispositivo?",
+    enableMsg:
+      "La prima volta scarica un modello di IA (circa {size}) sul tuo dispositivo. Poi funziona completamente offline — nulla viene mai inviato a un server.",
+    enableConfirm: "Scarica e attiva",
+    downloading: "Download del modello… {pct}%",
+    loading: "Caricamento del modello…",
+    thinking: "Sto pensando…",
+    errUnsupported:
+      "Questo browser non può eseguire l’assistente sul dispositivo (è richiesto WebGPU). Prova un Chrome, Edge o Safari recente.",
+    errInvalid:
+      "L’assistente non è riuscito a produrre una notazione valida. Prova a riformulare l’istruzione.",
+    errFailed: "L’assistente non è riuscito: {msg}",
+    revert: "Annulla",
+  },
   common: {
     cancel: "Annulla",
     confirm: "Conferma",
@@ -65,6 +101,7 @@ export default {
   },
   rail: {
     label: "Struttura della lezione",
+    tutor: "Vai al tutor di musica",
   },
   addbar: {
     title: "Aggiungi una cella",

@@ -1,6 +1,57 @@
 // Brazilian Portuguese (pt-BR). Mirrors the shape of en.js; any missing key
 // falls back to the English string there (see I18nProvider).
 export default {
+  ai: {
+    tier: {
+      label: "Modelo de IA",
+      fast: "Rápido",
+      smart: "Inteligente",
+      ultra: "Ultra",
+      fastNote: "Modelo rápido de 1,2 B — respostas ágeis, roda em quase qualquer dispositivo.",
+      smartNote: "Modelo de 3 B — melhor raciocínio e edições mais confiáveis. Download maior.",
+      ultraNote:
+        "Modelo da classe 8 B — melhor qualidade, mas download grande e exige uma GPU potente.",
+    },
+  },
+  assistant: {
+    toolLabel: "Assistente de notação — descreva uma edição",
+    title: "Assistente de notação",
+    hint: "Descreva uma edição em linguagem simples — ex.: “separar a cada três tempos” ou “ajustar o espaçamento”. Roda inteiramente no seu dispositivo.",
+    hintNote:
+      "Descreva uma edição em linguagem simples — ex.: “transformar em lista com marcadores” ou “corrigir os títulos”. Roda inteiramente no seu dispositivo.",
+    hintChords:
+      "Descreva uma edição em linguagem simples — ex.: “alinhar os acordes sobre a letra” ou “adicionar uma seção de introdução”. Roda inteiramente no seu dispositivo.",
+    placeholder: "Descreva a edição…",
+    run: "Transformar",
+    enableTitle: "Ativar o assistente no dispositivo?",
+    enableMsg:
+      "Na primeira vez, isto baixa um modelo de IA (cerca de {size}) para o seu dispositivo. Depois ele roda totalmente offline — nada é enviado a nenhum servidor.",
+    enableConfirm: "Baixar e ativar",
+    downloading: "Baixando o modelo… {pct}%",
+    loading: "Carregando o modelo…",
+    thinking: "Pensando…",
+    errUnsupported:
+      "Este navegador não consegue rodar o assistente no dispositivo (é necessário WebGPU). Tente um Chrome, Edge ou Safari recente.",
+    errInvalid:
+      "O assistente não conseguiu produzir uma notação válida. Tente reformular a instrução.",
+    errFailed: "O assistente falhou: {msg}",
+    revert: "Desfazer",
+  },
+  chat: {
+    title: "Pergunte sobre sua música",
+    subtitle: "Tutor no dispositivo, com suas notas como contexto",
+    placeholder: "Faça uma pergunta…",
+    send: "Enviar",
+    empty: "Pergunte qualquer coisa sobre teoria musical, suas lições ou como praticar. Roda inteiramente no seu dispositivo.",
+    enableTitle: "Ativar o tutor de música?",
+    enableMsg: "Na primeira vez, isto roda um modelo de IA no seu dispositivo (cerca de {size}, compartilhado com o assistente de edição). Depois funciona totalmente offline — nada é enviado a nenhum servidor.",
+    enableConfirm: "Baixar e ativar",
+    downloading: "Baixando o modelo… {pct}%",
+    loading: "Carregando o modelo…",
+    thinking: "Pensando…",
+    errUnsupported: "Este navegador não consegue rodar o tutor no dispositivo (é necessário WebGPU). Tente um Chrome, Edge ou Safari recente.",
+    errFailed: "O tutor falhou: {msg}",
+  },
   common: {
     cancel: "Cancelar",
     confirm: "Confirmar",
@@ -65,6 +116,7 @@ export default {
   },
   rail: {
     label: "Estrutura da aula",
+    tutor: "Ir para o tutor de música",
   },
   addbar: {
     title: "Adicionar uma célula",
@@ -151,7 +203,12 @@ export default {
     levelWeak: "Fraco",
     levelStrong: "Forte",
     subdivision: "Subdivisão",
-    sub: { none: "Nenhuma", eighths: "Colcheias", triplets: "Tercinas", sixteenths: "Semicolcheias" },
+    sub: {
+      none: "Nenhuma",
+      eighths: "Colcheias",
+      triplets: "Tercinas",
+      sixteenths: "Semicolcheias",
+    },
     polyrhythm: "Polirritmia",
     polyOff: "Desligado",
   },

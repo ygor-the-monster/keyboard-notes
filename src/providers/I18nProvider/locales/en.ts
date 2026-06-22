@@ -1,6 +1,55 @@
 // English — the source-of-truth dictionary. Other locales mirror this shape; any
 // missing key falls back to the English string here (see I18nProvider).
 export default {
+  ai: {
+    tier: {
+      label: "AI model",
+      fast: "Fast",
+      smart: "Smart",
+      ultra: "Ultra",
+      fastNote: "Fast 1.2B model — quick replies, runs on almost any device.",
+      smartNote: "3B model — better reasoning and more reliable edits. Larger download.",
+      ultraNote: "8B-class model — best quality, but a large download that needs a powerful GPU.",
+    },
+  },
+  assistant: {
+    toolLabel: "Notation assistant — describe an edit",
+    title: "Notation assistant",
+    hint: "Describe an edit in plain language — e.g. “split every third beat” or “tidy the spacing”. Runs entirely on your device.",
+    hintNote:
+      "Describe an edit in plain language — e.g. “turn this into a bullet list” or “fix the headings”. Runs entirely on your device.",
+    hintChords:
+      "Describe an edit in plain language — e.g. “align the chords over the lyrics” or “add an intro section”. Runs entirely on your device.",
+    placeholder: "Describe the edit…",
+    run: "Transform",
+    enableTitle: "Enable the on-device assistant?",
+    enableMsg:
+      "This downloads an AI model (about {size}) to your device the first time. After that it runs fully offline — nothing is ever sent to a server.",
+    enableConfirm: "Download & enable",
+    downloading: "Downloading model… {pct}%",
+    loading: "Loading model…",
+    thinking: "Thinking…",
+    errUnsupported:
+      "This browser can’t run the on-device assistant (WebGPU is required). Try a recent Chrome, Edge, or Safari.",
+    errInvalid: "The assistant couldn’t produce valid notation. Try rephrasing your instruction.",
+    errFailed: "The assistant failed: {msg}",
+    revert: "Undo",
+  },
+  chat: {
+    title: "Ask about your music",
+    subtitle: "On-device tutor with your notes as context",
+    placeholder: "Ask a question…",
+    send: "Send",
+    empty: "Ask anything about music theory, your lessons, or how to practise. Runs entirely on your device.",
+    enableTitle: "Enable the music tutor?",
+    enableMsg: "This runs an AI model on your device (about {size}, shared with the editing assistant) the first time. After that it works fully offline — nothing is ever sent to a server.",
+    enableConfirm: "Download & enable",
+    downloading: "Downloading model… {pct}%",
+    loading: "Loading model…",
+    thinking: "Thinking…",
+    errUnsupported: "This browser can’t run the on-device tutor (WebGPU is required). Try a recent Chrome, Edge, or Safari.",
+    errFailed: "The tutor failed: {msg}",
+  },
   common: {
     cancel: "Cancel",
     confirm: "Confirm",
@@ -66,6 +115,7 @@ export default {
   },
   rail: {
     label: "Lesson outline",
+    tutor: "Jump to the music tutor",
   },
   library: {
     title: "Library",

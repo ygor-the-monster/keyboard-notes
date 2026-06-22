@@ -1,6 +1,42 @@
 // Français — translated from en.js. Mirrors the English shape; any missing key
 // falls back to the English string (see I18nProvider).
 export default {
+  ai: {
+    tier: {
+      label: "Modèle d’IA",
+      fast: "Rapide",
+      smart: "Intelligent",
+      ultra: "Ultra",
+      fastNote: "Modèle rapide de 1,2 B — réponses rapides, fonctionne sur presque tous les appareils.",
+      smartNote: "Modèle de 3 B — meilleur raisonnement et modifications plus fiables. Téléchargement plus lourd.",
+      ultraNote:
+        "Modèle de classe 8 B — meilleure qualité, mais téléchargement volumineux et GPU puissant requis.",
+    },
+  },
+  assistant: {
+    toolLabel: "Assistant de notation — décrivez une modification",
+    title: "Assistant de notation",
+    hint: "Décrivez une modification en langage courant — par ex. « séparer tous les trois temps » ou « aérer l’espacement ». Fonctionne entièrement sur votre appareil.",
+    hintNote:
+      "Décrivez une modification en langage courant — par ex. « transformer en liste à puces » ou « corriger les titres ». Fonctionne entièrement sur votre appareil.",
+    hintChords:
+      "Décrivez une modification en langage courant — par ex. « aligner les accords sur les paroles » ou « ajouter une section d’intro ». Fonctionne entièrement sur votre appareil.",
+    placeholder: "Décrivez la modification…",
+    run: "Transformer",
+    enableTitle: "Activer l’assistant sur l’appareil ?",
+    enableMsg:
+      "La première fois, un modèle d’IA (environ {size}) est téléchargé sur votre appareil. Ensuite, il fonctionne entièrement hors ligne — rien n’est jamais envoyé à un serveur.",
+    enableConfirm: "Télécharger et activer",
+    downloading: "Téléchargement du modèle… {pct} %",
+    loading: "Chargement du modèle…",
+    thinking: "Réflexion…",
+    errUnsupported:
+      "Ce navigateur ne peut pas exécuter l’assistant sur l’appareil (WebGPU requis). Essayez un Chrome, Edge ou Safari récent.",
+    errInvalid:
+      "L’assistant n’a pas pu produire une notation valide. Essayez de reformuler votre instruction.",
+    errFailed: "Échec de l’assistant : {msg}",
+    revert: "Annuler",
+  },
   common: {
     cancel: "Annuler",
     confirm: "Confirmer",
@@ -65,6 +101,7 @@ export default {
   },
   rail: {
     label: "Plan de la leçon",
+    tutor: "Aller au tuteur de musique",
   },
   addbar: {
     title: "Ajouter une cellule",
@@ -151,7 +188,12 @@ export default {
     levelWeak: "Faible",
     levelStrong: "Fort",
     subdivision: "Subdivision",
-    sub: { none: "Aucune", eighths: "Croches", triplets: "Triolets", sixteenths: "Doubles croches" },
+    sub: {
+      none: "Aucune",
+      eighths: "Croches",
+      triplets: "Triolets",
+      sixteenths: "Doubles croches",
+    },
     polyrhythm: "Polyrythmie",
     polyOff: "Désactivé",
   },

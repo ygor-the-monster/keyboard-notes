@@ -22,6 +22,7 @@ import GoalTimer from "../GoalTimer/GoalTimer.tsx";
 import SyntaxRef from "../SyntaxRef/SyntaxRef.tsx";
 import ChordBuilder from "../ChordBuilder/ChordBuilder.tsx";
 import CellRail from "../CellRail/CellRail.tsx";
+import LessonChat from "../LessonChat/LessonChat.tsx";
 import LibraryScreen from "../LibraryScreen/LibraryScreen.tsx";
 import shared from "../../providers/ThemeProvider/ThemeProvider.module.css";
 import s from "./App.module.css";
@@ -189,6 +190,9 @@ export default function App() {
               </div>
             )}
             <AddBar />
+            {/* On-device music tutor — a special card below the cells and the add-strip; not a
+                cell in the lesson, so it stays out of the data model / export. */}
+            <LessonChat />
           </div>
         ) : (
           <div className={s.empty}>

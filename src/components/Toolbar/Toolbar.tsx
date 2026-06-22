@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, type ReactNode } from "react";
-import { Button, ToggleButton, TooltipTrigger, Tooltip } from "react-aria-components";
+import { Button, ToggleButton, TooltipTrigger, Tooltip, Popover } from "react-aria-components";
 import { CaretLeftIcon as CaretLeft, CaretRightIcon as CaretRight } from "@phosphor-icons/react";
 import type { Icon } from "@phosphor-icons/react";
 import shared from "../../providers/ThemeProvider/ThemeProvider.module.css";
@@ -152,6 +152,8 @@ function ToolView({
   onToggle: () => void;
   close: () => void;
 }) {
+  // Anchor for the input-tool Popover (declared unconditionally — hooks can't be inside a case).
+  const triggerRef = useRef<HTMLButtonElement>(null);
   switch (tool.kind) {
     case "sep":
       return <span className={shared.toolbarSep} aria-hidden />;
@@ -245,31 +247,49 @@ function ToolView({
         </span>
       );
 
-    case "input":
+    case "input": {
+      // Unlike a group's inline option row, an input tool's body is a full panel — render it in a
+      // Popover that floats out of the (overflow-clipped, single-row) strip instead of growing it.
+      // The Popover owns its own outside-press / Escape dismissal (see the openKind guard in
+      // Toolbar), so it isn't fought by the strip's manual outside-click handler.
+      const input = tool;
       return (
         <span className={s.group}>
           <TooltipTrigger delay={450}>
             <Button
-              aria-label={tool.label}
+              ref={triggerRef}
+              aria-label={input.label}
               aria-expanded={open}
-              className={faceClass(tool)}
+              className={faceClass(input)}
               onPress={onToggle}
             >
               <Face
-                icon={tool.icon}
-                char={tool.char}
-                glyph={tool.glyph}
-                swatch={tool.swatch}
-                dot={tool.dot}
+                icon={input.icon}
+                char={input.char}
+                glyph={input.glyph}
+                swatch={input.swatch}
+                dot={input.dot}
               />
             </Button>
             <Tooltip className={ic.tooltip} offset={6}>
-              {tool.label}
+              {input.label}
             </Tooltip>
           </TooltipTrigger>
-          {open && <span className={s.expansion}>{tool.render({ close })}</span>}
+          <Popover
+            triggerRef={triggerRef}
+            isOpen={open}
+            onOpenChange={(o) => {
+              if (!o) close();
+            }}
+            placement="bottom start"
+            offset={6}
+            className={s.popout}
+          >
+            {input.render({ close })}
+          </Popover>
         </span>
       );
+    }
 
     case "spinner": {
       const SpinIcon = tool.icon;
@@ -312,16 +332,19 @@ function ToolView({
 export default function Toolbar({ label, tools }: { label: string; tools: Tool[] }) {
   const [openId, setOpenId] = useState<string | null>(null);
   const ref = useRef<HTMLDivElement>(null);
+  const openKind = openId == null ? null : tools.find((t) => "id" in t && t.id === openId)?.kind;
 
-  // Collapse the open group/input on any click outside the strip.
+  // Collapse an open group on any click outside the strip. Input tools open in a portaled Popover
+  // (whose body is outside the strip), so this handler would mis-fire on clicks inside the panel —
+  // skip them and let the Popover manage its own outside-press / Escape dismissal.
   useEffect(() => {
-    if (openId == null) return;
+    if (openId == null || openKind === "input") return;
     function onDown(e: MouseEvent) {
       if (ref.current && !ref.current.contains(e.target as Node)) setOpenId(null);
     }
     document.addEventListener("mousedown", onDown, true);
     return () => document.removeEventListener("mousedown", onDown, true);
-  }, [openId]);
+  }, [openId, openKind]);
 
   return (
     <div ref={ref} className={`${shared.toolStrip} no-print`} role="toolbar" aria-label={label}>

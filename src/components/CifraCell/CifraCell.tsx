@@ -76,6 +76,8 @@ export default function CifraCell({ cell, editing }: { cell: CellOf<"cifra">; ed
     transpose,
     setTranspose,
     scrollTools: buildScrollTools({ t, scrolling, toggle, speed, setSpeed }),
+    sourceNow: () => taRef.current?.value ?? cell.source,
+    applySource: (next) => updateCell(cell.id, next),
   });
 
   // ---- compact view ----------------------------------------------------------

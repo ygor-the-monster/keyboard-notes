@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState, type CSSProperties } from "react";
+import { SparkleIcon as Sparkle } from "@phosphor-icons/react";
 import { useStore } from "../../providers/StoreProvider/StoreProvider.tsx";
 import { useEditing } from "../../providers/EditingProvider/EditingProvider.tsx";
 import { useI18n } from "../../providers/I18nProvider/I18nProvider.tsx";
@@ -109,8 +110,30 @@ export default function CellRail() {
     setEditing(id);
   };
 
+  // The tutor isn't a cell — it's the rainbow star pinned at the rail's end. Scroll to it and ask it
+  // to expand (LessonChat listens for this event).
+  const goToTutor = () => {
+    document.querySelector("[data-lesson-chat]")?.scrollIntoView({
+      behavior: "smooth",
+      block: "start",
+    });
+    window.dispatchEvent(new CustomEvent("lessonchat:open"));
+  };
+
   return (
     <nav className={`${s.rail} no-print`} data-cell-rail aria-label={t("rail.label")}>
+      {/* Gradient the rail's tutor star is filled with (self-contained, so it doesn't depend on
+          LessonChat being mounted). */}
+      <svg width="0" height="0" aria-hidden focusable="false" className={s.defs}>
+        <defs>
+          <linearGradient id="rail-star-grad" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0%" style={{ stopColor: "var(--s-magenta)" }} />
+            <stop offset="38%" style={{ stopColor: "var(--s-purple)" }} />
+            <stop offset="70%" style={{ stopColor: "var(--s-blue)" }} />
+            <stop offset="100%" style={{ stopColor: "var(--s-seafoam)" }} />
+          </linearGradient>
+        </defs>
+      </svg>
       {rendered.map((c, i) => {
         const view = cellRegistry[c.kind];
         const exiting = !cells.some((x) => x.id === c.id);
@@ -136,6 +159,15 @@ export default function CellRail() {
           </button>
         );
       })}
+      <button
+        type="button"
+        className={s.tutor}
+        onClick={goToTutor}
+        aria-label={t("rail.tutor")}
+        title={t("rail.tutor")}
+      >
+        <Sparkle size={16} weight="fill" aria-hidden focusable="false" className={s.star} />
+      </button>
     </nav>
   );
 }
