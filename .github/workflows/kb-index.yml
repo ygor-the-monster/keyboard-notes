@@ -1,18 +1,11 @@
 name: Regenerate KB Index
 
-# Rebuilds the music tutor's retrieval index (public/kb-index.json) from the Markdown sources in
-# src/prompts/kb/, then commits any change back to main. Runs on demand, and automatically whenever
-# a KB source or the build script changes — so adding a source is just "drop a file + push".
-#
-# CI is the source of truth for the index: it embeds every chunk with the bundled sentence model, a
-# job better done once on CI than by every contributor locally (the model is a ~33 MB download).
+# Manual-only (like the screenshots workflow). Rebuilds the music tutor's retrieval index
+# (public/kb-index.json) from the sources in src/prompts/kb/, then commits any change back to main.
+# Run it from the Actions tab after changing KB sources or the build script. Kept off the push
+# trigger so it never races a contributor who already committed a freshly-built index.
 on:
   workflow_dispatch:
-  push:
-    branches: [main]
-    paths:
-      - "src/prompts/kb/**"
-      - "scripts/build-kb-index.mjs"
 
 # Need write access to push the regenerated index back to main.
 permissions:

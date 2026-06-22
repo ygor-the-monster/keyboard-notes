@@ -10,7 +10,7 @@ export default {
       fastNote: "Modèle rapide de 1,2 B — réponses rapides, fonctionne sur presque tous les appareils.",
       smartNote: "Modèle de 3 B — meilleur raisonnement et modifications plus fiables. Téléchargement plus lourd.",
       ultraNote:
-        "Modèle de classe 8 B — meilleure qualité, mais téléchargement volumineux et GPU puissant requis.",
+        "Phi-3.5 (3,8 Md) — le meilleur raisonnement qui tourne encore dans le navigateur. Téléchargement plus lourd, GPU performant requis.",
     },
   },
   assistant: {

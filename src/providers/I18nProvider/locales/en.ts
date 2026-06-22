@@ -9,7 +9,7 @@ export default {
       ultra: "Ultra",
       fastNote: "Fast 1.2B model — quick replies, runs on almost any device.",
       smartNote: "3B model — better reasoning and more reliable edits. Larger download.",
-      ultraNote: "8B-class model — best quality, but a large download that needs a powerful GPU.",
+      ultraNote: "Phi-3.5 (3.8B) — strongest reasoning that still runs in the browser. Larger download, needs a capable GPU.",
     },
   },
   assistant: {
