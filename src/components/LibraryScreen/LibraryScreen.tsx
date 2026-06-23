@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   Button,
   MenuTrigger,
@@ -13,6 +13,8 @@ import {
   MagnifyingGlassIcon as MagnifyingGlass,
   SortAscendingIcon as SortAscending,
   PlusIcon as Plus,
+  ArrowCounterClockwiseIcon as ArrowCounterClockwise,
+  TrashIcon as Trash,
 } from "@phosphor-icons/react";
 import { useRoute } from "../../providers/RouteProvider/RouteProvider.tsx";
 import { useStore } from "../../providers/StoreProvider/StoreProvider.tsx";
@@ -20,6 +22,13 @@ import { useI18n } from "../../providers/I18nProvider/I18nProvider.tsx";
 import { toast } from "../Toasts/toasts.ts";
 import { selectLibraryView, type LibrarySort } from "../../utils/libraryView/libraryView.ts";
 import { serializeLesson, lessonFilename } from "../../utils/lessonExport/lessonExport.ts";
+import {
+  listDeleted,
+  removeDeleted,
+  type DeletedEntry,
+} from "../../utils/recentlyDeleted/recentlyDeleted.ts";
+import { formatRelativeTime } from "../../utils/relativeTime/relativeTime.ts";
+import { cellRegistry } from "../../utils/cellRegistry/cellRegistry.tsx";
 import type { Lesson } from "../../utils/cellKinds/cellKinds.ts";
 import ToolScreen from "../ToolScreen/ToolScreen.tsx";
 import EmptyState from "../EmptyState/EmptyState.tsx";
@@ -44,13 +53,27 @@ function downloadLesson(lesson: Lesson) {
 // `#library`, mirroring how the Pull Tab tools gate their expanded screens.
 export default function LibraryScreen() {
   const { screen, closeScreen } = useRoute();
-  const { state, selectLesson, createLesson, togglePin, setLessonTags, deleteLesson, restoreLesson } =
-    useStore();
-  const { t } = useI18n();
+  const {
+    state,
+    selectLesson,
+    createLesson,
+    togglePin,
+    setLessonTags,
+    deleteLesson,
+    restoreLesson,
+    restoreCell,
+  } = useStore();
+  const { t, locale } = useI18n();
 
   const [query, setQuery] = useState("");
   const [sort, setSort] = useState<LibrarySort>("recent");
   const [activeTag, setActiveTag] = useState<string | null>(null);
+  // The Recently Deleted bin lives in sessionStorage, not the store — mirror it into state and
+  // refresh whenever the Library screen opens (a deletion may have happened while it was closed).
+  const [deleted, setDeleted] = useState<DeletedEntry[]>([]);
+  useEffect(() => {
+    if (screen === LIBRARY_SCREEN) setDeleted(listDeleted());
+  }, [screen]);
 
   if (screen !== LIBRARY_SCREEN) return null;
 
@@ -67,14 +90,39 @@ export default function LibraryScreen() {
     closeScreen();
   };
   const remove = (lesson: Lesson) => {
-    const deleted = deleteLesson(lesson.id);
-    if (deleted)
+    const removed = deleteLesson(lesson.id);
+    if (removed) {
+      setDeleted(listDeleted()); // it just landed in the Recently Deleted bin below
       toast.neutral(t("undo.deleted", { kind: lesson.title || t("topbar.untitled") }), {
         actionLabel: t("undo.action"),
-        onAction: () => restoreLesson(deleted),
+        onAction: () => {
+          restoreLesson(removed);
+          removeDeleted(removed.lesson.id);
+          setDeleted(listDeleted());
+        },
         timeout: 7000,
       });
+    }
   };
+
+  // Restore (or permanently drop) an entry parked in the Recently Deleted bin.
+  const restoreEntry = (entry: DeletedEntry) => {
+    if (entry.kind === "lesson") restoreLesson(entry.payload);
+    else restoreCell(entry.payload);
+    removeDeleted(entry.id);
+    setDeleted(listDeleted());
+  };
+  const purgeEntry = (entry: DeletedEntry) => {
+    removeDeleted(entry.id);
+    setDeleted(listDeleted());
+  };
+  const entryLabel = (entry: DeletedEntry) =>
+    entry.kind === "lesson"
+      ? entry.title || t("topbar.untitled")
+      : t("recentlyDeleted.cellLabel", {
+          kind: t(cellRegistry[entry.cellKind as keyof typeof cellRegistry].tagLabelKey),
+          lesson: entry.lessonTitle || t("topbar.untitled"),
+        });
   // Tapping the active tag again clears the filter.
   const pickTag = (tag: string) => setActiveTag((cur) => (cur === tag ? null : tag));
 
@@ -196,6 +244,43 @@ export default function LibraryScreen() {
             </section>
           )}
         </>
+      )}
+
+      {deleted.length > 0 && (
+        <section className={s.section}>
+          <h2 className={s.sectionHead}>{t("recentlyDeleted.heading")}</h2>
+          <p className={s.trashNote}>{t("recentlyDeleted.note")}</p>
+          <ul className={s.trashList}>
+            {deleted.map((entry) => (
+              <li key={entry.id} className={s.trashItem}>
+                <span className={s.trashLabel}>
+                  {entryLabel(entry)}
+                  <span className={s.trashTime}>{formatRelativeTime(entry.at, now, locale)}</span>
+                </span>
+                <div className={s.trashActions}>
+                  <button
+                    type="button"
+                    className={s.trashBtn}
+                    onClick={() => restoreEntry(entry)}
+                    aria-label={t("recentlyDeleted.restore")}
+                    title={t("recentlyDeleted.restore")}
+                  >
+                    <ArrowCounterClockwise size={16} aria-hidden /> {t("recentlyDeleted.restore")}
+                  </button>
+                  <button
+                    type="button"
+                    className={`${s.trashBtn} ${s.trashBtnDanger}`}
+                    onClick={() => purgeEntry(entry)}
+                    aria-label={t("recentlyDeleted.purge")}
+                    title={t("recentlyDeleted.purge")}
+                  >
+                    <Trash size={16} aria-hidden />
+                  </button>
+                </div>
+              </li>
+            ))}
+          </ul>
+        </section>
       )}
     </ToolScreen>
   );

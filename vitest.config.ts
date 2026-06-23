@@ -12,6 +12,14 @@ export default defineConfig({
       provider: "v8",
       include: ["src/**/*.{ts,tsx}"],
       exclude: ["src/**/*.test-*.{ts,tsx}", "src/env.d.ts", "src/main.tsx"],
+      // A ratchet, not a target: set a few points below the current combined (unit + browser)
+      // coverage so it can only go up. Raise these as coverage climbs; never lower them.
+      thresholds: {
+        statements: 45,
+        branches: 36,
+        functions: 39,
+        lines: 47,
+      },
     },
     projects: [
       {

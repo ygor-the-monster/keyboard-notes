@@ -5,6 +5,7 @@
 // Cell/Lesson factories live in src/cells/kinds.ts — this file is persistence only.
 import { useCallback, useState } from "react";
 import type { AppState } from "../../utils/cellKinds/cellKinds.ts";
+import { validateCell } from "../../utils/cellKinds/cellKinds.ts";
 import { normalizeLessonTags } from "../../utils/lessonTags/lessonTags.ts";
 
 const STORE_KEY = "pianoNotes.v2"; // legacy localStorage key (migrated from, then cleared)
@@ -55,9 +56,18 @@ export function normalizeState(raw: unknown): AppState {
     (id) => lessons[id],
   );
   const activeId = d.activeId && lessons[d.activeId] ? d.activeId : (order[0] ?? null);
-  // Sanitize Library tags on every load (ADR-0005) so a hand-edited / legacy record can't carry a
-  // malformed tags field into the running app.
-  for (const id of order) normalizeLessonTags(lessons[id]);
+  // Sanitize on every load so a hand-edited / legacy record can't carry malformed data into the
+  // running app: tags (ADR-0005), and each cell through validateCell — a damaged cell is repaired
+  // to its kind's defaults, and an unknown-kind cell is dropped, rather than crashing its render.
+  for (const id of order) {
+    const lesson = lessons[id];
+    normalizeLessonTags(lesson);
+    if (Array.isArray(lesson?.cells)) {
+      lesson.cells = lesson.cells
+        .map(validateCell)
+        .filter((c): c is NonNullable<typeof c> => c !== null);
+    }
+  }
   return { lessons, order, activeId };
 }
 
@@ -131,7 +141,8 @@ export async function requestPersistentStorage(): Promise<boolean> {
   try {
     if (navigator.storage?.persisted && (await navigator.storage.persisted())) return true;
     return (await navigator.storage?.persist?.()) ?? false;
-  } catch {
+  } catch (e) {
+    console.warn("Persistent storage request failed:", e);
     return false;
   }
 }
@@ -146,7 +157,8 @@ export async function storageEstimate(): Promise<StorageEstimateResult> {
     const { usage, quota } = (await navigator.storage?.estimate?.()) || {};
     const persisted = (await navigator.storage?.persisted?.()) ?? false;
     return { usage, quota, persisted };
-  } catch {
+  } catch (e) {
+    console.warn("Storage estimate failed:", e);
     return {};
   }
 }

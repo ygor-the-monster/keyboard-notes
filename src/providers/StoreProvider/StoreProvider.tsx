@@ -17,8 +17,19 @@ import {
 import { uid } from "../../utils/cellId/cellId.ts";
 import { clamp } from "../../utils/numeric/numeric.ts";
 import { normalizeTags } from "../../utils/lessonTags/lessonTags.ts";
-import { cellKinds, defaultLesson } from "../../utils/cellKinds/cellKinds.ts";
+import {
+  cellKinds,
+  defaultLesson,
+  applyCellPatch,
+  coerceLesson,
+} from "../../utils/cellKinds/cellKinds.ts";
+import { pushDeleted } from "../../utils/recentlyDeleted/recentlyDeleted.ts";
 import type { AppState, Cell, Kind, Lesson } from "../../utils/cellKinds/cellKinds.ts";
+
+// The outcome of an import: how many damaged cells were skipped, so the caller can warn the user.
+export interface ImportResult {
+  dropped: number;
+}
 
 // What deleteCell removes, enough to restore it exactly (held by the caller's Undo toast, not the
 // store — so multiple pending deletions can each be undone independently).
@@ -53,8 +64,8 @@ interface StoreApi {
   duplicateCell(cellId: string): string | null;
   deleteCell(cellId: string): DeletedCell | null;
   restoreCell(deleted: DeletedCell): void;
-  importLesson(parsed: unknown): void;
-  importLibrary(parsed: unknown): void;
+  importLesson(parsed: unknown): ImportResult;
+  importLibrary(parsed: unknown): ImportResult;
 }
 
 export interface StoreValue extends StoreApi {
@@ -157,6 +168,8 @@ export function StoreProvider({ children }: { children: ReactNode }) {
           d.order = d.order.filter((x) => x !== id);
           if (d.activeId === id) d.activeId = d.order[0] || null;
         });
+        // Park it in the session-scoped Recently Deleted bin (Library), beyond the undo toast.
+        pushDeleted({ id, kind: "lesson", at: Date.now(), title: lesson.title, payload: deleted });
         return deleted;
       },
       restoreLesson({ lesson, index, wasActive }) {
@@ -202,8 +215,8 @@ export function StoreProvider({ children }: { children: ReactNode }) {
         commit((d) => {
           const lesson = activeLessonOf(d);
           if (!lesson) return;
-          const c = lesson.cells.find((x) => x.id === cellId);
-          if (c) Object.assign(c, patch);
+          const i = lesson.cells.findIndex((x) => x.id === cellId);
+          if (i >= 0) lesson.cells[i] = applyCellPatch(lesson.cells[i], patch);
           touch(d);
         });
       },
@@ -269,22 +282,36 @@ export function StoreProvider({ children }: { children: ReactNode }) {
           lesson.cells = lesson.cells.filter((x) => x.id !== cellId);
           touch(d);
         });
+        // Park it in the session-scoped Recently Deleted bin (Library), beyond the undo toast.
+        pushDeleted({
+          id: deleted.cell.id,
+          kind: "cell",
+          at: Date.now(),
+          cellKind: deleted.cell.kind,
+          lessonTitle: lesson0.title,
+          payload: deleted,
+        });
         return deleted;
       },
       restoreCell({ lessonId, index, cell }) {
         commit((d) => {
           const lesson = d.lessons[lessonId];
           if (!lesson) return;
+          if (lesson.cells.some((x) => x.id === cell.id)) return; // already restored (idempotent)
           lesson.cells.splice(Math.min(index, lesson.cells.length), 0, cell);
           lesson.updated = Date.now();
           d.activeId = lessonId;
         });
       },
       importLesson(parsed) {
+        // A file may be a bare Lesson or wrapped as `{ lesson }`. Validate before committing so a
+        // corrupt/legacy file can't land a malformed cell that later crashes its render.
+        const p = parsed as { lesson?: unknown };
+        const source = p && typeof p === "object" && p.lesson != null ? p.lesson : parsed;
+        const coerced = coerceLesson(source);
+        if (!coerced) throw new Error("Not a Keyboard Notes file");
+        const { lesson, dropped } = coerced;
         commit((d) => {
-          const p = parsed as { lesson?: Lesson } & Partial<Lesson>;
-          const lesson = (p.lesson || p) as Lesson;
-          if (!lesson || !lesson.cells) throw new Error("Not a Keyboard Notes file");
           lesson.id = uid();
           lesson.updated = Date.now();
           if (!lesson.created) lesson.created = Date.now();
@@ -293,27 +320,36 @@ export function StoreProvider({ children }: { children: ReactNode }) {
           d.order.unshift(lesson.id);
           d.activeId = lesson.id;
         });
+        return { dropped };
       },
       // Restore a full-library backup: every Lesson is added with a fresh id (so it never
       // clobbers existing Lessons).
       importLibrary(parsed) {
+        const p = parsed as {
+          library?: { lessons?: Record<string, Lesson>; order?: string[] };
+        } & {
+          lessons?: Record<string, Lesson>;
+          order?: string[];
+        };
+        const lib = p.library || p;
+        const lessons = lib.lessons;
+        if (!lessons || typeof lessons !== "object") throw new Error("Not a Keyboard Notes backup");
+        const order =
+          Array.isArray(lib.order) && lib.order.length
+            ? lib.order.filter((id) => lessons[id])
+            : Object.keys(lessons);
+        // Validate each lesson's cells before committing; skip whole lessons that aren't lessons.
+        const valid: Lesson[] = [];
+        let dropped = 0;
+        for (const oldId of order) {
+          const coerced = coerceLesson(lessons[oldId]);
+          if (!coerced) continue;
+          dropped += coerced.dropped;
+          valid.push(coerced.lesson);
+        }
         commit((d) => {
-          const p = parsed as {
-            library?: { lessons?: Record<string, Lesson>; order?: string[] };
-          } & {
-            lessons?: Record<string, Lesson>;
-            order?: string[];
-          };
-          const lib = p.library || p;
-          const lessons = lib.lessons;
-          if (!lessons || typeof lessons !== "object") throw new Error("Not a Keyboard Notes backup");
-          const order =
-            Array.isArray(lib.order) && lib.order.length
-              ? lib.order.filter((id) => lessons[id])
-              : Object.keys(lessons);
           let firstNew: string | null = null;
-          for (const oldId of order) {
-            const lesson = structuredClone(lessons[oldId]);
+          for (const lesson of valid) {
             lesson.id = uid();
             if (!lesson.created) lesson.created = Date.now();
             lesson.updated = Date.now();
@@ -324,6 +360,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
           }
           if (firstNew) d.activeId = firstNew;
         });
+        return { dropped };
       },
     };
   }, [commit]);

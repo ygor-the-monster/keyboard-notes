@@ -207,3 +207,33 @@
     display: none !important;
   }
 }
+
+/* Error-boundary fallback: actions row + a collapsible cause, so a broken cell is fixable in place. */
+.errActions {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+.errDetails {
+  margin-top: 0.75rem;
+  font-family: var(--font-ui);
+  font-size: 0.8rem;
+  color: var(--s-ink-muted);
+}
+.errDetails summary {
+  cursor: pointer;
+}
+.errMessage {
+  margin: 0.5rem 0 0;
+  padding: 0.5rem 0.6rem;
+  max-width: 100%;
+  overflow-x: auto;
+  white-space: pre-wrap;
+  word-break: break-word;
+  background: var(--s-layer, rgba(0, 0, 0, 0.04));
+  border-radius: 6px;
+  font-family: var(--font-mono, monospace);
+  font-size: 0.75rem;
+  color: var(--s-ink);
+}

@@ -76,7 +76,9 @@ export default function ScoreCell({ cell, editing }: { cell: CellOf<"score">; ed
     if (synthRef.current) {
       try {
         synthRef.current.stop();
-      } catch {}
+      } catch (e) {
+        console.warn("Audio stop failed:", e);
+      }
     }
   }
   async function play() {
@@ -114,7 +116,7 @@ export default function ScoreCell({ cell, editing }: { cell: CellOf<"score">; ed
   // Smart, caret/selection-aware edits: act on the note at the caret (or selected notes);
   // fall back to a plain insert when the caret isn't on a note.
   const caretRange = () => [taRef.current?.selectionStart ?? 0, taRef.current?.selectionEnd ?? 0];
-  const smart = (kind: string, arg: any, fallback: string, back?: number) => {
+  const smart = (kind: string, arg: string | number, fallback: string, back?: number) => {
     const [a, b] = caretRange();
     const nb = smartNote(headerNow(), bodyNow(), a, b, kind, arg);
     if (nb == null) ins(fallback, back);

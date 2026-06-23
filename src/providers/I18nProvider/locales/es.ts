@@ -97,7 +97,7 @@ export default {
     noLessonOpen: "No hay ninguna lección abierta",
     createFirst: "Crea tu primera lección",
     emptyLesson: "Esta lección está vacía",
-    emptyLessonHint: "Añade tu primera celda abajo.",
+    emptyLessonHint: "Añade tu primera celda abajo: luego haz clic para editarla y haz clic fuera para verla renderizada.",
   },
   rail: {
     label: "Esquema de la lección",
@@ -152,6 +152,13 @@ export default {
     back: "Volver",
     expand: "Expandir",
   },
+  recentlyDeleted: {
+    heading: "Eliminados recientemente",
+    note: "Se conservan hasta que salgas de la app: restaura aquí o elimina definitivamente.",
+    cellLabel: "Celda {kind} de «{lesson}»",
+    restore: "Restaurar",
+    purge: "Eliminar definitivamente",
+  },
   undo: {
     deleted: "Celda de {kind} eliminada",
     action: "Deshacer",
@@ -159,6 +166,7 @@ export default {
   toast: {
     duplicated: "Celda de {kind} duplicada",
     imported: "Lección importada",
+    importDropped: "Se omitieron {count} celdas dañadas",
     restored: "{count} lecciones restauradas",
     exported: "Lección exportada",
     backedUp: "Copia exportada",

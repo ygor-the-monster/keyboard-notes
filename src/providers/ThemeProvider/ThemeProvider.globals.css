@@ -398,6 +398,13 @@ body {
   flex: 1;
   min-height: 0;
 }
+/* On phones the CellRail floats as a pill at the bottom edge; leave room so it never covers the
+   last cell / the tutor card when scrolled to the end. */
+@media (max-width: 760px) {
+  .app-scroll {
+    padding-bottom: calc(64px + env(safe-area-inset-bottom, 0px));
+  }
+}
 
 /* Generic "hide when printing" utility, used across components. */
 .no-print {

@@ -1,4 +1,5 @@
 import { marked } from "marked";
+import DOMPurify from "dompurify";
 import type { MarkedExtension, RendererThis, Tokens, TokenizerThis } from "marked";
 import markedFootnote from "marked-footnote";
 import { markedSmartypants } from "marked-smartypants";
@@ -49,27 +50,28 @@ marked.use(markedSmartypants());
 // page without colliding ids — `footnote-1` becomes `footnote-1-<idScope>` on both the definition
 // and the refs/back-links that point at it.
 export function renderMarkdown(src: string, idScope?: string): string {
-  const html = marked.parse(src || "") as string;
+  const dirty = marked.parse(src || "") as string;
+  // Sanitize with DOMPurify (a vetted allow-list sanitizer) rather than a hand-rolled deny-list.
+  // The HTML profile keeps the markup we emit — including GFM task <input> checkboxes and footnote
+  // anchors — while dropping scripts, event handlers, javascript:/data: URLs, and SVG/MathML vectors.
+  const clean = DOMPurify.sanitize(dirty, { USE_PROFILES: { html: true } });
   const tpl = document.createElement("template");
-  tpl.innerHTML = html;
-  tpl.content.querySelectorAll("script, style, iframe, object, embed").forEach((n) => n.remove());
+  tpl.innerHTML = clean;
   const scope = idScope ? `-${idScope}` : "";
-  tpl.content.querySelectorAll("*").forEach((node) => {
-    [...node.attributes].forEach((attr) => {
-      const name = attr.name.toLowerCase();
-      const val = attr.value.toLowerCase().trim();
-      if (name.startsWith("on")) node.removeAttribute(attr.name);
-      if ((name === "href" || name === "src") && val.startsWith("javascript:"))
-        node.removeAttribute(attr.name);
-      // Suffix the footnote anchors so refs ↔ defs stay matched within the cell but unique across cells.
-      if (scope && name === "id" && attr.value.startsWith("footnote"))
-        node.setAttribute("id", attr.value + scope);
-      else if (scope && name === "aria-describedby" && attr.value.startsWith("footnote"))
-        node.setAttribute("aria-describedby", attr.value + scope);
-      else if (scope && name === "href" && attr.value.startsWith("#footnote"))
-        node.setAttribute("href", attr.value + scope);
+  // Footnote id scoping is app logic (namespacing refs ↔ defs per cell), not sanitization.
+  if (scope) {
+    tpl.content.querySelectorAll("*").forEach((node) => {
+      [...node.attributes].forEach((attr) => {
+        const name = attr.name.toLowerCase();
+        if (name === "id" && attr.value.startsWith("footnote"))
+          node.setAttribute("id", attr.value + scope);
+        else if (name === "aria-describedby" && attr.value.startsWith("footnote"))
+          node.setAttribute("aria-describedby", attr.value + scope);
+        else if (name === "href" && attr.value.startsWith("#footnote"))
+          node.setAttribute("href", attr.value + scope);
+      });
     });
-  });
+  }
   tpl.content.querySelectorAll("li > input[type=checkbox]").forEach((cb) => {
     cb.closest("ul")?.classList.add("task");
   });

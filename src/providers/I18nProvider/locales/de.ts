@@ -97,7 +97,7 @@ export default {
     noLessonOpen: "Keine Lektion geöffnet",
     createFirst: "Erstelle deine erste Lektion",
     emptyLesson: "Diese Lektion ist leer",
-    emptyLessonHint: "Füge unten deine erste Zelle hinzu.",
+    emptyLessonHint: "Füge unten deine erste Zelle hinzu – klicke sie dann zum Bearbeiten an, und klicke daneben, um sie gerendert zu sehen.",
   },
   rail: {
     label: "Lektionsübersicht",
@@ -152,6 +152,13 @@ export default {
     back: "Zurück",
     expand: "Vergrößern",
   },
+  recentlyDeleted: {
+    heading: "Kürzlich gelöscht",
+    note: "Bleibt erhalten, bis du die App verlässt – hier wiederherstellen oder endgültig entfernen.",
+    cellLabel: "{kind}-Zelle aus „{lesson}“",
+    restore: "Wiederherstellen",
+    purge: "Endgültig löschen",
+  },
   undo: {
     deleted: "{kind}-Zelle gelöscht",
     action: "Rückgängig",
@@ -159,6 +166,7 @@ export default {
   toast: {
     duplicated: "{kind}-Zelle dupliziert",
     imported: "Lektion importiert",
+    importDropped: "{count} beschädigte Zellen wurden übersprungen",
     restored: "{count} Lektionen wiederhergestellt",
     exported: "Lektion exportiert",
     backedUp: "Backup exportiert",

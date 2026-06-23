@@ -185,7 +185,9 @@ export function smartNote(
   selStart: number,
   selEnd: number,
   kind: string,
-  arg?: any,
+  // `arg` covaries with `kind`: a number for "octave" (direction), a string for "accidental"/
+  // "length". Narrowed per-branch below.
+  arg?: string | number,
 ): string | null {
   const targets = targetNotes(header, body, selStart, selEnd).filter((t) => !t.rest);
   if (!targets.length) return null;
@@ -200,15 +202,15 @@ export function smartNote(
     let [, acc, letter, oct, len] = m;
     if (kind === "octave")
       oct =
-        arg > 0
+        (arg as number) > 0
           ? oct.includes(",")
             ? oct.replace(",", "")
             : oct + "'"
           : oct.includes("'")
             ? oct.replace("'", "")
             : oct + ",";
-    else if (kind === "accidental") acc = arg;
-    else if (kind === "length") len = arg;
+    else if (kind === "accidental") acc = arg as string;
+    else if (kind === "length") len = arg as string;
     b = b.slice(0, t.start) + lead + acc + letter + oct + len + trail + b.slice(t.end);
   }
   return b;

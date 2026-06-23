@@ -308,12 +308,30 @@ export default defineConfig({
     chunkSizeWarningLimit: 1024,
     rollupOptions: {
       output: {
-        // Pin the on-device assistant engine into one predictably-named chunk
-        // (assets/transformers-*.js) so the service worker can exclude it from the precache.
-        manualChunks: (id) =>
-          id.includes("@huggingface/transformers") || id.includes("onnxruntime")
-            ? "transformers"
-            : undefined,
+        // Chunking strategy. The heavy *engines* (abcjs, pdfjs, pdf-lib) already split
+        // automatically because they're dynamically imported; transformers is pinned by name so the
+        // service worker can exclude it from the precache. On top of that, group the large *static*
+        // vendor deps into their own long-lived chunks — they change far less often than app code, so
+        // splitting them out keeps the main bundle smaller and lets browsers cache them across deploys.
+        manualChunks: (id) => {
+          if (id.includes("@huggingface/transformers") || id.includes("onnxruntime"))
+            return "transformers";
+          if (!id.includes("node_modules")) return undefined;
+          // react-aria (+ its scoped deps) — the biggest static vendor surface. Check before "react".
+          if (
+            id.includes("/react-aria") ||
+            id.includes("/react-stately") ||
+            id.includes("/@react-aria/") ||
+            id.includes("/@react-stately/") ||
+            id.includes("/@internationalized/")
+          )
+            return "react-aria";
+          if (id.includes("/react-dom/") || id.includes("/react/") || id.includes("/scheduler/"))
+            return "react";
+          if (id.includes("/@phosphor-icons/")) return "icons";
+          if (id.includes("/marked") || id.includes("/dompurify")) return "markdown";
+          return undefined;
+        },
       },
     },
   },

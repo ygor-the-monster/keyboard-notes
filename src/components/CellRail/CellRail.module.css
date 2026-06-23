@@ -141,10 +141,56 @@
   outline-offset: 3px;
 }
 
-/* Too tight beside the page on phones / small tablets. */
+/* On phones / small tablets there's no room beside the page, so the rail keeps all its function but
+   reflows into a floating horizontal pill centered at the bottom edge — same dots, hues, on-screen /
+   selected states, tap-to-jump, and the tutor star. No JS change: the handlers are orientation-free. */
 @media (max-width: 760px) {
   .rail {
-    display: none;
+    right: 50%;
+    top: auto;
+    bottom: calc(10px + env(safe-area-inset-bottom, 0px));
+    transform: translateX(50%);
+    flex-direction: row;
+    max-height: none;
+    max-width: 92vw;
+    overflow-x: auto;
+    overflow-y: hidden;
+    padding: 4px 10px;
+    background: var(--topbar-bg);
+    backdrop-filter: saturate(1.4) blur(10px);
+    border: 1px solid var(--s-line);
+    border-radius: 999px;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.14);
+  }
+  /* Space the dots horizontally, and collapse width (not height) on enter/exit so neighbours slide. */
+  .seg {
+    margin: 0 3.5px;
+    animation: seg-in-h 0.24s cubic-bezier(0.2, 0.8, 0.2, 1);
+  }
+  .seg.exiting {
+    animation: seg-out-h 0.2s ease forwards;
+  }
+  /* The tutor star's hairline divider moves to the left edge of the row. */
+  .tutor {
+    margin: 0 0 0 3.5px;
+    padding-top: 0;
+    padding-left: 10px;
+    border-top: none;
+    border-left: 1px solid var(--s-line);
+  }
+}
+@keyframes seg-in-h {
+  from {
+    width: 0;
+    margin-inline: 0;
+    opacity: 0;
+  }
+}
+@keyframes seg-out-h {
+  to {
+    width: 0;
+    margin-inline: 0;
+    opacity: 0;
   }
 }
 @media (prefers-reduced-motion: reduce) {

@@ -13,6 +13,7 @@ import {
   DotsSixVerticalIcon as DotsSixVertical,
 } from "@phosphor-icons/react";
 import { toast } from "../Toasts/toasts.ts";
+import { removeDeleted } from "../../utils/recentlyDeleted/recentlyDeleted.ts";
 import { useStore } from "../../providers/StoreProvider/StoreProvider.tsx";
 import { useEditing } from "../../providers/EditingProvider/EditingProvider.tsx";
 import { useI18n } from "../../providers/I18nProvider/I18nProvider.tsx";
@@ -43,7 +44,7 @@ function translateYOf(el: Element): number {
 
 export default function Cell({ cell, index = 0 }: { cell: CellModel; index?: number }) {
   const { moveCell, moveCellTo, duplicateCell, deleteCell, restoreCell } = useStore();
-  const { editingId } = useEditing();
+  const { editingId, setEditing } = useEditing();
   const { t } = useI18n();
   const editing = editingId === cell.id;
   const view = cellRegistry[cell.kind];
@@ -135,14 +136,23 @@ export default function Cell({ cell, index = 0 }: { cell: CellModel; index?: num
       window.removeEventListener("pointermove", onMove);
       window.removeEventListener("pointerup", end);
       window.removeEventListener("pointercancel", end);
+      window.removeEventListener("keydown", onKey);
+      window.removeEventListener("blur", end);
       drag.current = null;
       setDragging(false);
       cellRef.current?.style.removeProperty("--stick"); // let the card settle back into its slot
       stick.current = 0;
     };
+    // Escape aborts the drag; so does the window losing focus (e.g. a tool screen opening, or the
+    // tab being switched) — otherwise the document-level listeners would linger past the gesture.
+    const onKey = (ev: KeyboardEvent) => {
+      if (ev.key === "Escape") end();
+    };
     window.addEventListener("pointermove", onMove);
     window.addEventListener("pointerup", end);
     window.addEventListener("pointercancel", end);
+    window.addEventListener("keydown", onKey);
+    window.addEventListener("blur", end);
     state.raf = requestAnimationFrame(tick);
   }
 
@@ -229,7 +239,10 @@ export default function Cell({ cell, index = 0 }: { cell: CellModel; index?: num
                   if (deleted)
                     toast.neutral(t("undo.deleted", { kind: t(view.tagLabelKey) }), {
                       actionLabel: t("undo.action"),
-                      onAction: () => restoreCell(deleted),
+                      onAction: () => {
+                        restoreCell(deleted);
+                        removeDeleted(deleted.cell.id); // also clear it from the Recently Deleted bin
+                      },
                       timeout: 7000,
                       accent: `var(${view.hue.base})`,
                     });
@@ -242,16 +255,27 @@ export default function Cell({ cell, index = 0 }: { cell: CellModel; index?: num
         <div className="cell-body">
           <CellErrorBoundary
             resetKeys={[cell]}
-            fallback={(retry) => (
+            fallback={(retry, error) => (
               <EmptyState
                 kind={cell.kind}
                 neutral
                 title={t("cell.errBoundaryTitle")}
                 hint={t("cell.errBoundaryHint")}
               >
-                <button type="button" className={shared.btnSecondary} onClick={retry}>
-                  {t("cell.errBoundaryRetry")}
-                </button>
+                <div className={s.errActions}>
+                  <button type="button" className={shared.btnSecondary} onClick={() => setEditing(cell.id)}>
+                    {t("cell.errBoundaryEdit")}
+                  </button>
+                  <button type="button" className={shared.btnSecondary} onClick={retry}>
+                    {t("cell.errBoundaryRetry")}
+                  </button>
+                </div>
+                {error?.message && (
+                  <details className={s.errDetails}>
+                    <summary>{t("cell.errBoundaryDetails")}</summary>
+                    <pre className={s.errMessage}>{error.message}</pre>
+                  </details>
+                )}
               </EmptyState>
             )}
           >

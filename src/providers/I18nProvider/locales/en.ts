@@ -112,7 +112,7 @@ export default {
     noLessonOpen: "No lesson open",
     createFirst: "Create your first lesson",
     emptyLesson: "This lesson is empty",
-    emptyLessonHint: "Add your first cell below.",
+    emptyLessonHint: "Add your first cell below — then click it to edit, and click away to see it rendered.",
   },
   rail: {
     label: "Lesson outline",
@@ -186,6 +186,8 @@ export default {
     errBoundaryTitle: "This cell couldn’t be displayed",
     errBoundaryHint: "Your other cells are safe. Try again, or edit the cell to fix it.",
     errBoundaryRetry: "Try again",
+    errBoundaryEdit: "Edit source",
+    errBoundaryDetails: "Error details",
   },
   theme: {
     dark: "Dark mode",
@@ -199,6 +201,13 @@ export default {
     back: "Back",
     expand: "Expand",
   },
+  recentlyDeleted: {
+    heading: "Recently deleted",
+    note: "Kept until you leave the app — restore here or remove for good.",
+    cellLabel: "{kind} cell from “{lesson}”",
+    restore: "Restore",
+    purge: "Delete forever",
+  },
   undo: {
     deleted: "{kind} cell deleted",
     action: "Undo",
@@ -206,6 +215,7 @@ export default {
   toast: {
     duplicated: "{kind} cell duplicated",
     imported: "Lesson imported",
+    importDropped: "{count} damaged cells were skipped",
     restored: "{count} lessons restored",
     exported: "Lesson exported",
     backedUp: "Backup exported",

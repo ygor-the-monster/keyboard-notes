@@ -30,6 +30,7 @@ import { useI18n } from "../../providers/I18nProvider/I18nProvider.tsx";
 import { useTheme, ZOOM_LEVELS } from "../../providers/ThemeProvider/ThemeProvider.tsx";
 import { useRoute } from "../../providers/RouteProvider/RouteProvider.tsx";
 import { toolRegistry } from "../../utils/toolRegistry/toolRegistry.ts";
+import { removeDeleted } from "../../utils/recentlyDeleted/recentlyDeleted.ts";
 import {
   serializeLesson,
   serializeLibrary,
@@ -101,7 +102,10 @@ export default function Topbar() {
       if (removed)
         toast.neutral(t("toast.lessonDeleted"), {
           actionLabel: t("undo.action"),
-          onAction: () => restoreLesson(removed),
+          onAction: () => {
+            restoreLesson(removed);
+            removeDeleted(removed.lesson.id); // also clear it from the Recently Deleted bin
+          },
           timeout: 7000,
         });
     } else selectLesson(k);
@@ -117,12 +121,14 @@ export default function Topbar() {
       try {
         const parsed = JSON.parse(reader.result as string);
         if (parsed && parsed.library) {
-          importLibrary(parsed);
+          const { dropped } = importLibrary(parsed);
           const n = Object.keys(parsed.library.lessons ?? {}).length;
           toast.positive(t("toast.restored", { count: n }));
+          if (dropped > 0) toast.neutral(t("toast.importDropped", { count: dropped }));
         } else {
-          importLesson(parsed);
+          const { dropped } = importLesson(parsed);
           toast.positive(t("toast.imported"));
+          if (dropped > 0) toast.neutral(t("toast.importDropped", { count: dropped }));
         }
       } catch {
         toast.negative(t("dialogs.importFailedTitle"));

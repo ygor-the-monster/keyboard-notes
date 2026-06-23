@@ -97,7 +97,7 @@ export default {
     noLessonOpen: "Nessuna lezione aperta",
     createFirst: "Crea la tua prima lezione",
     emptyLesson: "Questa lezione è vuota",
-    emptyLessonHint: "Aggiungi la tua prima cella qui sotto.",
+    emptyLessonHint: "Aggiungi la tua prima cella qui sotto: poi cliccala per modificarla e clicca fuori per vederla resa.",
   },
   rail: {
     label: "Struttura della lezione",
@@ -153,6 +153,13 @@ export default {
     back: "Indietro",
     expand: "Espandi",
   },
+  recentlyDeleted: {
+    heading: "Eliminati di recente",
+    note: "Conservati finché non esci dall’app — ripristina qui o elimina definitivamente.",
+    cellLabel: "Cella {kind} da «{lesson}»",
+    restore: "Ripristina",
+    purge: "Elimina definitivamente",
+  },
   undo: {
     deleted: "Cella {kind} eliminata",
     action: "Annulla",
@@ -160,6 +167,7 @@ export default {
   toast: {
     duplicated: "Cella {kind} duplicata",
     imported: "Lezione importata",
+    importDropped: "{count} celle danneggiate sono state ignorate",
     restored: "{count} lezioni ripristinate",
     exported: "Lezione esportata",
     backedUp: "Backup esportato",

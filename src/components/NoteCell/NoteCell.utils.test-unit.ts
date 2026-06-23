@@ -52,4 +52,14 @@ describe("renderMarkdown", () => {
   it("supports the custom ==highlight== syntax", () => {
     expect(renderMarkdown("==hi==")).toContain("<mark>hi</mark>");
   });
+  it("neutralizes injected event handlers and dangerous URLs", () => {
+    expect(renderMarkdown('<img src=x onerror="alert(1)">')).not.toContain("onerror");
+    expect(renderMarkdown("[x](javascript:alert(1))")).not.toContain("javascript:");
+    expect(renderMarkdown("<svg><script>alert(1)</script></svg>")).not.toContain("<script");
+  });
+  it("keeps GFM task checkboxes after sanitizing", () => {
+    const html = renderMarkdown("- [x] done\n- [ ] todo");
+    expect(html).toContain('type="checkbox"');
+    expect(html).toContain("task"); // the <ul class="task"> hook survives
+  });
 });

@@ -6,12 +6,13 @@ import { Component, type ErrorInfo, type ReactNode } from "react";
 // the broken cell (e.g. a malformed ABC score or a corrupt PDF). React error boundaries must be
 // class components; this is the only class in the tree.
 //
-// `fallback` is a render prop given a `retry` that clears the error and re-renders the body.
-// `resetKeys` auto-clears the error when any key changes (shallow compare) — passing the cell makes
-// an edit that fixes the underlying data recover on its own, with no extra tap.
+// `fallback` is a render prop given a `retry` that clears the error and re-renders the body, plus the
+// `error` itself so the fallback can surface the cause. `resetKeys` auto-clears the error when any
+// key changes (shallow compare) — passing the cell makes an edit that fixes the underlying data
+// recover on its own, with no extra tap.
 interface Props {
   children: ReactNode;
-  fallback: (retry: () => void) => ReactNode;
+  fallback: (retry: () => void, error: Error) => ReactNode;
   resetKeys?: readonly unknown[];
 }
 
@@ -49,7 +50,7 @@ export default class CellErrorBoundary extends Component<Props, State> {
   retry = () => this.setState({ error: null });
 
   render() {
-    if (this.state.error) return this.props.fallback(this.retry);
+    if (this.state.error) return this.props.fallback(this.retry, this.state.error);
     return this.props.children;
   }
 }

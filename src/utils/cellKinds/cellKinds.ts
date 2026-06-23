@@ -205,3 +205,79 @@ export const defaultLesson = (): Lesson => {
   const t = Date.now();
   return { id: uid(), title: "", created: t, updated: t, cells: [] };
 };
+
+// ---- Validation / coercion (pure) -------------------------------------------------------
+// Used at the two trust boundaries — importing a file and loading a persisted record — and for
+// patching a Cell. Pure and React-free, so they can be unit-tested without the store/UI.
+
+type Checker = (v: unknown) => boolean;
+const isStr: Checker = (v) => typeof v === "string";
+const isNum: Checker = (v) => typeof v === "number" && Number.isFinite(v);
+const isArr: Checker = (v) => Array.isArray(v);
+const isObj: Checker = (v) => !!v && typeof v === "object" && !Array.isArray(v);
+
+// The mutable data fields per kind, with the type each must hold. Excludes `id` and the `kind`
+// discriminant (which must never change). Drives both `applyCellPatch` (allowlist) and
+// `validateCell` (repair table) so the two can't drift from the Cell union above.
+const cellFields: Record<Kind, Record<string, Checker>> = {
+  note: { source: isStr },
+  score: { header: isStr, body: isStr },
+  cifra: { source: isStr, transpose: isNum },
+  image: { dataUrl: isStr, filter: isObj, strokes: isArr },
+  pdf: { dataUrl: isStr, url: isStr, name: isStr, height: isNum, annotations: isObj },
+  audio: { dataUrl: isStr, marks: isArr },
+  external: { url: isStr, title: isStr },
+};
+
+const isKind = (v: unknown): v is Kind =>
+  typeof v === "string" && (KINDS as readonly string[]).includes(v);
+
+// Apply a partial patch to a Cell, copying only fields that belong to the cell's kind. The `kind`
+// discriminant and `id` are never patchable, so a stray/hostile patch can't corrupt the union.
+export function applyCellPatch<C extends Cell>(cell: C, patch: Partial<Cell>): C {
+  const allowed = cellFields[cell.kind];
+  const next = { ...cell } as Record<string, unknown>;
+  for (const key of Object.keys(patch)) {
+    if (key in allowed) next[key] = (patch as Record<string, unknown>)[key];
+  }
+  return next as C;
+}
+
+// Coerce an untrusted value into a valid Cell, or null if it isn't salvageable (not an object, or
+// an unknown kind). For a known kind we start from a fresh default (giving every required field a
+// valid value + a fresh id) and copy over each incoming field that is present with the right type —
+// so a slightly-damaged cell is repaired rather than dropped, and original ids are preserved.
+export function validateCell(value: unknown): Cell | null {
+  if (!isObj(value)) return null;
+  const raw = value as Record<string, unknown>;
+  if (!isKind(raw.kind)) return null;
+  const base = cellKinds[raw.kind].factory() as unknown as Record<string, unknown>;
+  if (isStr(raw.id) && raw.id) base.id = raw.id;
+  for (const [field, ok] of Object.entries(cellFields[raw.kind])) {
+    if (field in raw && ok(raw[field])) base[field] = raw[field];
+  }
+  return base as unknown as Cell;
+}
+
+// What `coerceLesson` returns: the sanitized Lesson plus how many cells were dropped (unknown kind
+// or non-object), so the caller can warn the user. Returns null when the value isn't a Lesson at
+// all (not an object, or no `cells` array).
+export interface CoercedLesson {
+  lesson: Lesson;
+  dropped: number;
+}
+
+// Coerce an untrusted value into a Lesson with only valid cells. Leaves id/created/updated/tags to
+// the caller (the store mints/normalizes those on import); here we guarantee a string title and a
+// cells array of valid Cells.
+export function coerceLesson(value: unknown): CoercedLesson | null {
+  if (!isObj(value)) return null;
+  const raw = value as Record<string, unknown>;
+  if (!isArr(raw.cells)) return null;
+  const input = raw.cells as unknown[];
+  const cells = input.map(validateCell).filter((c): c is Cell => c !== null);
+  const lesson = { ...(raw as object) } as Lesson;
+  lesson.cells = cells;
+  if (!isStr(lesson.title)) lesson.title = "";
+  return { lesson, dropped: input.length - cells.length };
+}
