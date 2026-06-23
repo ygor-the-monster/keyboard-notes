@@ -168,6 +168,19 @@ export function embedFor(raw: string): EmbedSpec | null {
   return detectProvider(raw)?.embed() ?? null;
 }
 
+// Timestamp Anchors: the video providers whose embed accepts a deterministic start time, so a Note
+// anchor can jump them. (Audio widgets — Spotify/SoundCloud/etc. — have no reliable start param.)
+export const isSeekableProvider = (id: ProviderId): boolean => id === "youtube" || id === "vimeo";
+
+// Rewrite a (param-free) embed src to start at `seconds` and autoplay there. Returns null for
+// providers without a deterministic start, so the caller leaves the embed untouched.
+export function seekableSrc(id: ProviderId, baseSrc: string, seconds: number): string | null {
+  const t = Math.max(0, Math.round(seconds));
+  if (id === "youtube") return `${baseSrc}?start=${t}&autoplay=1`;
+  if (id === "vimeo") return `${baseSrc}?autoplay=1#t=${t}s`;
+  return null;
+}
+
 // Fetch a readable title (and thumbnail) once via the provider's oEmbed endpoint. Online-only and
 // fail-soft: any error (offline, CORS, non-provider) resolves to null and the caller keeps the
 // hostname-derived title.

@@ -417,6 +417,28 @@ body {
   line-height: 1.7;
   color: var(--s-ink);
 }
+/* Timestamp anchor — an inline action button (jumps a media cell to a moment) styled as a link,
+   in the Note's accent, with a small clock cue. Not an <a>, so it never touches the router hash. */
+.md-preview .seek-anchor {
+  font: inherit;
+  display: inline;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--accent, var(--s-magenta));
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  text-decoration-thickness: 1px;
+  cursor: pointer;
+}
+.md-preview .seek-anchor::before {
+  content: "▸ ";
+  text-decoration: none;
+  font-size: 0.85em;
+}
+.md-preview .seek-anchor:hover {
+  color: var(--accent-strong, var(--s-magenta-strong));
+}
 .md-preview > :first-child {
   margin-top: 0;
 }

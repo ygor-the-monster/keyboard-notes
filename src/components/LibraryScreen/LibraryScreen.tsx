@@ -4,6 +4,9 @@ import {
   MenuTrigger,
   Menu,
   MenuItem,
+  MenuSection,
+  Header,
+  Separator,
   Popover,
   TextField,
   Input,
@@ -21,6 +24,7 @@ import { useStore } from "../../providers/StoreProvider/StoreProvider.tsx";
 import { useI18n } from "../../providers/I18nProvider/I18nProvider.tsx";
 import { toast } from "../Toasts/toasts.ts";
 import { selectLibraryView, type LibrarySort } from "../../utils/libraryView/libraryView.ts";
+import { isTemplate } from "../../utils/lessonStatus/lessonStatus.ts";
 import { serializeLesson, lessonFilename } from "../../utils/lessonExport/lessonExport.ts";
 import {
   listDeleted,
@@ -57,8 +61,10 @@ export default function LibraryScreen() {
     state,
     selectLesson,
     createLesson,
+    createLessonFromTemplate,
     togglePin,
     setLessonTags,
+    setLessonStatus,
     deleteLesson,
     restoreLesson,
     restoreCell,
@@ -87,6 +93,12 @@ export default function LibraryScreen() {
   };
   const makeNew = () => {
     createLesson();
+    closeScreen();
+  };
+  // Lessons flagged status="template" are offered as starting points (in Library order).
+  const templates = state.order.map((id) => state.lessons[id]).filter(Boolean).filter(isTemplate);
+  const makeFromTemplate = (id: string) => {
+    createLessonFromTemplate(id);
     closeScreen();
   };
   const remove = (lesson: Lesson) => {
@@ -134,6 +146,7 @@ export default function LibraryScreen() {
       onOpen={() => open(lesson.id)}
       onTogglePin={() => togglePin(lesson.id)}
       onSetTags={(tags) => setLessonTags(lesson.id, tags)}
+      onSetStatus={(status) => setLessonStatus(lesson.id, status)}
       onExport={() => downloadLesson(lesson)}
       onDelete={() => remove(lesson)}
       onPickTag={pickTag}
@@ -176,9 +189,38 @@ export default function LibraryScreen() {
           </Popover>
         </MenuTrigger>
 
-        <Button className={s.newBtn} onPress={makeNew}>
-          <Plus size={18} weight="bold" aria-hidden /> {t("topbar.newLesson")}
-        </Button>
+        {templates.length > 0 ? (
+          <MenuTrigger>
+            <Button className={s.newBtn} aria-label={t("topbar.newLesson")}>
+              <Plus size={18} weight="bold" aria-hidden /> {t("topbar.newLesson")}
+            </Button>
+            <Popover className={f.menuPopover}>
+              <Menu
+                className={f.menu}
+                onAction={(k) => (k === "blank" ? makeNew() : makeFromTemplate(String(k)))}
+              >
+                <MenuSection>
+                  <MenuItem id="blank" className={f.menuItem}>
+                    {t("library.newBlank")}
+                  </MenuItem>
+                </MenuSection>
+                <Separator className={f.menuSeparator} />
+                <MenuSection>
+                  <Header className={f.menuSectionHeader}>{t("library.fromTemplate")}</Header>
+                  {templates.map((tpl) => (
+                    <MenuItem key={tpl.id} id={tpl.id} className={f.menuItem}>
+                      {tpl.title || t("topbar.untitled")}
+                    </MenuItem>
+                  ))}
+                </MenuSection>
+              </Menu>
+            </Popover>
+          </MenuTrigger>
+        ) : (
+          <Button className={s.newBtn} onPress={makeNew}>
+            <Plus size={18} weight="bold" aria-hidden /> {t("topbar.newLesson")}
+          </Button>
+        )}
       </div>
 
       {view.allTags.length > 0 && (

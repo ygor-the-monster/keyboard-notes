@@ -2,6 +2,7 @@ import { describe, it, expect, afterEach } from "vitest";
 import { render, cleanup } from "@testing-library/react";
 import { StoreProvider } from "../../providers/StoreProvider/StoreProvider.tsx";
 import { I18nProvider } from "../../providers/I18nProvider/I18nProvider.tsx";
+import { EditingProvider } from "../../providers/EditingProvider/EditingProvider.tsx";
 import NoteCell from "./NoteCell.tsx";
 import type { CellOf } from "../../utils/cellKinds/cellKinds.ts";
 
@@ -13,7 +14,9 @@ const renderNote = (cell: CellOf<"note">) =>
   render(
     <StoreProvider>
       <I18nProvider>
-        <NoteCell cell={cell} editing={false} />
+        <EditingProvider>
+          <NoteCell cell={cell} editing={false} />
+        </EditingProvider>
       </I18nProvider>
     </StoreProvider>,
   );

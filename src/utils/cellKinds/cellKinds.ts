@@ -2,6 +2,7 @@
 // union, the pure factories, and the kind -> factory map. React-free, so the store/reducer can
 // import it without dragging in component-land. The view side lives in registry.tsx.
 import { uid } from "../cellId/cellId.ts";
+import type { LessonStatus } from "../lessonStatus/lessonStatus.ts";
 
 // Single source of truth for the closed set of kinds. `as const` makes it erasable and lets
 // `Kind` be derived from it — never a TS enum (forbidden under erasableSyntaxOnly).
@@ -116,11 +117,13 @@ export interface Lesson {
   created: number;
   updated: number;
   cells: Cell[];
-  // Library organization (ADR-0005). Both optional + additive, so old records/files load unchanged.
-  // `pinned` floats the Lesson to the top of the Library; `tags` are normalized (see lessonTags).
-  // Editing either is organizing, not editing — neither bumps `updated`.
+  // Library organization (ADR-0005). All optional + additive, so old records/files load unchanged.
+  // `pinned` floats the Lesson to the top of the Library; `tags` are normalized (see lessonTags);
+  // `status` is the workflow badge, where "template" marks the Lesson reusable (see lessonStatus).
+  // Editing any of these is organizing, not editing — none bumps `updated`.
   pinned?: boolean;
   tags?: string[];
+  status?: LessonStatus;
 }
 
 export interface AppState {

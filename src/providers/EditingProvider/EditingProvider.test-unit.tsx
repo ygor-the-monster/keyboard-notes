@@ -26,4 +26,22 @@ describe("useEditing", () => {
   it("throws when used outside its provider", () => {
     expect(() => renderHook(() => useEditing())).toThrow(/EditingProvider/);
   });
+
+  it("entering performance mode drops any active edit", () => {
+    const { result } = renderHook(() => useEditing(), { wrapper });
+    act(() => result.current.setEditing("cell-1"));
+    act(() => result.current.setPerforming(true));
+    expect(result.current.performing).toBe(true);
+    expect(result.current.editingId).toBeNull();
+  });
+
+  it("locks editing while performing — setEditing is a no-op until it exits", () => {
+    const { result } = renderHook(() => useEditing(), { wrapper });
+    act(() => result.current.setPerforming(true));
+    act(() => result.current.setEditing("cell-1"));
+    expect(result.current.editingId).toBeNull(); // locked
+    act(() => result.current.setPerforming(false));
+    act(() => result.current.setEditing("cell-1"));
+    expect(result.current.editingId).toBe("cell-1"); // editable again
+  });
 });

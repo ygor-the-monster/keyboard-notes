@@ -178,6 +178,30 @@
   color: var(--accent-strong);
 }
 
+/* Stable, copyable seek code for media cells (e.g. "A3F") — referenced by Note [[code:time]]
+   anchors. Monospace + a leading # cue; click copies it. */
+.seekCode {
+  display: inline-flex;
+  align-items: center;
+  border: 1px solid var(--accent-ring, var(--s-line));
+  border-radius: var(--radius-pill);
+  padding: 2px 8px;
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  background: var(--canvas);
+  color: var(--accent-strong);
+  cursor: pointer;
+}
+.seekCode::before {
+  content: "#";
+  opacity: 0.5;
+}
+.seekCode:hover {
+  background: var(--accent-tint);
+}
+
 @media (prefers-reduced-motion: reduce) {
   .cell {
     animation: none;

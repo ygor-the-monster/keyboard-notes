@@ -2,10 +2,17 @@ import { useEffect, useRef, useState, type PointerEvent as ReactPointerEvent } f
 import { Button, DropZone, FileTrigger } from "react-aria-components";
 import { toast } from "../Toasts/toasts.ts";
 import EmptyState from "../EmptyState/EmptyState.tsx";
-import { WaveformIcon as Waveform, XIcon as X } from "@phosphor-icons/react";
+import {
+  WaveformIcon as Waveform,
+  XIcon as X,
+  PlayIcon as Play,
+  PauseIcon as Pause,
+} from "@phosphor-icons/react";
 import { useStore } from "../../providers/StoreProvider/StoreProvider.tsx";
 import { useDialog } from "../../providers/DialogProvider/DialogProvider.tsx";
 import { useI18n } from "../../providers/I18nProvider/I18nProvider.tsx";
+import { useEditing } from "../../providers/EditingProvider/EditingProvider.tsx";
+import { onSeek } from "../../utils/seekBus/seekBus.ts";
 import { useMediaSession } from "../../hooks/useMediaSession.ts";
 import {
   fileToDataUrl,
@@ -41,6 +48,7 @@ export default function AudioCell({ cell, editing }: { cell: CellOf<"audio">; ed
   const { updateCell, activeLesson } = useStore();
   const { confirm } = useDialog();
   const { t } = useI18n();
+  const { performing } = useEditing();
   const src = cell.dataUrl;
   const marks = cell.marks || EMPTY_MARKS;
 
@@ -90,6 +98,20 @@ export default function AudioCell({ cell, editing }: { cell: CellOf<"audio">; ed
   useEffect(() => {
     if (audioRef.current) audioRef.current.playbackRate = rate;
   }, [rate, src]);
+
+  // Timestamp Anchors: when this Cell's player is mounted (edit or present mode), answer seek
+  // requests from Note anchors — jump to the moment and play. In plain read mode the player isn't
+  // mounted, so a Note anchor first opens it (setEditing), then the parked seek arrives here.
+  useEffect(() => {
+    if (!src || !(editing || performing)) return;
+    return onSeek(cell.id, (seconds) => {
+      const a = audioRef.current;
+      if (!a) return;
+      a.currentTime = seconds;
+      setCur(seconds);
+      a.play().catch(() => {});
+    });
+  }, [src, editing, performing, cell.id]);
 
   // Draw the waveform (played portion + selection + cursor) in the cell's accent colour.
   useEffect(() => {
@@ -393,7 +415,11 @@ export default function AudioCell({ cell, editing }: { cell: CellOf<"audio">; ed
             onClick={() => editing && cycleMarkColor(m)}
             aria-label={t("audio.markColor")}
           />
-          <button type="button" className={css.markTime} onClick={() => editing && seekTo(m.time)}>
+          <button
+            type="button"
+            className={css.markTime}
+            onClick={() => (editing || performing) && seekTo(m.time)}
+          >
             {m.kind === "region"
               ? `${fmtTime(m.time)}–${fmtTime(m.end ?? m.time)}`
               : fmtTime(m.time)}
@@ -424,7 +450,31 @@ export default function AudioCell({ cell, editing }: { cell: CellOf<"audio">; ed
   );
 
   if (!editing) {
-    // Compact view is display-only — clicking inside the cell switches to edit mode, so a play
+    // Performance ("present") mode gets a real transport: play/pause, a seekable waveform, and
+    // tappable marks — so you can play your recording from the piano (and Note timestamp anchors can
+    // jump it) without opening the editor.
+    if (performing) {
+      return (
+        <div className={css.col}>
+          {audioEl}
+          <div className={css.transport}>
+            <Button
+              className={css.transportBtn}
+              onPress={togglePlay}
+              aria-label={playing ? t("audio.pause") : t("audio.play")}
+            >
+              {playing ? <Pause size={20} weight="fill" /> : <Play size={20} weight="fill" />}
+            </Button>
+            <span className={css.transportTime}>
+              {fmtTime(cur)} / {fmtTime(dur)}
+            </span>
+          </div>
+          <div className={css.waveWrap}>{waveform}</div>
+          {marksList}
+        </div>
+      );
+    }
+    // Plain read mode is display-only — clicking inside the cell switches to edit mode, so a play
     // control can't live here. Show the waveform + duration + any markers.
     return (
       <div className={css.col}>

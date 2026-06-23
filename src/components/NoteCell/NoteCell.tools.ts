@@ -1,3 +1,4 @@
+import { createElement } from "react";
 import {
   TextBIcon as TextB,
   TextItalicIcon as TextItalic,
@@ -14,22 +15,35 @@ import {
   LinkSimpleIcon as LinkSimple,
   TableIcon as Table,
   MinusIcon as Minus,
+  ClockIcon as Clock,
 } from "@phosphor-icons/react";
 import type { Icon } from "@phosphor-icons/react";
 import type { Tool } from "../Toolbar/Toolbar.tsx";
 import { buildAssistantTool } from "../AssistantPanel/assistantTool.ts";
 import { runTextTransform } from "../../utils/notationAssistant/notationAssistant.ts";
+import TimestampAnchorPicker, { type SeekTarget } from "./TimestampAnchorPicker.tsx";
 
 interface NoteToolsArgs {
   t: (key: string, vars?: Record<string, unknown>) => string;
   format: (kind: string) => void;
   sourceNow: () => string;
   applySource: (next: { source: string }) => void;
+  // Timestamp Anchors — the lesson's seek-able media Cells (Audio + YouTube/Vimeo) and how to insert
+  // an anchor to one. Optional: the tool only appears when the lesson has at least one such Cell.
+  seekTargets?: SeekTarget[];
+  insertAnchor?: (cellId: string, seconds: number, label: string) => void;
 }
 
 // The Note (Markdown) editor's unified-Toolbar tools. Pure: every label reads through `t` and every
 // action delegates to `format(id)`.
-export function buildNoteTools({ t, format, sourceNow, applySource }: NoteToolsArgs): Tool[] {
+export function buildNoteTools({
+  t,
+  format,
+  sourceNow,
+  applySource,
+  seekTargets,
+  insertAnchor,
+}: NoteToolsArgs): Tool[] {
   const act = (id: string, icon: Icon, key: string): Tool => ({
     kind: "action",
     id,
@@ -37,6 +51,25 @@ export function buildNoteTools({ t, format, sourceNow, applySource }: NoteToolsA
     label: t(key),
     onUse: () => format(id),
   });
+  // Insert-a-timestamp-anchor tool — only when the lesson has a seek-able media Cell to point at.
+  const timestampTool: Tool[] =
+    seekTargets && seekTargets.length > 0 && insertAnchor
+      ? [
+          {
+            kind: "input",
+            id: "timestamp",
+            icon: Clock,
+            label: t("note.timestamp"),
+            render: ({ close }) =>
+              createElement(TimestampAnchorPicker, {
+                targets: seekTargets,
+                t,
+                onInsert: insertAnchor,
+                close,
+              }),
+          },
+        ]
+      : [];
   return [
     // Inline formatting
     act("bold", TextB, "note.bold"),
@@ -84,6 +117,7 @@ export function buildNoteTools({ t, format, sourceNow, applySource }: NoteToolsA
       onUse: () => format("footnote"),
     },
     act("hr", Minus, "note.divider"),
+    ...timestampTool,
     { kind: "sep" },
     // On-device assistant — last in the list (an optional power feature, not pushed up front).
     // Edits the Markdown from a plain-language instruction (see AssistantPanel).

@@ -18,6 +18,11 @@ import { uid } from "../../utils/cellId/cellId.ts";
 import { clamp } from "../../utils/numeric/numeric.ts";
 import { normalizeTags } from "../../utils/lessonTags/lessonTags.ts";
 import {
+  normalizeStatus,
+  normalizeLessonStatus,
+  type LessonStatus,
+} from "../../utils/lessonStatus/lessonStatus.ts";
+import {
   cellKinds,
   defaultLesson,
   applyCellPatch,
@@ -57,6 +62,10 @@ interface StoreApi {
   // lesson, not just the active one. Neither bumps `updated`: organizing isn't editing.
   togglePin(id: string): void;
   setLessonTags(id: string, tags: string[]): void;
+  setLessonStatus(id: string, status: LessonStatus): void;
+  // Clone a Lesson marked status="template" into a fresh, editable Lesson (new ids, "new" status)
+  // and make it active. A no-op if the id isn't found.
+  createLessonFromTemplate(id: string): void;
   addCell(kind: Kind): string;
   updateCell(cellId: string, patch: Partial<Cell>): void;
   moveCell(cellId: string, dir: number): void;
@@ -201,6 +210,32 @@ export function StoreProvider({ children }: { children: ReactNode }) {
           if (lesson) lesson.tags = normalizeTags(tags);
         });
       },
+      setLessonStatus(id, status) {
+        commit((d) => {
+          const lesson = d.lessons[id];
+          if (lesson) lesson.status = normalizeStatus(status);
+        });
+      },
+      // Instantiate a template: deep-clone it with fresh lesson + cell ids, fresh timestamps, and a
+      // clean slate (unpinned, status reset to the "new" default so the copy isn't itself a
+      // template). The title carries over so the new Lesson is recognizable, then renamable.
+      createLessonFromTemplate(id) {
+        const src = stateRef.current.lessons[id];
+        if (!src) return;
+        const t = Date.now();
+        const clone = structuredClone(src);
+        clone.id = uid();
+        clone.created = t;
+        clone.updated = t;
+        clone.pinned = false;
+        clone.status = undefined;
+        for (const cell of clone.cells) cell.id = uid();
+        commit((d) => {
+          d.lessons[clone.id] = clone;
+          d.order.unshift(clone.id);
+          d.activeId = clone.id;
+        });
+      },
       addCell(kind) {
         const cell = cellKinds[kind].factory();
         commit((d) => {
@@ -316,6 +351,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
           lesson.updated = Date.now();
           if (!lesson.created) lesson.created = Date.now();
           if (lesson.tags !== undefined) lesson.tags = normalizeTags(lesson.tags);
+          normalizeLessonStatus(lesson);
           d.lessons[lesson.id] = lesson;
           d.order.unshift(lesson.id);
           d.activeId = lesson.id;
@@ -354,6 +390,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
             if (!lesson.created) lesson.created = Date.now();
             lesson.updated = Date.now();
             if (lesson.tags !== undefined) lesson.tags = normalizeTags(lesson.tags);
+            normalizeLessonStatus(lesson);
             d.lessons[lesson.id] = lesson;
             d.order.push(lesson.id);
             if (!firstNew) firstNew = lesson.id;

@@ -7,6 +7,7 @@ import { useCallback, useState } from "react";
 import type { AppState } from "../../utils/cellKinds/cellKinds.ts";
 import { validateCell } from "../../utils/cellKinds/cellKinds.ts";
 import { normalizeLessonTags } from "../../utils/lessonTags/lessonTags.ts";
+import { normalizeLessonStatus } from "../../utils/lessonStatus/lessonStatus.ts";
 
 const STORE_KEY = "pianoNotes.v2"; // legacy localStorage key (migrated from, then cleared)
 const DB_NAME = "pianoNotes";
@@ -62,6 +63,7 @@ export function normalizeState(raw: unknown): AppState {
   for (const id of order) {
     const lesson = lessons[id];
     normalizeLessonTags(lesson);
+    normalizeLessonStatus(lesson);
     if (Array.isArray(lesson?.cells)) {
       lesson.cells = lesson.cells
         .map(validateCell)

@@ -16,8 +16,16 @@ import type { Icon } from "@phosphor-icons/react";
 import EmptyState from "../EmptyState/EmptyState.tsx";
 import { useStore } from "../../providers/StoreProvider/StoreProvider.tsx";
 import { useI18n } from "../../providers/I18nProvider/I18nProvider.tsx";
+import { onSeek } from "../../utils/seekBus/seekBus.ts";
 import type { CellOf } from "../../utils/cellKinds/cellKinds.ts";
-import { detectProvider, fetchMeta, deriveTitle, type ProviderId } from "./ExternalCell.utils.ts";
+import {
+  detectProvider,
+  fetchMeta,
+  deriveTitle,
+  isSeekableProvider,
+  seekableSrc,
+  type ProviderId,
+} from "./ExternalCell.utils.ts";
 import shared from "../../providers/ThemeProvider/ThemeProvider.module.css";
 import offlineArt from "./illustrations/offline.svg";
 import css from "./ExternalCell.module.css";
@@ -114,6 +122,19 @@ export default function ExternalCell({
   const spec = provider?.embed() ?? null;
   const ProviderIcon = provider ? PROVIDER_ICON[provider.id] : Globe;
 
+  // Timestamp Anchors: a Note anchor can jump this video to a moment. We reload the embed at the
+  // requested start time (autoplaying there) — keyed by a bump counter so even the same second
+  // re-fires. Only YouTube/Vimeo expose a deterministic start; other providers ignore the request.
+  const seekable = !!provider && isSeekableProvider(provider.id) && !!spec;
+  const [seek, setSeek] = useState<{ at: number; bump: number } | null>(null);
+  const providerId = provider?.id;
+  useEffect(() => {
+    if (!seekable || !providerId) return;
+    return onSeek(cell.id, (seconds) =>
+      setSeek((cur) => ({ at: seconds, bump: (cur?.bump ?? 0) + 1 })),
+    );
+  }, [seekable, providerId, cell.id]);
+
   function commitUrl(next: string) {
     const u = next.trim();
     if (!u) return;
@@ -195,8 +216,11 @@ export default function ExternalCell({
           style={frameStyle}
         >
           <iframe
+            key={seek?.bump ?? 0}
             className={css.frame}
-            src={spec.src}
+            src={
+              (seek && providerId && seekableSrc(providerId, spec.src, seek.at)) || spec.src
+            }
             title={cell.title || url}
             loading="lazy"
             allow="accelerometer; autoplay; clipboard-write; encrypted-media; fullscreen; gyroscope; picture-in-picture"

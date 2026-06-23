@@ -1,0 +1,54 @@
+/* Floating exit control for performance mode. Fades to near-invisible at rest so it doesn't compete
+   with the lesson, and lifts to full opacity on hover/focus-within — there when you reach for it. */
+.bar {
+  position: fixed;
+  top: calc(0.6rem + env(safe-area-inset-top, 0px));
+  right: calc(0.6rem + env(safe-area-inset-right, 0px));
+  z-index: 50;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  max-width: min(60vw, 28rem);
+  padding: 0.35rem 0.4rem 0.35rem 0.85rem;
+  border-radius: 999px;
+  border: 1px solid var(--s-line);
+  background: color-mix(in srgb, var(--canvas) 88%, transparent);
+  backdrop-filter: blur(8px);
+  box-shadow: var(--shadow-2, 0 4px 16px rgba(0, 0, 0, 0.12));
+  opacity: 0.45;
+  transition: opacity 0.2s ease;
+}
+.bar:hover,
+.bar:focus-within {
+  opacity: 1;
+}
+.title {
+  font-family: var(--font-ui);
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--s-ink);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.exit {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  flex: none;
+  font-family: var(--font-ui);
+  font-size: 0.8rem;
+  border: 0;
+  border-radius: 999px;
+  background: var(--s-ink);
+  color: var(--canvas);
+  padding: 0.28rem 0.7rem;
+  cursor: pointer;
+}
+.exit[data-hovered] {
+  background: var(--s-ink-muted);
+}
+.exit[data-focus-visible] {
+  outline: 2px solid var(--screen-accent, var(--s-magenta));
+  outline-offset: 2px;
+}

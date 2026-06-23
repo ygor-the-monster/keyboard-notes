@@ -13,6 +13,13 @@
   flex-direction: column;
   gap: 28px;
 }
+
+/* Performance ("present") mode: no left dock to clear and no editing chrome, so the lesson column
+   reclaims a symmetric gutter and a touch more width to fill the screen. */
+:global(.app-shell[data-performing]) .page {
+  padding: 36px 24px calc(36px + env(safe-area-inset-bottom, 0px));
+  max-width: 1040px;
+}
 .empty {
   display: flex;
   height: 100%;

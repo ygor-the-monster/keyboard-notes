@@ -21,6 +21,8 @@ import IconBtn from "../IconBtn/IconBtn.tsx";
 import EmptyState from "../EmptyState/EmptyState.tsx";
 import CellErrorBoundary from "../CellErrorBoundary/CellErrorBoundary.tsx";
 import { cellRegistry } from "../../utils/cellRegistry/cellRegistry.tsx";
+import { cellSeekCode } from "../../utils/seekBus/seekBus.ts";
+import { detectProvider, isSeekableProvider } from "../ExternalCell/ExternalCell.utils.ts";
 import { dropIndex } from "./Cell.dnd.ts";
 import type { Cell as CellModel } from "../../utils/cellKinds/cellKinds.ts";
 import shared from "../../providers/ThemeProvider/ThemeProvider.module.css";
@@ -44,12 +46,28 @@ function translateYOf(el: Element): number {
 
 export default function Cell({ cell, index = 0 }: { cell: CellModel; index?: number }) {
   const { moveCell, moveCellTo, duplicateCell, deleteCell, restoreCell } = useStore();
-  const { editingId, setEditing } = useEditing();
+  const { editingId, setEditing, performing } = useEditing();
   const { t } = useI18n();
   const editing = editingId === cell.id;
   const view = cellRegistry[cell.kind];
   const TagIcon = view.icon;
   const Body = view.component;
+
+  // Seek-able media Cells (Audio, or a YouTube/Vimeo External) expose a short, stable code as a
+  // copyable badge — it's the `<code>` a Note timestamp anchor `[[code:time]]` points at.
+  const seekProvider =
+    cell.kind === "external" && cell.url ? detectProvider(cell.url) : null;
+  const seekCode =
+    cell.kind === "audio" || (seekProvider && isSeekableProvider(seekProvider.id))
+      ? cellSeekCode(cell)
+      : null;
+  const copyCode = () => {
+    if (!seekCode) return;
+    navigator.clipboard?.writeText(seekCode).then(
+      () => toast.neutral(t("cell.codeCopied", { code: seekCode })),
+      () => {},
+    );
+  };
 
   // Drag-to-reorder via the grip handle. Pointer/touch moves are tracked on `window` (NOT via pointer
   // capture or useMove) so the listeners survive the dragged cell's own DOM node being reordered
@@ -185,6 +203,7 @@ export default function Cell({ cell, index = 0 }: { cell: CellModel; index?: num
         data-dragging={dragging ? "" : undefined}
         style={{ "--stagger": `${Math.min(index, 8) * 55}ms` } as CSSProperties}
       >
+        {!performing && (
         <div className={`${s.cellToolbar} no-print`}>
           <span className={s.tagGroup}>
             <span
@@ -200,6 +219,17 @@ export default function Cell({ cell, index = 0 }: { cell: CellModel; index?: num
             <span className={s.cellTag}>
               <TagIcon size={12} aria-hidden /> {t(view.tagLabelKey)}
             </span>
+            {seekCode && (
+              <button
+                type="button"
+                className={s.seekCode}
+                onClick={copyCode}
+                aria-label={t("cell.copyCode", { code: seekCode })}
+                title={t("cell.copyCode", { code: seekCode })}
+              >
+                {seekCode}
+              </button>
+            )}
           </span>
           <div className={`${s.actions} no-print`} role="toolbar" aria-label={t("cell.actions")}>
             <IconBtn
@@ -251,6 +281,7 @@ export default function Cell({ cell, index = 0 }: { cell: CellModel; index?: num
             />
           </div>
         </div>
+        )}
 
         <div className="cell-body">
           <CellErrorBoundary

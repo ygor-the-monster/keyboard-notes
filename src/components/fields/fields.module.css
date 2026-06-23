@@ -225,6 +225,15 @@
   opacity: 0.4;
   cursor: default;
 }
+.menuSectionHeader {
+  padding: 6px 12px 2px;
+  font-family: var(--font-ui);
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  color: var(--s-ink-muted);
+}
 .menuSeparator {
   height: 1px;
   border: none;

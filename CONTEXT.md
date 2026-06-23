@@ -24,6 +24,23 @@ _Avoid_: notebook (that is the app), document, page, sheet
 One block within a Lesson. Cells are reorderable and each is of a single Kind.
 _Avoid_: block, section, item
 
+**Status**:
+A Lesson's workflow badge in the Library — one of No Status (the default), New, In Progress, In
+Review, Done, Archived, or Template. Additive + optional like tags/pinning (ADR-0005); setting it
+is organizing, not editing, so it never bumps `updated`.
+_Avoid_: state, stage, label
+
+**Template**:
+A Lesson whose Status is Template — surfaced as a starting point in the Library's "new" menu.
+Instantiating one deep-clones it (fresh Lesson + Cell ids, reset to No Status) into a new Lesson.
+_Avoid_: preset, starter, boilerplate
+
+**Beam**:
+Sending one Lesson directly to another device over an encrypted peer-to-peer WebRTC DataChannel —
+no server — by exchanging two QR codes (ADR-0007). The teacher→student companion to file export; the
+received Lesson passes the same `coerceLesson` import boundary before it's added.
+_Avoid_: share, sync, send (bare)
+
 **Kind**:
 The discriminator that fixes which of the seven kinds a Cell is (Note, Score, Cifra, Image,
 PDF, Audio, External). The single source of truth for the closed set of kinds.

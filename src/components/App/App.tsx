@@ -24,6 +24,8 @@ import ChordBuilder from "../ChordBuilder/ChordBuilder.tsx";
 import CellRail from "../CellRail/CellRail.tsx";
 import LessonChat from "../LessonChat/LessonChat.tsx";
 import LibraryScreen from "../LibraryScreen/LibraryScreen.tsx";
+import BeamScreen from "../BeamScreen/BeamScreen.tsx";
+import PerformanceBar from "../PerformanceBar/PerformanceBar.tsx";
 import shared from "../../providers/ThemeProvider/ThemeProvider.module.css";
 import s from "./App.module.css";
 
@@ -32,7 +34,7 @@ const OVERLAY_SELECTOR =
 
 export default function App() {
   const { activeLesson, createLesson, importLesson, hydrated } = useStore();
-  const { setEditing } = useEditing();
+  const { setEditing, performing, setPerforming } = useEditing();
   const { canInstall, promptInstall } = usePwa();
   const { t } = useI18n();
   const { openScreen } = useRoute();
@@ -146,6 +148,9 @@ export default function App() {
   useEffect(() => {
     function onDown(e: MouseEvent) {
       const target = e.target as Element;
+      // A Note timestamp anchor is an action (jump a media cell), not an "edit this note" intent —
+      // leave editing alone so the anchor's own click handler runs and the note stays rendered.
+      if (target.closest?.("[data-seek-code]")) return;
       const cellEl = target.closest?.("[data-cell-id]");
       if (cellEl) setEditing((cellEl as HTMLElement).dataset.cellId ?? null);
       // The cell rail focuses a card itself (and isn't an overlay) — don't treat it as click-away.
@@ -156,20 +161,36 @@ export default function App() {
     return () => document.removeEventListener("mousedown", onDown, true);
   }, [setEditing]);
 
+  // Escape leaves performance ("present") mode — the keyboard mirror of the floating exit control.
+  useEffect(() => {
+    if (!performing) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setPerforming(false);
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [performing, setPerforming]);
+
+  // Performance ("present") mode is only meaningful with a lesson on screen — never strand the user
+  // in a chrome-less empty app.
+  const performingLesson = performing && !!activeLesson;
+
   return (
-    <div className="app-shell">
-      <Topbar />
+    <div className="app-shell" data-performing={performingLesson ? "" : undefined}>
+      {!performingLesson && <Topbar />}
       {/* Left-edge utility docks (moved off the right to make room for the cell rail by the
           scrollbar). Each dock wears the colour of the cell it relates to. */}
-      <div className={`${s.utilityDock} no-print`}>
-        <Metronome autostart={launch.tool === "metronome"} />
-        <Tuner autostart={launch.tool === "tuner"} />
-        <Drone />
-        <ChordBuilder />
-        <Scratchpad />
-        <SyntaxRef />
-        <GoalTimer />
-      </div>
+      {!performingLesson && (
+        <div className={`${s.utilityDock} no-print`}>
+          <Metronome autostart={launch.tool === "metronome"} />
+          <Tuner autostart={launch.tool === "tuner"} />
+          <Drone />
+          <ChordBuilder />
+          <Scratchpad />
+          <SyntaxRef />
+          <GoalTimer />
+        </div>
+      )}
       <div className="app-scroll">
         {!hydrated ? null : activeLesson ? (
           <div className={s.page}>
@@ -189,10 +210,10 @@ export default function App() {
                 ))}
               </div>
             )}
-            <AddBar />
+            {!performingLesson && <AddBar />}
             {/* On-device music tutor — a special card below the cells and the add-strip; not a
                 cell in the lesson, so it stays out of the data model / export. */}
-            <LessonChat />
+            {!performingLesson && <LessonChat />}
           </div>
         ) : (
           <div className={s.empty}>
@@ -204,8 +225,15 @@ export default function App() {
           </div>
         )}
       </div>
-      <CellRail />
+      {!performingLesson && <CellRail />}
+      {performingLesson && (
+        <PerformanceBar
+          title={activeLesson?.title || t("topbar.untitled")}
+          onExit={() => setPerforming(false)}
+        />
+      )}
       <LibraryScreen />
+      <BeamScreen />
       <Toasts />
     </div>
   );

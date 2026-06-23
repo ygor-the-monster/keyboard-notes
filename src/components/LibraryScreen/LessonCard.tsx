@@ -22,6 +22,11 @@ import {
 import { useI18n } from "../../providers/I18nProvider/I18nProvider.tsx";
 import { cellRegistry } from "../../utils/cellRegistry/cellRegistry.tsx";
 import { formatRelativeTime } from "../../utils/relativeTime/relativeTime.ts";
+import {
+  LESSON_STATUSES,
+  effectiveStatus,
+  type LessonStatus,
+} from "../../utils/lessonStatus/lessonStatus.ts";
 import type { Lesson, Kind } from "../../utils/cellKinds/cellKinds.ts";
 import f from "../fields/fields.module.css";
 import s from "./LibraryScreen.module.css";
@@ -34,6 +39,7 @@ export default function LessonCard({
   onOpen,
   onTogglePin,
   onSetTags,
+  onSetStatus,
   onExport,
   onDelete,
   onPickTag,
@@ -43,12 +49,14 @@ export default function LessonCard({
   onOpen: () => void;
   onTogglePin: () => void;
   onSetTags: (tags: string[]) => void;
+  onSetStatus: (status: LessonStatus) => void;
   onExport: () => void;
   onDelete: () => void;
   onPickTag: (tag: string) => void;
 }) {
   const { t, locale } = useI18n();
   const tags = lesson.tags ?? [];
+  const status = effectiveStatus(lesson);
 
   // The set of distinct cell kinds present, in first-appearance order — a compact visual fingerprint
   // of what the lesson holds, drawn in each kind's hue.
@@ -81,6 +89,31 @@ export default function LessonCard({
       </button>
 
       <div className={s.cardFoot}>
+        <MenuTrigger>
+          <Button
+            className={s.statusBadge}
+            data-status={status}
+            aria-label={t("library.setStatus", { status: t(`library.status_${status}`) })}
+          >
+            <span className={s.statusDot} aria-hidden />
+            {t(`library.status_${status}`)}
+          </Button>
+          <Popover className={f.menuPopover}>
+            <Menu
+              className={f.menu}
+              selectionMode="single"
+              selectedKeys={[status]}
+              onAction={(k) => onSetStatus(String(k) as LessonStatus)}
+            >
+              {LESSON_STATUSES.map((st) => (
+                <MenuItem key={st} id={st} className={f.menuItem}>
+                  {t(`library.status_${st}`)}
+                </MenuItem>
+              ))}
+            </Menu>
+          </Popover>
+        </MenuTrigger>
+
         {tags.length > 0 && (
           <div className={s.cardTags}>
             {tags.map((tag) => (

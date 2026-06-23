@@ -21,6 +21,8 @@ import {
   MoonIcon as Moon,
   SunIcon as Sun,
   MagnifyingGlassIcon as MagnifyingGlass,
+  PresentationIcon as Presentation,
+  BroadcastIcon as Broadcast,
 } from "@phosphor-icons/react";
 import { useStore } from "../../providers/StoreProvider/StoreProvider.tsx";
 import { storageEstimate } from "../../providers/StoreProvider/StoreProvider.utils.ts";
@@ -28,6 +30,7 @@ import { usePwa } from "../../providers/PWAProvider/PWAProvider.tsx";
 import { useDialog } from "../../providers/DialogProvider/DialogProvider.tsx";
 import { useI18n } from "../../providers/I18nProvider/I18nProvider.tsx";
 import { useTheme, ZOOM_LEVELS } from "../../providers/ThemeProvider/ThemeProvider.tsx";
+import { useEditing } from "../../providers/EditingProvider/EditingProvider.tsx";
 import { useRoute } from "../../providers/RouteProvider/RouteProvider.tsx";
 import { toolRegistry } from "../../utils/toolRegistry/toolRegistry.ts";
 import { removeDeleted } from "../../utils/recentlyDeleted/recentlyDeleted.ts";
@@ -37,6 +40,7 @@ import {
   lessonFilename,
 } from "../../utils/lessonExport/lessonExport.ts";
 import { LIBRARY_SCREEN } from "../LibraryScreen/LibraryScreen.tsx";
+import { BEAM_SCREEN } from "../BeamScreen/BeamScreen.tsx";
 import IconBtn from "../IconBtn/IconBtn.tsx";
 import ic from "../IconBtn/IconBtn.module.css";
 import f from "../fields/fields.module.css";
@@ -62,6 +66,7 @@ export default function Topbar() {
   const { alert } = useDialog();
   const { t, locale, setLocale, locales } = useI18n();
   const { scheme, toggle: toggleTheme, zoom, setZoom } = useTheme();
+  const { setPerforming } = useEditing();
   const { screen, openScreen } = useRoute();
   // While a tool screen is open, the lesson title isn't editable — swap it for the tool's name.
   const screenTool = screen ? toolRegistry[screen] : undefined;
@@ -303,6 +308,20 @@ export default function Topbar() {
             label={scheme === "dark" ? t("theme.light") : t("theme.dark")}
             onPress={toggleTheme}
           />
+          {activeLesson && (
+            <IconBtn
+              icon={Presentation}
+              label={t("performance.enter")}
+              onPress={() => setPerforming(true)}
+            />
+          )}
+          {activeLesson && (
+            <IconBtn
+              icon={Broadcast}
+              label={t("beam.title")}
+              onPress={() => openScreen(BEAM_SCREEN)}
+            />
+          )}
           <IconBtn icon={DownloadSimple} label={t("topbar.exportLesson")} onPress={exportJson} />
           {canShareFiles && (
             <IconBtn icon={ShareNetwork} label={t("topbar.shareLesson")} onPress={shareLesson} />

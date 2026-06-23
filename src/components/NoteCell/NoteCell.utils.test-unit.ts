@@ -62,4 +62,20 @@ describe("renderMarkdown", () => {
     expect(html).toContain('type="checkbox"');
     expect(html).toContain("task"); // the <ul class="task"> hook survives
   });
+  it("renders a [[code:time|label]] timestamp anchor as a data-button, never a router hash href", () => {
+    // Timestamp Anchors are a custom token, NOT a Markdown link — so they emit a <button> carrying
+    // the target code + time (seconds) in data-* attributes, with no `#…` href the router could
+    // mistake for a screen.
+    const html = renderMarkdown("[[A3F:1:23|go to chorus]]");
+    expect(html).toContain('class="seek-anchor"');
+    expect(html).toContain('data-seek-code="A3F"');
+    expect(html).toContain('data-seek-time="83"'); // 1:23 parsed to seconds
+    expect(html).toContain(">go to chorus</button>");
+    expect(html).not.toContain("href"); // the whole point: no anchor/hash
+  });
+  it("uses the timecode as the anchor's label when none is given", () => {
+    const html = renderMarkdown("[[V7Q:0:45]]");
+    expect(html).toContain('data-seek-code="V7Q"');
+    expect(html).toContain(">0:45</button>");
+  });
 });

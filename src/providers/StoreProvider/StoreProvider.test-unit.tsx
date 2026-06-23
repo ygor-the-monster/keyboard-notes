@@ -179,6 +179,43 @@ describe("StoreProvider / useStore", () => {
     expect(result.current.state.lessons[id].updated).toBe(updatedBefore);
   });
 
+  it("setLessonStatus stores a valid status and clears the field for the 'no_status' sentinel", async () => {
+    const { result } = await mountStore();
+    const id = result.current.activeLesson!.id;
+    const updatedBefore = result.current.state.lessons[id].updated;
+    act(() => result.current.setLessonStatus(id, "in_progress"));
+    expect(result.current.state.lessons[id].status).toBe("in_progress");
+    // Choosing "No status" clears the field rather than storing the sentinel.
+    act(() => result.current.setLessonStatus(id, "no_status"));
+    expect(result.current.state.lessons[id].status).toBeUndefined();
+    // Organizing isn't editing — recency timestamp untouched (ADR-0005).
+    expect(result.current.state.lessons[id].updated).toBe(updatedBefore);
+  });
+
+  it("createLessonFromTemplate deep-clones a template into a fresh, active, status-less Lesson", async () => {
+    const { result } = await mountStore();
+    let templateId = "";
+    let cellId = "";
+    act(() => {
+      cellId = result.current.addCell("note");
+    });
+    act(() => result.current.updateCell(cellId, { source: "from template" }));
+    templateId = result.current.activeLesson!.id;
+    act(() => result.current.setLessonStatus(templateId, "template"));
+
+    act(() => result.current.createLessonFromTemplate(templateId));
+    const made = result.current.activeLesson!;
+    expect(made.id).not.toBe(templateId); // fresh lesson id
+    expect(result.current.state.activeId).toBe(made.id); // and active
+    expect(made.status).toBeUndefined(); // copy is "No status", never a template itself
+    expect(made.pinned).toBe(false);
+    expect(made.cells).toHaveLength(1);
+    expect(made.cells[0].id).not.toBe(cellId); // fresh cell id
+    expect(noteSourceOf(made.cells, made.cells[0].id)).toBe("from template"); // content preserved
+    // The template itself is untouched.
+    expect(result.current.state.lessons[templateId].status).toBe("template");
+  });
+
   it("importLesson normalizes incoming tags", async () => {
     const { result } = await mountStore();
     act(() =>

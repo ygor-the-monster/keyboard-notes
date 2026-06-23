@@ -3,6 +3,7 @@ import DOMPurify from "dompurify";
 import type { MarkedExtension, RendererThis, Tokens, TokenizerThis } from "marked";
 import markedFootnote from "marked-footnote";
 import { markedSmartypants } from "marked-smartypants";
+import { SEEK_TOKEN_RE, parseTimecode, fmtTimecode } from "../../utils/seekBus/seekBus.ts";
 
 marked.setOptions({ gfm: true, breaks: true });
 
@@ -29,11 +30,40 @@ const inlineWrap = (name: string, open: string, tag: string, re: RegExp) => ({
   },
 });
 
+// Timestamp Anchor: `[[<code>:<time>|<label?>]]` → a <button> carrying the target Cell code + the
+// time (in seconds) in data-* attributes; NoteCell resolves the code to a Cell and wires the click
+// to the seek bus. A custom token, not a link, so it never emits a `#…` href the router would treat
+// as a screen. The code is constrained by the regex; the label is HTML-escaped into text content.
+const escapeHtml = (s: string) =>
+  s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+
+const seekAnchor = {
+  name: "seekAnchor",
+  level: "inline" as const,
+  start(src: string) {
+    const i = src.indexOf("[[");
+    return i < 0 ? undefined : i;
+  },
+  tokenizer(this: TokenizerThis, src: string) {
+    const m = SEEK_TOKEN_RE.exec(src);
+    if (!m) return undefined;
+    const seconds = parseTimecode(m[2]);
+    if (seconds == null) return undefined; // not a valid time → leave as literal text
+    return { type: "seekAnchor", raw: m[0], code: m[1], seconds, label: m[3] ?? "" };
+  },
+  renderer(this: RendererThis, token: Tokens.Generic) {
+    const seconds = token.seconds as number;
+    const label = (token.label as string).trim() || fmtTimecode(seconds);
+    return `<button type="button" class="seek-anchor" data-seek-code="${token.code}" data-seek-time="${seconds}">${escapeHtml(label)}</button>`;
+  },
+};
+
 marked.use({
   extensions: [
     inlineWrap("highlight", "==", "mark", /^==(?=\S)([\s\S]*?\S)==/),
     inlineWrap("superscript", "^", "sup", /^\^([^\s^]+)\^/),
     inlineWrap("subscript", "~", "sub", /^~(?!~)([^\s~]+)~(?!~)/),
+    seekAnchor,
   ],
 } satisfies MarkedExtension);
 

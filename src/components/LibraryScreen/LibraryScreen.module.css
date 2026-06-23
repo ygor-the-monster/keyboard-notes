@@ -208,6 +208,65 @@
   padding: 0;
 }
 
+/* Workflow status badge — also the picker trigger. The dot carries the per-status hue (set via the
+   data-status attribute below); the label stays ink for legibility. Hues are semantic where one
+   exists (done = positive green) and otherwise drawn from the palette — retune freely. */
+.statusBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.32rem;
+  font-family: var(--font-ui);
+  font-size: 0.72rem;
+  border-radius: 999px;
+  border: 1px solid var(--s-line);
+  background: var(--canvas);
+  color: var(--s-ink);
+  padding: 0.12rem 0.55rem 0.12rem 0.45rem;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.statusBadge:hover {
+  border-color: var(--s-line-strong);
+}
+.statusBadge[data-focus-visible] {
+  outline: 2px solid var(--screen-accent);
+  outline-offset: 1px;
+}
+.statusDot {
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: 999px;
+  background: var(--status-hue, var(--s-ink-muted));
+  flex: none;
+}
+/* "No Status" reads as an empty/outline dot so it's visibly the absence of a status. */
+.statusBadge[data-status="no_status"] {
+  color: var(--s-ink-muted);
+}
+.statusBadge[data-status="no_status"] .statusDot {
+  background: transparent;
+  border: 1.5px solid var(--s-ink-muted);
+}
+.statusBadge[data-status="new"] {
+  --status-hue: var(--s-blue);
+}
+.statusBadge[data-status="in_progress"] {
+  --status-hue: var(--s-gold-strong);
+}
+.statusBadge[data-status="in_review"] {
+  --status-hue: var(--s-indigo);
+}
+.statusBadge[data-status="done"] {
+  --status-hue: var(--s-green);
+}
+.statusBadge[data-status="archived"] {
+  --status-hue: var(--s-silver);
+  color: var(--s-ink-muted);
+}
+.statusBadge[data-status="template"] {
+  --status-hue: var(--s-magenta);
+}
+
 .iconAction {
   display: inline-flex;
   align-items: center;
